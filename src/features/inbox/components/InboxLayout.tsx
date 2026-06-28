@@ -138,8 +138,11 @@ export function InboxLayout() {
     };
 
     return (
-        <div className="p-4 md:p-8 max-w-7xl mx-auto h-screen flex flex-col">
-            <div className="flex flex-row items-center justify-between mb-6">
+        <div
+            className="-m-4 md:-m-8 flex flex-col overflow-hidden bg-gray-50"
+            style={{ height: 'calc(100dvh - 64px)' }}
+        >
+            <div className="px-4 pt-4 pb-2 md:px-8 md:pt-6 md:pb-4 flex flex-row items-center justify-between shrink-0">
                 <h1 className="text-2xl font-bold text-gray-900">Inbox</h1>
                 <div className="text-xs text-gray-500 flex items-center gap-2">
                     <span>Home</span>
@@ -151,7 +154,7 @@ export function InboxLayout() {
                 </div>
             </div>
 
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-0">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 px-4 pb-4 md:px-8 md:pb-8 min-h-0 overflow-hidden">
                 {error && (
                     <div className="lg:col-span-3 bg-red-50 text-red-600 p-4 rounded-lg mb-4">
                         {error}

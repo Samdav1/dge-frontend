@@ -19,7 +19,7 @@ export async function GET(
         const backendUrl = getBackendUrl();
         const apiKey = process.env.BACKEND_API_KEY || "";
 
-        const res = await fetch(`${backendUrl}/v1/services/${id}`, {
+        const res = await fetch(`${backendUrl}/v1/services/services/${id}`, {
             method: "GET",
             headers: headers(apiKey),
             cache: "no-store",
@@ -30,7 +30,38 @@ export async function GET(
             return NextResponse.json({ error: errText }, { status: res.status });
         }
 
-        return NextResponse.json(await res.json());
+        const data = await res.json();
+
+        // Dynamically fetch categories if missing/empty in service
+        if (data.service && (!data.service.categories || data.service.categories.length === 0)) {
+            try {
+                const linksRes = await fetch(`${backendUrl}/v1/service_category/categories/service/${id}/links`, {
+                    method: "GET",
+                    headers: headers(apiKey),
+                });
+                if (linksRes.ok) {
+                    const links = await linksRes.json();
+                    if (links && links.length > 0) {
+                        const catsRes = await fetch(`${backendUrl}/v1/service_category/categories/`, {
+                            method: "GET",
+                            headers: headers(apiKey),
+                        });
+                        if (catsRes.ok) {
+                            const categories = await catsRes.json();
+                            const matchedCategories = links.map((link: any) => {
+                                const matchedCat = categories.find((c: any) => c.id === link.category_id);
+                                return matchedCat ? { id: matchedCat.id, name: matchedCat.name } : null;
+                            }).filter(Boolean);
+                            data.service.categories = matchedCategories;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to dynamically fetch categories on admin API proxy:", err);
+            }
+        }
+
+        return NextResponse.json(data);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
     Car, MapPin, Clock, Shield, DollarSign, Navigation, Users,
@@ -200,6 +202,17 @@ function RideSimulator() {
 export function DrivingSection() {
     const sectionRef = useRef<HTMLDivElement>(null);
     const [isVisible, setIsVisible] = useState(false);
+    const router = useRouter();
+    const { data: session } = useSession();
+    const isLoggedIn = !!session?.backendToken;
+
+    const handleCtaClick = (callbackPath: string = "/dashboard/driving") => {
+        if (isLoggedIn) {
+            router.push(callbackPath);
+        } else {
+            router.push(`/login?callbackUrl=${encodeURIComponent(callbackPath)}`);
+        }
+    };
 
     useEffect(() => {
         const observer = new IntersectionObserver(
@@ -284,11 +297,11 @@ export function DrivingSection() {
                         </div>
 
                         <div className="flex gap-4">
-                            <Button className="bg-primary hover:bg-primary/90 text-white px-6 py-5 rounded-xl text-sm font-semibold">
+                            <Button onClick={() => handleCtaClick("/dashboard/driving")} className="bg-primary hover:bg-primary/90 text-white px-6 py-5 rounded-xl text-sm font-semibold">
                                 Book a Ride
                                 <ArrowRight className="h-4 w-4 ml-2" />
                             </Button>
-                            <Button variant="outline" className="border-white/20 text-black hover:bg-white/10 hover:text-white px-6 py-5 rounded-xl text-sm">
+                            <Button onClick={() => handleCtaClick("/dashboard/driving")} variant="outline" className="border-white/20 text-black hover:bg-white/10 hover:text-white px-6 py-5 rounded-xl text-sm">
                                 Become a Driver
                             </Button>
                         </div>
@@ -339,9 +352,9 @@ export function DrivingSection() {
                     <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                         <div>
                             <h3 className="text-xl md:text-2xl font-bold text-white mb-2">Ready to join the DGE Rides community?</h3>
-                            <p className="text-sm text-gray-400">Thousands of drivers and riders are already part of the trusted DGE World ecosystem.</p>
+                            <p className="text-sm text-gray-400">Thousands of drivers and riders are already part of the trusted DGE SPACE ecosystem.</p>
                         </div>
-                        <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-5 rounded-xl text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
+                        <Button onClick={() => handleCtaClick("/dashboard/driving")} className="bg-primary hover:bg-primary/90 text-white px-8 py-5 rounded-xl text-sm font-semibold flex items-center gap-2 whitespace-nowrap">
                             <Sparkles className="h-4 w-4" />
                             Become a Driver
                             <ChevronRight className="h-4 w-4" />

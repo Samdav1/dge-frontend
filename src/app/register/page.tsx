@@ -1,7 +1,7 @@
 "use client";
 
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 const SLIDES = [
     {
@@ -71,7 +71,9 @@ export default function RegisterPage() {
 
             {/* Right Side - Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-background">
-                <RegisterForm />
+                <React.Suspense fallback={<div className="flex items-center justify-center p-12"><div className="animate-spin h-8 w-8 border-4 border-[#C69C2E] border-t-transparent rounded-full"></div></div>}>
+                    <RegisterForm />
+                </React.Suspense>
             </div>
         </div>
     );

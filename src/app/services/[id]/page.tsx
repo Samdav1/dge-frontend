@@ -55,7 +55,7 @@ function mapBackendDataToService(backendData: import("@/types/marketplace").Serv
         originalPrice: service.discount
             ? new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(service.price / (1 - service.discount_percent / 100))
             : undefined,
-        category: "General", 
+        category: service.categories?.[0]?.name || "General",
         image: service.image,
         status: (service.status as "Active" | "Inactive") || "Active",
         tags: [service.type, ...(service.status ? [service.status] : [])],
@@ -72,7 +72,7 @@ function mapBackendDataToService(backendData: import("@/types/marketplace").Serv
             description: profile?.bio || "No description available.",
             website: socialLinks.website || "",
             phone: profile?.phone || "",
-            email: user?.email || "", 
+            email: user?.email || "",
             facebook: socialLinks.facebook || "",
             twitter: socialLinks.twitter || "",
             instagram: socialLinks.instagram || "",

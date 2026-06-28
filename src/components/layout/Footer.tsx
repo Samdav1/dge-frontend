@@ -3,10 +3,7 @@ export function Footer() {
         <footer className="py-12 bg-black text-white text-sm">
             <div className="container mx-auto px-4 md:px-8 max-w-[1600px] flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="flex items-center gap-2">
-                    <div className="font-bold text-xl text-primary tracking-tighter flex items-center gap-1">
-                        <span className="bg-transparent border border-primary text-primary w-8 h-8 rounded-full flex items-center justify-center text-xs">D</span>
-                        DGE
-                    </div>
+                    <img src="/DGE logo.png" alt="DGE Logo" className="h-10 w-auto" />
                     <span className="text-gray-400 ml-4">@copyright 2025</span>
                 </div>
 

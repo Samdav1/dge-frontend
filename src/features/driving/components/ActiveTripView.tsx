@@ -259,11 +259,23 @@ export function ActiveTripView({ trip, isDriver, onCancel, onComplete, onArrive,
                 {/* Contact */}
                 <div className="flex items-center justify-between p-4 border border-gray-100 rounded-xl">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                            {isDriver ? <User className="w-5 h-5 text-gray-500" /> : <Car className="w-5 h-5 text-gray-500" />}
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                            {isDriver ? (
+                                trip.rider_avatar ? (
+                                    <img src={trip.rider_avatar.startsWith("http") ? trip.rider_avatar : `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}${trip.rider_avatar}`} alt={trip.rider_name || "Passenger"} className="w-full h-full object-cover" />
+                                ) : (
+                                    <User className="w-5 h-5 text-gray-500" />
+                                )
+                            ) : (
+                                trip.driver_avatar ? (
+                                    <img src={trip.driver_avatar.startsWith("http") ? trip.driver_avatar : `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}${trip.driver_avatar}`} alt={trip.driver_name || "Driver"} className="w-full h-full object-cover" />
+                                ) : (
+                                    <Car className="w-5 h-5 text-gray-500" />
+                                )
+                            )}
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-gray-900">{isDriver ? "Passenger" : "Driver"}</p>
+                            <p className="text-sm font-bold text-gray-900">{isDriver ? (trip.rider_name || "Passenger") : (trip.driver_name || "Driver")}</p>
                             <p className="text-xs text-gray-400">Connected</p>
                         </div>
                     </div>

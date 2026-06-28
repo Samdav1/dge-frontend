@@ -14,6 +14,7 @@ import { useOpenPostedJobs } from "@/features/posted-jobs/hooks/usePostedJobs";
 import { useCategories } from "@/features/marketplace/hooks/useMarketplace";
 import { useDebounce } from "@/hooks/useDebounce";
 import { JobBoardCard } from "@/features/posted-jobs/components/JobBoardCard";
+import { JobBoardSectionSkeleton } from "@/features/posted-jobs/components/JobBoardCardSkeleton";
 import { PostedJobDetailsModal } from "@/features/posted-jobs/components/PostedJobDetailsModal";
 import { CreatePostedJobModal } from "@/features/posted-jobs/components/CreatePostedJobModal";
 import { PostedJob } from "@/features/posted-jobs/actions";
@@ -92,15 +93,7 @@ export default function JobBoardPage() {
 
             {/* Content Area */}
             {isLoading ? (
-                <div className="flex flex-col justify-center items-center h-96 gap-4">
-                    <div className="relative">
-                        <Loader2 className="w-12 h-12 animate-spin text-[#C69C2E]" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <Briefcase className="w-5 h-5 text-[#C69C2E]/50" />
-                        </div>
-                    </div>
-                    <p className="text-gray-400 font-medium animate-pulse">Loading amazing jobs...</p>
-                </div>
+                <JobBoardSectionSkeleton count={6} />
             ) : error ? (
                 <div className="flex flex-col justify-center items-center h-96 bg-red-50 rounded-3xl border border-red-100 p-8 text-center">
                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-500">

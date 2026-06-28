@@ -15,6 +15,7 @@ export interface Service {
     upvotes: number;
     user_online: boolean;
     user_picture?: string | null;
+    categories?: { id: string; name: string }[];
 }
 
 export interface UserProfile {

@@ -11,7 +11,7 @@ const TRENDING_SERVICES = [
         category: "Plumbing",
         rating: 4.9,
         reviews: 1240,
-        price: "From £50",
+        price: "From ₦50,000",
         icon: Droplet,
         color: "#3B82F6",
         image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?q=80&w=2070&auto=format&fit=crop"
@@ -22,7 +22,7 @@ const TRENDING_SERVICES = [
         category: "Electrical",
         rating: 4.8,
         reviews: 856,
-        price: "From £65",
+        price: "From ₦65,000",
         icon: Zap,
         color: "#F59E0B",
         image: "https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=2069&auto=format&fit=crop"
@@ -33,7 +33,7 @@ const TRENDING_SERVICES = [
         category: "Cleaning",
         rating: 4.9,
         reviews: 2100,
-        price: "From £40",
+        price: "From ₦40,000",
         icon: Brush,
         color: "#10B981",
         image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2070&auto=format&fit=crop"

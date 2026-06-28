@@ -83,6 +83,7 @@ export function MyServicesTab({ onCreateService }: MyServicesTabProps) {
                     image={getBackendImageUrl(service.image)}
                     category={service.categories[0]?.name || "Uncategorized"}
                     type={service.type === "online" ? "Online" : "Onsite"}
+                    status={service.status}
                 />
             ))}
         </div>

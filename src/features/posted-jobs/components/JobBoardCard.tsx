@@ -28,6 +28,14 @@ function JobStatusBadge({ status }: { status: PostedJob["status"] }) {
 }
 
 export function JobBoardCard({ job, onClick }: JobBoardCardProps) {
+    const [isClicked, setIsClicked] = React.useState(false);
+
+    const handleCardClick = () => {
+        setIsClicked(true);
+        onClick();
+        setTimeout(() => setIsClicked(false), 500);
+    };
+
     const formatPrice = (cents: number) => {
         return new Intl.NumberFormat('en-NG', {
             style: 'currency',
@@ -47,8 +55,10 @@ export function JobBoardCard({ job, onClick }: JobBoardCardProps) {
 
     return (
         <div 
-            onClick={onClick}
-            className="bg-white rounded-2xl p-5 border border-gray-100 hover:border-[#C69C2E] hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col h-full"
+            onClick={handleCardClick}
+            className={`bg-white rounded-2xl p-5 border border-gray-100 hover:border-[#C69C2E] hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col h-full ${
+                isClicked ? "pulse-grow-active" : ""
+            }`}
         >
             {/* Header with Image and Status */}
             <div className="relative h-44 rounded-xl overflow-hidden mb-5 shrink-0 bg-gray-50">

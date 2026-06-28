@@ -79,12 +79,7 @@ export default function AdminSidebar() {
                 <div className="p-6">
                     {/* Brand Logo */}
                     <Link href="/admin/overview" className="flex items-center gap-2 mb-10 hover:scale-[1.02] transition-all">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-r from-[#b68512] to-[#dca51a] flex items-center justify-center font-bold text-white text-lg tracking-tight shadow-sm">
-                            D
-                        </div>
-                        <span className="font-bold text-xl tracking-tight text-slate-800">
-                            DGE
-                        </span>
+                        <img src="/DGE logo.png" alt="DGE Logo" className="h-10 w-auto" />
                     </Link>
 
                     {/* Navigation Items */}

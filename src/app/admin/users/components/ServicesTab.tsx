@@ -73,7 +73,7 @@ export default function ServicesTab({ userId }: { userId: string }) {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-slate-50">
-                                <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Job Title</th>
+                                <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Service Title</th>
                                 <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Type</th>
                                 <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Service Price</th>
                                 <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Date Listed</th>
@@ -85,7 +85,7 @@ export default function ServicesTab({ userId }: { userId: string }) {
                             {filtered.map((srv) => (
                                 <tr 
                                     key={srv.id} 
-                                    onClick={() => router.push(`/admin/jobs/${srv.id}`)}
+                                    onClick={() => router.push(`/admin/services/${srv.id}`)}
                                     className="hover:bg-slate-50/50 cursor-pointer transition-colors"
                                 >
                                     <td className="py-4 px-2 text-xs font-bold text-slate-800 leading-none max-w-[280px] truncate">{srv.title}</td>

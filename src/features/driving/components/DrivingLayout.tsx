@@ -20,7 +20,7 @@ import { useSession } from "next-auth/react";
 import { useChatContext } from "@/providers/ChatProvider";
 import {
     Loader2, Car, Navigation, Clock, History, UserCircle,
-    Sparkles, Shield, TrendingUp, Zap, MapPin, Activity, Banknote
+    Sparkles, Shield, TrendingUp, Zap, MapPin, Activity, Banknote, Check
 } from "lucide-react";
 
 const playNotificationSound = () => {
@@ -57,6 +57,9 @@ export function DrivingLayout() {
     const [isAcceptingRequests, setIsAcceptingRequests] = React.useState(true);
     const [isCountryWide, setIsCountryWide] = React.useState(false);
     const [liveDrivers, setLiveDrivers] = React.useState<{ id: string, lat: number, lng: number, details?: any }[]>([]);
+
+    // Driver: incoming ride request dialog (shown as a prominent modal for direct requests)
+    const [incomingRequestDialog, setIncomingRequestDialog] = React.useState<RideIntent | null>(null);
 
     // Rider specific states
     const [tripData, setTripData] = React.useState<any>(null);
@@ -133,6 +136,10 @@ export function DrivingLayout() {
                                 const filtered = prev.filter(r => r.rider_id !== data.rider_id);
                                 return [data, ...filtered];
                             });
+                            // Show prominent dialog for direct ride requests to verified drivers
+                            if (data.type === "ride_request" && data.trip_id && isDriverVerifiedRef.current) {
+                                setIncomingRequestDialog(data);
+                            }
                         }
                     } else if (data.type === "driver_location") {
                         // Handle driver location updates for riders browsing map
@@ -169,7 +176,12 @@ export function DrivingLayout() {
                         import('../actions').then(m => m.getActiveTrip().then(res => {
                             if (res.success && res.data) setActiveTrip(res.data);
                         }));
-                    } else if (data.type === 'ride_cancelled') {
+                    } else if (data.type === 'ride_cancelled' || data.type === 'ride_request_timeout') {
+                        // Dismiss driver's incoming request dialog if it matches the cancelled trip
+                        setIncomingRequestDialog(prev => {
+                            if (prev && prev.trip_id === data.trip_id) return null;
+                            return prev;
+                        });
                         setCounterOffer(null);
                         setIsWaitingForDriver(false);
                         setSelectedDriver(null);
@@ -517,7 +529,7 @@ export function DrivingLayout() {
                 />
             )}
 
-            {/* Waiting for Driver Modal */}
+            {/* Waiting for Driver Modal (Rider Side) */}
             {isWaitingForDriver && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl w-full max-w-sm relative shadow-2xl overflow-hidden p-8 text-center flex flex-col items-center">
@@ -587,6 +599,129 @@ export function DrivingLayout() {
                                 </div>
                             </>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* Incoming Ride Request Dialog (Driver Side) */}
+            {incomingRequestDialog && isDriverVerified && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-sm relative shadow-2xl overflow-hidden flex flex-col items-center">
+                        {/* Pulsing header */}
+                        <div className="w-full bg-gradient-to-r from-[#C69C2E] to-[#e6b93d] px-6 py-5 text-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-white/10 animate-pulse" />
+                            <div className="relative z-10">
+                                <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mx-auto mb-3">
+                                    <Navigation className="w-7 h-7 text-white" />
+                                </div>
+                                <h2 className="text-lg font-bold text-white">New Ride Request!</h2>
+                                <p className="text-xs text-white/80 mt-1">A passenger is waiting for your response</p>
+                            </div>
+                        </div>
+
+                        {/* Route details */}
+                        <div className="w-full px-6 py-5 space-y-4">
+                            <div className="relative flex gap-3 ml-1">
+                                <div className="flex flex-col items-center pt-1.5">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#C69C2E] ring-3 ring-[#C69C2E]/10" />
+                                    <div className="w-0.5 flex-1 my-1.5 min-h-[20px]" style={{ backgroundImage: 'repeating-linear-gradient(to bottom, #C69C2E40 0px, #C69C2E40 3px, transparent 3px, transparent 6px)' }} />
+                                    <div className="w-2.5 h-2.5 rounded-sm bg-gray-900 ring-3 ring-gray-900/10" />
+                                </div>
+                                <div className="space-y-4 pb-1 flex-1">
+                                    <div>
+                                        <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Pickup</p>
+                                        <p className="text-sm text-gray-900 font-medium line-clamp-1">{incomingRequestDialog.pickup?.address || 'Pickup location'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[9px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Dropoff</p>
+                                        <p className="text-sm text-gray-900 font-medium line-clamp-1">{incomingRequestDialog.dropoff?.address || 'Dropoff location'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Fare & distance info */}
+                            <div className="flex gap-2">
+                                <div className="flex-1 p-3 rounded-xl bg-gray-50 border border-gray-100 text-center">
+                                    <p className="text-[10px] text-gray-400 font-medium">Fare</p>
+                                    <p className="text-base font-bold text-[#C69C2E]">
+                                        ₦{(incomingRequestDialog.negotiated_fare || incomingRequestDialog.estimated_fare || 0).toLocaleString()}
+                                    </p>
+                                    {incomingRequestDialog.negotiated_fare && (
+                                        <p className="text-[9px] text-green-600 font-semibold">Rider Offer</p>
+                                    )}
+                                </div>
+                                <div className="flex-1 p-3 rounded-xl bg-gray-50 border border-gray-100 text-center">
+                                    <p className="text-[10px] text-gray-400 font-medium">Distance</p>
+                                    <p className="text-base font-bold text-gray-900">{(incomingRequestDialog.distance_km || 0).toFixed(1)} km</p>
+                                </div>
+                                <div className="flex-1 p-3 rounded-xl bg-gray-50 border border-gray-100 text-center">
+                                    <p className="text-[10px] text-gray-400 font-medium">Pickup</p>
+                                    <p className="text-base font-bold text-gray-900">{Math.ceil((incomingRequestDialog.distance_to_pickup_km || 0) * 2)} min</p>
+                                </div>
+                            </div>
+
+                            {/* Progress bar / timer */}
+                            <div className="w-full">
+                                <div className="flex justify-between text-[10px] text-gray-400 mb-1">
+                                    <span>Time remaining</span>
+                                    <span className="text-red-400 font-semibold">Respond quickly!</span>
+                                </div>
+                                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                    <div className="h-full bg-[#C69C2E] animate-[shrink_30s_linear_forwards]" style={{ width: '100%' }} />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action buttons */}
+                        <div className="w-full px-6 pb-6 flex flex-col gap-2.5">
+                            <Button
+                                onClick={async () => {
+                                    const req = incomingRequestDialog;
+                                    setIncomingRequestDialog(null);
+                                    if (req.trip_id) {
+                                        const res = await acceptRide(req.trip_id);
+                                        if (res.success) {
+                                            setRideRequests(prev => prev.filter(r => r.trip_id !== req.trip_id));
+                                            if (res.data) setActiveTrip(res.data);
+                                            setSuccessModal({ title: "Ride Accepted", message: "You have accepted the ride request. Head to the pickup location!" });
+                                        } else {
+                                            setSuccessModal({ title: "Error", message: res.error || "Failed to accept ride." });
+                                        }
+                                    }
+                                }}
+                                className="w-full h-12 bg-[#C69C2E] hover:bg-[#b08b29] text-white font-bold rounded-xl text-sm transition-all hover:shadow-lg hover:shadow-[#C69C2E]/20"
+                            >
+                                <Check className="w-4 h-4 mr-2" />
+                                Accept Ride
+                            </Button>
+                            <div className="flex gap-2.5">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setIncomingRequestDialog(null);
+                                        setActiveTab('booked');
+                                    }}
+                                    className="flex-1 h-10 border-[#C69C2E]/30 text-[#C69C2E] hover:bg-[#C69C2E]/5 rounded-xl text-xs font-semibold"
+                                >
+                                    <Banknote className="w-3.5 h-3.5 mr-1.5" />
+                                    Counter Offer
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={async () => {
+                                        const req = incomingRequestDialog;
+                                        setIncomingRequestDialog(null);
+                                        setRideRequests(prev => prev.filter(r => r.rider_id !== req.rider_id));
+                                        if (req.trip_id) {
+                                            await cancelTrip(req.trip_id, 'declined');
+                                        }
+                                    }}
+                                    className="flex-1 h-10 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl text-xs font-semibold"
+                                >
+                                    Decline
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

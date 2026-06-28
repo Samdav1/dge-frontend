@@ -22,6 +22,7 @@ import QueryProvider from "@/providers/QueryProvider";
 import { ChatProvider } from "@/providers/ChatProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { StatusModalProvider } from "@/app/admin/components/StatusModalProvider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
 
 export default function RootLayout({
   children,
@@ -29,19 +30,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <QueryProvider>
-            <ChatProvider>
-              <StatusModalProvider>
-                {children}
-              </StatusModalProvider>
-            </ChatProvider>
-          </QueryProvider>
-        </AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+          <AuthProvider>
+            <QueryProvider>
+              <ChatProvider>
+                <StatusModalProvider>
+                  {children}
+                </StatusModalProvider>
+              </ChatProvider>
+            </QueryProvider>
+          </AuthProvider>
+        </ThemeProvider>
         <Toaster position="top-right" richColors />
       </body>
     </html>

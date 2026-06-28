@@ -12,7 +12,7 @@ const TRUST_PILLARS = [
     {
         icon: Users,
         title: "A United Community",
-        desc: "We are more than a marketplace. DGE World is a community where providers and clients grow together.",
+        desc: "We are more than a marketplace. DGE SPACE is a community where providers and clients grow together.",
         color: "#10B981",
     },
     {
@@ -35,18 +35,18 @@ export function AboutUsSection() {
                             <span className="text-[#C69C2E]">A World of Your Own.</span>
                         </h2>
                         <p className="text-muted-foreground mb-4 leading-relaxed text-base">
-                            At DGE World, we believe every connection matters. We are not just building a marketplace — we are building a community anchored in <strong>trust, unity, and unique experiences</strong>.
+                            At DGE SPACE, serve or get served; we bring you every connections that matters. Connecting you with real people to serve your needs.
                         </p>
                         <p className="text-muted-foreground mb-8 leading-relaxed text-base">
-                            Whether you are a client looking for a skilled professional, a freelancer showcasing your craft, or someone who simply needs a reliable ride — DGE World is the ecosystem that brings it all together, safely and seamlessly.
+                            We did not just build a space, we built an ecosystem community of verified users; professionals, freelancers and clients, anchored in <strong>trust, unique experiences, and reliability</strong>.
                         </p>
-                        <Button variant="default" className="bg-[#C69C2E] hover:bg-[#B58B1D] text-white px-8 py-5 rounded-xl font-semibold">Join DGE World Today</Button>
+                        <Button variant="default" className="bg-[#C69C2E] hover:bg-[#B58B1D] text-white px-8 py-5 rounded-xl font-semibold">Join DGE SPACE Today</Button>
                     </div>
                     <div className="flex-1">
                         <div className="rounded-2xl overflow-hidden shadow-xl">
                             <FallbackImage
                                 src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
-                                alt="DGE World Community"
+                                alt="DGE SPACE Community"
                                 className="w-full h-auto object-cover"
                             />
                         </div>

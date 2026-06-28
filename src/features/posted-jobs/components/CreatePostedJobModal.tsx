@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCategories } from "@/features/marketplace/hooks/useMarketplace";
 import { createPostedJob, uploadJobImage } from "@/features/posted-jobs/actions";
 import { getBackendImageUrl } from "@/lib/imageUtils";
+import { CategorySearchPicker } from "@/components/ui/CategorySearchPicker";
 
 interface Props {
     open: boolean;
@@ -166,16 +167,12 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
                                     <Tag className="inline w-3.5 h-3.5 mr-1" />
                                     Category <span className="text-red-500">*</span>
                                 </label>
-                                <select
+                                <CategorySearchPicker
+                                    categories={(categories || []).map((cat: any) => ({ id: cat.id.toString ? cat.id.toString() : cat.id, name: cat.name }))}
                                     value={categoryId}
-                                    onChange={(e) => setCategoryId(e.target.value)}
-                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C69C2E]/30 bg-gray-50"
-                                >
-                                    <option value="">-- Select category --</option>
-                                    {categories?.map((cat: any) => (
-                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                    ))}
-                                </select>
+                                    onChange={(val) => setCategoryId(val)}
+                                    placeholder="Select category"
+                                />
                             </div>
 
                             {/* Price Range */}

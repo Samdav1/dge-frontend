@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
     ArrowDownToLine, ExternalLink, Copy, CheckCircle2,
-    Loader2, AlertCircle, Clock
+    Loader2, AlertCircle, Clock, ShieldCheck
 } from "lucide-react";
-import { initiateDeposit } from "../actions";
+import { initiateDeposit, verifyDeposit } from "../actions";
 
 interface DepositModalProps {
     open: boolean;
@@ -16,7 +16,7 @@ interface DepositModalProps {
     onSuccess?: () => void;
 }
 
-type Step = "amount" | "payment" | "success";
+type Step = "amount" | "payment" | "verifying" | "success";
 
 export function DepositModal({ open, onOpenChange, onSuccess }: DepositModalProps) {
     const [step, setStep] = useState<Step>("amount");
@@ -24,7 +24,9 @@ export function DepositModal({ open, onOpenChange, onSuccess }: DepositModalProp
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [copied, setCopied] = useState(false);
+    const [verifyMessage, setVerifyMessage] = useState("");
     const [depositData, setDepositData] = useState<{
+        deposit_id?: string;
         payment_link?: string;
         monnify_reference: string;
         amount_naira: number;
@@ -40,6 +42,7 @@ export function DepositModal({ open, onOpenChange, onSuccess }: DepositModalProp
                 setAmount("");
                 setError("");
                 setDepositData(null);
+                setVerifyMessage("");
             }, 300);
         }
     }, [open]);
@@ -64,6 +67,39 @@ export function DepositModal({ open, onOpenChange, onSuccess }: DepositModalProp
             setError("Something went wrong. Please try again.");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleVerifyPayment = async () => {
+        if (!depositData?.deposit_id) {
+            setError("Missing deposit reference. Please try initiating a new deposit.");
+            return;
+        }
+
+        setStep("verifying");
+        setError("");
+        setVerifyMessage("Checking payment status with Monnify...");
+
+        try {
+            const result = await verifyDeposit(depositData.deposit_id);
+            if (result.success && result.data?.verified) {
+                setVerifyMessage(result.data.message || "Payment confirmed! Your wallet has been credited.");
+                setStep("success");
+                onSuccess?.();
+            } else if (result.success && !result.data?.verified) {
+                // Payment not yet completed
+                setVerifyMessage(result.data?.message || "Payment not yet received. Please complete payment first.");
+                setStep("payment");
+                setError(result.data?.message || "Payment not yet received.");
+            } else {
+                setVerifyMessage("");
+                setStep("payment");
+                setError(result.error || "Verification failed. Try again in a moment.");
+            }
+        } catch {
+            setVerifyMessage("");
+            setStep("payment");
+            setError("Could not verify payment. Please try again.");
         }
     };
 
@@ -177,11 +213,18 @@ export function DepositModal({ open, onOpenChange, onSuccess }: DepositModalProp
                             <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-800">
                                 <p className="font-semibold mb-1">How this works</p>
                                 <ol className="space-y-1 text-xs list-decimal pl-4 text-amber-700">
-                                    <li>Click the button below to open Monnify's secure payment page.</li>
+                                    <li>Click the button below to open Monnify&apos;s secure payment page.</li>
                                     <li>Complete payment using bank transfer or card.</li>
-                                    <li>Your wallet will be credited automatically once confirmed.</li>
+                                    <li>Return here and click &quot;I&apos;ve Paid — Verify&quot; to credit your wallet.</li>
                                 </ol>
                             </div>
+
+                            {error && (
+                                <div className="flex items-center gap-2 p-3 bg-red-50 rounded-xl text-red-600 text-sm">
+                                    <AlertCircle className="w-4 h-4 shrink-0" />
+                                    {error}
+                                </div>
+                            )}
 
                             {depositData.payment_link ? (
                                 <a
@@ -200,13 +243,52 @@ export function DepositModal({ open, onOpenChange, onSuccess }: DepositModalProp
                                 </div>
                             )}
 
+                            <Button
+                                onClick={handleVerifyPayment}
+                                className="w-full bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl font-bold text-base"
+                            >
+                                <ShieldCheck className="w-5 h-5 mr-2" />
+                                I&apos;ve Paid — Verify Payment
+                            </Button>
+
                             <button
-                                onClick={() => { onOpenChange(false); onSuccess?.(); }}
+                                onClick={() => { onOpenChange(false); }}
                                 className="w-full text-sm text-gray-400 hover:text-gray-600 transition-colors py-2"
                             >
-                                I've completed payment — close
+                                Cancel
                             </button>
                         </div>
+                    </div>
+                )}
+
+                {/* ── Step 3: Verifying ── */}
+                {step === "verifying" && (
+                    <div className="p-6 flex flex-col items-center justify-center min-h-[280px]">
+                        <Loader2 className="w-12 h-12 animate-spin text-[#C69C2E] mb-4" />
+                        <p className="text-lg font-bold text-gray-900">Verifying Payment</p>
+                        <p className="text-sm text-gray-500 mt-1 text-center">{verifyMessage}</p>
+                    </div>
+                )}
+
+                {/* ── Step 4: Success ── */}
+                {step === "success" && (
+                    <div className="p-6 flex flex-col items-center justify-center min-h-[280px]">
+                        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                            <CheckCircle2 className="w-8 h-8 text-green-600" />
+                        </div>
+                        <p className="text-xl font-bold text-gray-900">Payment Successful!</p>
+                        <p className="text-sm text-gray-500 mt-2 text-center max-w-xs">{verifyMessage}</p>
+                        {depositData && (
+                            <p className="text-2xl font-bold text-green-600 mt-3">
+                                {formatAmount(depositData.amount_naira)}
+                            </p>
+                        )}
+                        <Button
+                            onClick={() => { onOpenChange(false); onSuccess?.(); }}
+                            className="mt-6 bg-[#C69C2E] hover:bg-[#b08b29] text-white h-12 px-8 rounded-xl font-bold text-base"
+                        >
+                            Done
+                        </Button>
                     </div>
                 )}
             </DialogContent>

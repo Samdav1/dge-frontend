@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/lib/validation";
@@ -13,6 +14,8 @@ import { signIn } from "next-auth/react";
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get("callbackUrl") || "/dashboard/marketplace";
     const {
         register,
         handleSubmit,
@@ -33,8 +36,8 @@ export function LoginForm() {
                 throw new Error("Invalid credentials");
             }
 
-            // Redirect to marketplace on success
-            window.location.href = "/dashboard/marketplace";
+            // Redirect to callback URL on success
+            window.location.href = callbackUrl;
         } catch (error) {
             console.error("Login error:", error);
             // TODO: Handle error state (e.g., show toast)
@@ -46,10 +49,9 @@ export function LoginForm() {
         <div className="w-full max-w-md mx-auto">
             <div className="text-center mb-8">
                 <div className="flex justify-center mb-4">
-                    <div className="font-bold text-2xl text-primary tracking-tighter flex items-center gap-1">
-                        <span className="bg-transparent border border-primary text-primary w-8 h-8 rounded-full flex items-center justify-center text-lg">D</span>
-                        DGE
-                    </div>
+                    <Link href="/">
+                        <img src="/DGE logo.png" alt="DGE Logo" className="h-12 w-auto" />
+                    </Link>
                 </div>
                 <h1 className="text-2xl font-bold mb-2">Login Account</h1>
                 <p className="text-muted-foreground text-sm">
@@ -139,7 +141,7 @@ export function LoginForm() {
                     onClick={() => {
                         document.cookie = "auth_intent=login; path=/; max-age=3600";
                         setIsGoogleLoading(true);
-                        signIn("google", { callbackUrl: "/dashboard/marketplace" });
+                        signIn("google", { callbackUrl });
                     }}
                     disabled={isGoogleLoading}
                 >

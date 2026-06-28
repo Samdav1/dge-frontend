@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { MarketplaceCard } from "./MarketplaceCard";
 import { listServices } from "../actions";
-import { Loader2, ChevronDown } from "lucide-react";
+import { Loader2, ChevronDown, PackageOpen, Plus, ArrowRight, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MarketplaceSectionSkeleton } from "./MarketplaceCardSkeleton";
 
 interface CategorySectionProps {
     categoryId: string;
@@ -10,15 +12,27 @@ interface CategorySectionProps {
     searchTerm?: string;
     type?: string;
     initialLimit?: number;
+    /** If true, show a friendly empty state instead of hiding the section */
+    showEmptyState?: boolean;
+    onLoadComplete?: () => void;
 }
 
-export function CategorySection({ categoryId, title, searchTerm, type, initialLimit = 10 }: CategorySectionProps) {
+export function CategorySection({ 
+    categoryId, 
+    title, 
+    searchTerm, 
+    type, 
+    initialLimit = 10, 
+    showEmptyState = false,
+    onLoadComplete 
+}: CategorySectionProps) {
     const [services, setServices] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [viewType, setViewType] = useState<"grid" | "list">("grid");
 
     // Initial fetch when filters or category changes
     useEffect(() => {
@@ -46,6 +60,9 @@ export function CategorySection({ categoryId, title, searchTerm, type, initialLi
                 setError(err.message || "An error occurred");
             } finally {
                 setLoading(false);
+                if (onLoadComplete) {
+                    onLoadComplete();
+                }
             }
         };
 
@@ -79,8 +96,12 @@ export function CategorySection({ categoryId, title, searchTerm, type, initialLi
 
     if (loading) {
         return (
-            <div className="py-12 flex justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-[#C69C2E]" />
+            <div className="space-y-6 p-6 md:p-8 rounded-[2rem] border bg-white dark:bg-[#141414] border-gray-100 dark:border-[#2A2A2A]">
+                <div className="flex items-center justify-between">
+                    <div className="h-7 w-48 bg-gray-200 dark:bg-[#2A2A2A] rounded-md animate-pulse" />
+                    <div className="h-6 w-20 bg-gray-200 dark:bg-[#2A2A2A] rounded-full animate-pulse" />
+                </div>
+                <MarketplaceSectionSkeleton count={initialLimit > 8 ? 8 : initialLimit} />
             </div>
         );
     }
@@ -90,69 +111,76 @@ export function CategorySection({ categoryId, title, searchTerm, type, initialLi
     }
 
     if (services.length === 0) {
-        return null; // Don't render the section if no services
+        // When viewing a specific category (showEmptyState=true), show a helpful message.
+        // When in the default all-categories feed, hide silently to keep things clean.
+        if (!showEmptyState) return null;
+        return (
+            <div className="flex flex-col items-center justify-center gap-5 p-10 md:p-14 rounded-[2rem] border border-dashed border-[#C69C2E]/30 bg-[#C69C2E]/5 dark:bg-[#C69C2E]/5 text-center">
+                {/* Icon */}
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center bg-[#C69C2E]/10 shadow-sm">
+                    <PackageOpen className="w-8 h-8 text-[#C69C2E] opacity-50" />
+                </div>
+
+                {/* Copy */}
+                <div className="space-y-1.5">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">{title}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto leading-relaxed">
+                        No services listed here yet. Be the first to offer your skills in{" "}
+                        <span className="font-semibold text-[#C69C2E]">{title}</span>!
+                    </p>
+                </div>
+
+                {/* CTAs */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 mt-1">
+                    <Link href="/dashboard/my-jobs">
+                        <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#C69C2E] hover:bg-[#b08b29] text-white text-sm font-semibold shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer">
+                            <Plus className="w-4 h-4" />
+                            List Your Service
+                        </button>
+                    </Link>
+                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                        or check back later
+                        <ArrowRight className="w-3 h-3" />
+                    </span>
+                </div>
+            </div>
+        );
     }
 
-    // Determine theme based on category name
-    const getThemeForCategory = (name: string) => {
-        const lower = name.toLowerCase();
-        if (lower.includes('web') || lower.includes('tech')) {
-            return {
-                bg: "bg-blue-50/50",
-                border: "border-blue-100",
-                text: "text-blue-900",
-                badge: "bg-blue-100 text-blue-700",
-                button: "hover:bg-blue-100 text-blue-700 border-blue-200"
-            };
-        }
-        if (lower.includes('design') || lower.includes('art')) {
-            return {
-                bg: "bg-pink-50/50",
-                border: "border-pink-100",
-                text: "text-pink-900",
-                badge: "bg-pink-100 text-pink-700",
-                button: "hover:bg-pink-100 text-pink-700 border-pink-200"
-            };
-        }
-        if (lower.includes('plumb') || lower.includes('home') || lower.includes('build')) {
-            return {
-                bg: "bg-orange-50/50",
-                border: "border-orange-100",
-                text: "text-orange-900",
-                badge: "bg-orange-100 text-orange-700",
-                button: "hover:bg-orange-100 text-orange-700 border-orange-200"
-            };
-        }
-        if (lower.includes('write') || lower.includes('consult')) {
-            return {
-                bg: "bg-emerald-50/50",
-                border: "border-emerald-100",
-                text: "text-emerald-900",
-                badge: "bg-emerald-100 text-emerald-700",
-                button: "hover:bg-emerald-100 text-emerald-700 border-emerald-200"
-            };
-        }
-        return {
-            bg: "bg-gray-50/50",
-            border: "border-gray-100",
-            text: "text-gray-900",
-            badge: "bg-gray-200 text-gray-700",
-            button: "hover:bg-gray-100 text-gray-700 border-gray-200"
-        };
-    };
-
-    const theme = getThemeForCategory(title);
-
     return (
-        <div className={`space-y-6 p-6 md:p-8 rounded-[2rem] border ${theme.bg} ${theme.border}`}>
-            <div className="flex items-center justify-between">
-                <h2 className={`text-xl md:text-2xl font-bold ${theme.text}`}>{title}</h2>
-                <span className={`text-sm font-medium px-3 py-1 rounded-full ${theme.badge}`}>
-                    {services.length} {services.length === 1 ? 'Service' : 'Services'}
-                </span>
+        <div className="space-y-6 p-6 md:p-8 rounded-[2rem] border bg-white dark:bg-[#141414] border-gray-100 dark:border-[#2A2A2A]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{title}</h2>
+                    <span className="text-sm font-medium px-3 py-1 rounded-full bg-[#C69C2E]/10 text-[#C69C2E]">
+                        {services.length} {services.length === 1 ? 'Service' : 'Services'}
+                    </span>
+                </div>
+                <div className="flex items-center gap-2 bg-gray-50 dark:bg-[#1A1A1A] p-1 rounded-lg border border-gray-200 dark:border-[#2A2A2A] self-start sm:self-auto">
+                    <button
+                        onClick={() => setViewType("grid")}
+                        className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                            viewType === "grid" 
+                                ? "bg-white dark:bg-[#2A2A2A] text-gray-900 dark:text-white shadow-sm" 
+                                : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        }`}
+                    >
+                        <LayoutGrid className="w-4 h-4" />
+                    </button>
+                    <button
+                        onClick={() => setViewType("list")}
+                        className={`p-1.5 rounded-md transition-colors cursor-pointer ${
+                            viewType === "list" 
+                                ? "bg-white dark:bg-[#2A2A2A] text-gray-900 dark:text-white shadow-sm" 
+                                : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        }`}
+                    >
+                        <List className="w-4 h-4" />
+                    </button>
+                </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className={viewType === "grid" ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6" : "flex flex-col gap-4"}>
                 {services.map((item: any, index: number) => {
                     const service = item.service || item;
                     const profile = item.profile;
@@ -197,6 +225,7 @@ export function CategorySection({ categoryId, title, searchTerm, type, initialLi
                             }}
                             category={service.categories?.[0]?.name || title}
                             status={service.status}
+                            viewType={viewType}
                         />
                     );
                 })}
@@ -208,7 +237,7 @@ export function CategorySection({ categoryId, title, searchTerm, type, initialLi
                         variant="outline"
                         onClick={loadMore}
                         disabled={loadingMore}
-                        className={`rounded-xl px-8 h-12 gap-2 transition-colors ${theme.button}`}
+                        className="rounded-xl px-8 h-12 gap-2 transition-colors hover:bg-[#C69C2E]/10 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-[#2A2A2A] hover:border-[#C69C2E]/30"
                     >
                         {loadingMore ? (
                             <Loader2 className="w-4 h-4 animate-spin" />

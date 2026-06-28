@@ -36,9 +36,7 @@ const FallbackImage: React.FC<FallbackImageProps> = ({
     return (
       <div className={`flex items-center justify-center bg-gray-50 border border-gray-100 rounded-lg ${className}`}>
         <div className="flex flex-col items-center gap-2">
-          <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 font-bold border border-amber-100">
-             DGE
-          </div>
+          <img src="/DGE logo.png" alt="DGE Logo Placeholder" className="w-10 h-auto opacity-50 grayscale" />
           <ImageOff className="w-4 h-4 text-gray-300" />
         </div>
       </div>

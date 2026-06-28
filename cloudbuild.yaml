@@ -1,0 +1,46 @@
+steps:
+  # 1. Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_API_URL=$_NEXT_PUBLIC_API_URL'
+      - '-t'
+      - '$_AR_LOCATION-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+      - '.'
+
+  # 2. Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '$_AR_LOCATION-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+
+  # 3. Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - '$_SERVICE_NAME'
+      - '--image'
+      - '$_AR_LOCATION-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+      - '--region'
+      - '$_REGION'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-env-vars'
+      - 'NEXT_PUBLIC_API_URL=$_NEXT_PUBLIC_API_URL'
+
+images:
+  - '$_AR_LOCATION-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
+
+substitutions:
+  _AR_LOCATION: us-central1
+  _AR_REPOSITORY: dge-repo
+  _SERVICE_NAME: dge-frontend
+  _REGION: us-central1
+  _NEXT_PUBLIC_API_URL: https://dge-tech-web-cjhe4jg72a-ew.a.run.app
+
+options:
+  logging: CLOUD_LOGGING_ONLY

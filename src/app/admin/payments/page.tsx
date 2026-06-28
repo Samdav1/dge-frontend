@@ -295,7 +295,7 @@ export default function AdminPaymentsPage() {
             <div className="space-y-6">
                 <div>
                     <h2 className="text-xl font-bold text-slate-800 tracking-tight">Platform Fee Configurations</h2>
-                    <p className="text-slate-500 text-sm mt-0.5">Manage DGE World commissions and transaction charges</p>
+                    <p className="text-slate-500 text-sm mt-0.5">Manage DGE SPACE commissions and transaction charges</p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

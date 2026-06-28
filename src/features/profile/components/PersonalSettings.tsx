@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,8 +9,20 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Image as ImageIcon, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
-import { useEffect } from "react";
+import { 
+    Image as ImageIcon, 
+    Loader2, 
+    CheckCircle, 
+    AlertTriangle, 
+    Camera, 
+    User, 
+    Phone, 
+    Calendar, 
+    MapPin, 
+    Globe, 
+    FileText, 
+    ArrowRight 
+} from "lucide-react";
 import { updateProfile, getProfile } from "../actions";
 import FallbackImage from "@/components/ui/FallbackImage";
 
@@ -164,198 +176,252 @@ export function PersonalSettings() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Profile Photo Upload */}
-            <div className="flex flex-col items-center justify-center py-8">
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleAvatarChange}
-                    accept="image/*"
-                    className="hidden"
-                />
-                <div
-                    onClick={handleAvatarClick}
-                    className="w-24 h-24 rounded-full bg-gray-50 flex items-center justify-center mb-4 border border-gray-100 cursor-pointer hover:border-[#C69C2E] transition-colors overflow-hidden"
-                >
-                    {avatarPreview ? (
-                        <FallbackImage src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
-                    ) : (
-                        <ImageIcon className="w-8 h-8 text-gray-300" />
-                    )}
-                </div>
-                <button
-                    type="button"
-                    onClick={handleAvatarClick}
-                    className="text-sm font-medium text-gray-900 hover:text-[#C69C2E] transition-colors"
-                >
-                    Upload personal profile photo
-                </button>
-            </div>
-
+        <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto">
             {error && (
-                <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-sm flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4" />
-                    {error}
+                <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-sm flex items-center gap-2.5 animate-in fade-in duration-200">
+                    <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+                    <span className="font-medium">{error}</span>
                 </div>
             )}
 
-            {/* Form Fields */}
-            <div className="space-y-6">
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-900">Bio</label>
-                    <Textarea
-                        name="bio"
-                        value={formData.bio}
-                        onChange={handleInputChange}
-                        placeholder="Enter Bio"
-                        className="min-h-[100px] bg-white border-gray-200 rounded-xl resize-none"
-                    />
-                </div>
+            {/* Profile Avatar / Cover Card */}
+            <div className="relative bg-gradient-to-r from-gray-900 to-gray-800 rounded-3xl p-6 sm:p-8 text-white overflow-hidden shadow-lg">
+                <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full bg-[#C69C2E]/10 blur-[100px] pointer-events-none" />
+                <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
+                    {/* Avatar Upload Container */}
+                    <div className="relative group cursor-pointer shrink-0" onClick={handleAvatarClick}>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleAvatarChange}
+                            accept="image/*"
+                            className="hidden"
+                        />
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white/10 overflow-hidden bg-white/5 flex items-center justify-center transition-all duration-300 group-hover:border-[#C69C2E] shadow-xl">
+                            {avatarPreview ? (
+                                <FallbackImage src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                            ) : (
+                                <User className="w-10 h-10 text-gray-400" />
+                            )}
+                        </div>
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center text-white text-[10px] font-bold gap-1">
+                            <Camera className="w-5 h-5 text-[#C69C2E]" />
+                            <span>Change Photo</span>
+                        </div>
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-900">First Name</label>
-                        <Input
-                            name="first_name"
-                            value={formData.first_name}
-                            onChange={handleInputChange}
-                            placeholder="First name"
-                            className="h-12 bg-white border-gray-200 rounded-xl"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-900">Last Name</label>
-                        <Input
-                            name="last_name"
-                            value={formData.last_name}
-                            onChange={handleInputChange}
-                            placeholder="Last name"
-                            className="h-12 bg-white border-gray-200 rounded-xl"
-                        />
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-900">Phone Number</label>
-                        <Input
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleInputChange}
-                            placeholder="Enter phone number"
-                            className="h-12 bg-white border-gray-200 rounded-xl"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-900">Date of Birth</label>
-                        <Input
-                            name="date_of_birth"
-                            type="date"
-                            value={formData.date_of_birth}
-                            onChange={handleInputChange}
-                            className="h-12 bg-white border-gray-200 rounded-xl"
-                        />
+                    {/* Quick Profile Summary */}
+                    <div className="text-center sm:text-left flex-1 min-w-0">
+                        <h2 className="text-xl sm:text-2xl font-bold truncate">
+                            {formData.first_name || formData.last_name 
+                                ? `${formData.first_name} ${formData.last_name}`.trim() 
+                                : "Your Profile"}
+                        </h2>
+                        <p className="text-xs text-gray-400 mt-1 font-medium flex items-center justify-center sm:justify-start gap-1.5">
+                            <Globe className="w-3.5 h-3.5" />
+                            {formData.city && formData.country ? `${formData.city}, ${formData.country}` : "Location not set"}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-2 line-clamp-2 max-w-xl italic">
+                            {formData.bio || "No bio added yet. Tell the community a bit about yourself."}
+                        </p>
                     </div>
                 </div>
+            </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-900">Gender</label>
-                    <Select value={formData.gender} onValueChange={(v) => handleSelectChange("gender", v)}>
-                        <SelectTrigger className="h-12 bg-white border-gray-200 rounded-xl">
-                            <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="male">Male</SelectItem>
-                            <SelectItem value="female">Female</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-900">Country</label>
-                    <Select value={formData.country} onValueChange={(v) => handleSelectChange("country", v)}>
-                        <SelectTrigger className="h-12 bg-white border-gray-200 rounded-xl">
-                            <SelectValue placeholder="Select country" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Nigeria">Nigeria</SelectItem>
-                            <SelectItem value="United States">United States</SelectItem>
-                            <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-900">State</label>
-                        <Input
-                            name="state"
-                            value={formData.state}
-                            onChange={handleInputChange}
-                            placeholder="Enter state"
-                            className="h-12 bg-white border-gray-200 rounded-xl"
-                        />
+            {/* Grid for Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Profile Details Card */}
+                <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-shadow duration-200">
+                    <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
+                        <div className="w-9 h-9 rounded-xl bg-[#C69C2E]/10 flex items-center justify-center text-[#C69C2E]">
+                            <User className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-gray-900">Personal Details</h3>
+                            <p className="text-[10px] text-gray-400">Your basic information settings</p>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-900">City</label>
-                        <Input
-                            name="city"
-                            value={formData.city}
-                            onChange={handleInputChange}
-                            placeholder="Enter city"
-                            className="h-12 bg-white border-gray-200 rounded-xl"
-                        />
-                    </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-900">Address Line 1</label>
-                        <Input
-                            name="address_line1"
-                            value={formData.address_line1}
-                            onChange={handleInputChange}
-                            placeholder="Address"
-                            className="h-12 bg-white border-gray-200 rounded-xl"
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-900">Address Line 2 (optional)</label>
-                        <Input
-                            name="address_line2"
-                            value={formData.address_line2}
-                            onChange={handleInputChange}
-                            placeholder="Address"
-                            className="h-12 bg-white border-gray-200 rounded-xl"
-                        />
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-gray-500">First Name</label>
+                                <Input
+                                    name="first_name"
+                                    value={formData.first_name}
+                                    onChange={handleInputChange}
+                                    placeholder="First name"
+                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-gray-500">Last Name</label>
+                                <Input
+                                    name="last_name"
+                                    value={formData.last_name}
+                                    onChange={handleInputChange}
+                                    placeholder="Last name"
+                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-gray-500">Biography</label>
+                            <Textarea
+                                name="bio"
+                                value={formData.bio}
+                                onChange={handleInputChange}
+                                placeholder="Write a short bio about yourself..."
+                                className="min-h-[96px] bg-gray-50/50 border-gray-100 rounded-xl resize-none focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs py-3"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-gray-500">Date of Birth</label>
+                                <Input
+                                    name="date_of_birth"
+                                    type="date"
+                                    value={formData.date_of_birth}
+                                    onChange={handleInputChange}
+                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-gray-500">Gender</label>
+                                <Select value={formData.gender} onValueChange={(v) => handleSelectChange("gender", v)}>
+                                    <SelectTrigger className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white text-xs">
+                                        <SelectValue placeholder="Select Gender" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="male">Male</SelectItem>
+                                        <SelectItem value="female">Female</SelectItem>
+                                        <SelectItem value="other">Other</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-900">Postal Code</label>
-                    <Input
-                        name="postal_code"
-                        value={formData.postal_code}
-                        onChange={handleInputChange}
-                        placeholder="Enter Postal"
-                        className="h-12 bg-white border-gray-200 rounded-xl"
-                    />
-                </div>
+                {/* Contact & Location Card */}
+                <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-shadow duration-200">
+                    <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
+                        <div className="w-9 h-9 rounded-xl bg-[#C69C2E]/10 flex items-center justify-center text-[#C69C2E]">
+                            <Phone className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-gray-900">Contact & Address</h3>
+                            <p className="text-[10px] text-gray-400">Manage communication and address details</p>
+                        </div>
+                    </div>
 
+                    <div className="space-y-4">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-gray-500">Phone Number</label>
+                            <Input
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleInputChange}
+                                placeholder="Enter phone number"
+                                className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-gray-500">Country</label>
+                                <Select value={formData.country} onValueChange={(v) => handleSelectChange("country", v)}>
+                                    <SelectTrigger className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white text-xs">
+                                        <SelectValue placeholder="Select Country" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Nigeria">Nigeria</SelectItem>
+                                        <SelectItem value="United States">United States</SelectItem>
+                                        <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-gray-500">State / Region</label>
+                                <Input
+                                    name="state"
+                                    value={formData.state}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter state"
+                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-gray-500">City</label>
+                                <Input
+                                    name="city"
+                                    value={formData.city}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter city"
+                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-gray-500">Postal Code</label>
+                                <Input
+                                    name="postal_code"
+                                    value={formData.postal_code}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter Postal"
+                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 pt-1">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-gray-500">Address Line 1</label>
+                                <Input
+                                    name="address_line1"
+                                    value={formData.address_line1}
+                                    onChange={handleInputChange}
+                                    placeholder="Address Line 1"
+                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-semibold text-gray-500">Address Line 2 (Optional)</label>
+                                <Input
+                                    name="address_line2"
+                                    value={formData.address_line2}
+                                    onChange={handleInputChange}
+                                    placeholder="Apartment, suite, unit etc."
+                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Actions */}
+            <div className="flex justify-end pt-4 border-t border-gray-50">
                 <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-12 bg-[#C69C2E] hover:bg-[#b08b29] text-white font-bold rounded-xl mt-4"
+                    className="w-full sm:w-auto px-8 h-12 bg-[#C69C2E] hover:bg-[#b08b29] text-white font-bold rounded-xl shadow-lg shadow-[#C69C2E]/20 transition-all duration-300 flex items-center justify-center gap-2 group"
                 >
                     {isSubmitting ? (
                         <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Updating...
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Saving Profile...
                         </>
                     ) : (
-                        "Update"
+                        <>
+                            Save Changes
+                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                        </>
                     )}
                 </Button>
             </div>
@@ -364,7 +430,7 @@ export function PersonalSettings() {
                 open={showSuccess}
                 onClose={() => setShowSuccess(false)}
                 title="Profile Updated!"
-                message="Your personal information has been successfully saved."
+                message="Your personal settings have been successfully saved."
             />
         </form>
     );

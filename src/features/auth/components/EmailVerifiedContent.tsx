@@ -17,14 +17,14 @@ export function EmailVerifiedContent() {
             <h1 className="text-2xl font-bold mb-4">Email Verified</h1>
 
             <p className="text-muted-foreground text-sm mb-8 leading-relaxed max-w-xs mx-auto">
-                Your email has been verified click on the link below to login into your account
+                Your email has been verified. Click on the link below to set up your profile and portfolio.
             </p>
 
             <Link
-                href="/login"
+                href="/dashboard/profile"
                 className="text-[#C69C2E] text-sm font-medium hover:underline"
             >
-                Login to your account
+                Set up your profile
             </Link>
         </div>
     );

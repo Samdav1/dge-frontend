@@ -26,7 +26,7 @@ export function JobListingSection() {
                             Can't find what you're looking for? Post a job for free and let the talent come to you. Freelancers and service providers from across Nigeria will submit competitive bids for your consideration.
                         </p>
                         <p className="text-muted-foreground mb-8 leading-relaxed">
-                            Review proposals, negotiate prices directly, and once you're happy — confirm the deal. Your payment is secured in Escrow until the job is done right.
+                            Review proposals, negotiate prices directly, and once you're happy, confirm the deal. Your payment is secured in Escrow until the job is done right.
                         </p>
                         <Link href="/register">
                             <Button variant="default" className="bg-[#C69C2E] hover:bg-[#B58B1D] text-white px-8 py-5 rounded-xl font-semibold">Post a Job for Free</Button>

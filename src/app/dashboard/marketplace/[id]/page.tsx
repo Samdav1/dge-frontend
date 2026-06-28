@@ -53,10 +53,10 @@ export default function ServiceDetailsPage() {
         originalPrice: service.discount
             ? new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(service.price / (1 - service.discount_percent / 100))
             : undefined,
-        category: "General", // Category is not in the new service object, defaulting to General or we need to fetch it separately if needed
+        category: service.categories?.[0]?.name || "General",
         image: service.image,
         status: (service.status as "Active" | "Inactive") || "Active",
-        tags: [service.type, ...(service.status ? [service.status] : [])],
+        tags: [service.type].filter(Boolean),
         longDescription: service.description,
         aboutJob: service.description,
         author: {

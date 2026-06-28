@@ -10,7 +10,7 @@ const TESTIMONIALS = [
         name: "Chukwuemeka Obi",
         role: "Business Owner, Lagos",
         quote:
-            "I hired a web developer through DGE World and the Escrow feature gave me total peace of mind. The funds were held securely until I approved the final product. I will never hire talent any other way.",
+            "I hired a web developer through DGE SPACE and the Escrow feature gave me total peace of mind. The funds were held securely until I approved the final product. I will never hire talent any other way.",
         stars: 5,
     },
     {
@@ -18,7 +18,7 @@ const TESTIMONIALS = [
         name: "Amina Yusuf",
         role: "Freelance Designer, Abuja",
         quote:
-            "As a freelancer, getting paid used to be my biggest worry. DGE World's Escrow system means I always get paid for my work — no more chasing clients. The negotiation feature also lets me set fair prices.",
+            "As a freelancer, getting paid used to be my biggest worry. DGE SPACE's Escrow system means I always get paid for my work — no more chasing clients. The negotiation feature also lets me set fair prices.",
         stars: 5,
     },
     {
@@ -49,7 +49,7 @@ export function TestimonialsSection() {
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C69C2E] mb-3">Community Stories</p>
                     <h2 className="text-3xl md:text-4xl font-bold mb-4">Trusted by Thousands Across Nigeria</h2>
                     <p className="text-muted-foreground max-w-lg mx-auto text-base">
-                        Real people. Real experiences. See how DGE World is changing the way people connect, work, and travel.
+                        Real people. Real experiences. See how DGE SPACE is changing the way people connect, work, and travel.
                     </p>
                 </div>
                 <div className="grid md:grid-cols-3 gap-8">

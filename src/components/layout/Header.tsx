@@ -7,10 +7,9 @@ export function Header() {
             <div className="container mx-auto px-4 md:px-8 max-w-[1600px] h-20 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     {/* Logo */}
-                    <div className="font-bold text-2xl text-primary tracking-tighter flex items-center gap-1">
-                        <span className="bg-transparent border border-primary text-primary w-8 h-8 rounded-full flex items-center justify-center text-lg">D</span>
-                        DGE
-                    </div>
+                    <Link href="/">
+                        <img src="/DGE logo.png" alt="DGE Logo" className="h-10 w-auto" />
+                    </Link>
                 </div>
 
                 <div className="flex items-center gap-8">

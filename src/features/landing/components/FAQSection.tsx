@@ -6,15 +6,15 @@ import { useState } from "react";
 const FAQS = [
     {
         q: "How does the Escrow payment system work?",
-        a: "When you hire a professional on DGE World, your payment is held securely in Escrow — not with the service provider. The funds are only released to them after you confirm that the work has been completed to your satisfaction. If there is a dispute, our team steps in to mediate fairly.",
+        a: "When you hire a professional on DGE SPACE, your payment is held securely in Escrow and not with the service provider. The funds are only released to them after you confirm that the work has been completed to your satisfaction. If there is a dispute, our team steps in to mediate fairly.",
     },
     {
         q: "How do I find and hire a service provider?",
         a: "Simply search for the service you need, browse verified providers or post a job, and use our built-in negotiation system to agree on a fair price. Once you are happy, confirm the booking and the Escrow is created automatically.",
     },
     {
-        q: "Are the professionals on DGE World verified?",
-        a: "Yes. Every service provider on DGE World goes through a thorough background check and KYC (Know Your Customer) verification before they can offer services. You can also see their community ratings and client reviews before hiring.",
+        q: "Are the professionals on DGE SPACE verified?",
+        a: "Yes. Every service provider on DGE SPACE goes through a thorough background check and KYC (Know Your Customer) verification before they can offer services. You can also see their community ratings and client reviews before hiring.",
     },
     {
         q: "What happens if I am not satisfied with the completed work?",
@@ -22,11 +22,11 @@ const FAQS = [
     },
     {
         q: "How does DGE Rides work?",
-        a: "DGE Rides is our built-in ride-hailing service. Simply open the app, enter your destination, and we will match you with a nearby verified driver. You can track your ride in real time, and payment is handled seamlessly through your DGE World wallet.",
+        a: "DGE Rides is our built-in ride-hailing service. Simply open the app, enter your destination, and we will match you with a nearby verified driver. You can track your ride in real time, and payment is handled seamlessly through your DGE SPACE wallet.",
     },
     {
         q: "How do I withdraw my earnings as a freelancer or driver?",
-        a: "Your earnings go directly into your DGE World Earnings Wallet after each completed job or ride. You can request a withdrawal to your verified bank account at any time, and payments are processed promptly.",
+        a: "Your earnings go directly into your DGE SPACE Earnings Wallet after each completed job or ride. You can request a withdrawal to your verified bank account at any time, and payments are processed promptly.",
     },
 ];
 
@@ -59,7 +59,7 @@ export function FAQSection() {
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C69C2E] mb-3 text-center">Got Questions?</p>
                 <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">Frequently Asked Questions</h2>
                 <p className="text-center text-muted-foreground mb-12 text-sm max-w-xl mx-auto">
-                    Everything you need to know about how DGE World works — from Escrow payments to getting verified and booking a ride.
+                    Everything you need to know about how DGE SPACE works — from Escrow payments to getting verified and booking a ride.
                 </p>
 
                 <div className="space-y-3">

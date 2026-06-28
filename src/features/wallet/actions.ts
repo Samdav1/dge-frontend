@@ -269,6 +269,23 @@ export async function initiateDeposit(amountNaira: number) {
     }
 }
 
+// Verify a deposit payment with Monnify (call after user completes payment)
+export async function verifyDeposit(depositId: string) {
+    const headers = await getAuthHeaders();
+    if (!headers) return { success: false, error: "Unauthorized" };
+    try {
+        const response = await fetch(`${apiUrl}/payments/deposit/verify/${depositId}`, {
+            method: "POST",
+            headers,
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) return { success: false, error: data.detail || "Verification failed" };
+        return { success: true, data };
+    } catch {
+        return { success: false, error: "Network error" };
+    }
+}
+
 // Get deposit history
 export async function getDepositHistory() {
     const headers = await getAuthHeaders();

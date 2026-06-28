@@ -197,6 +197,40 @@ export async function getService(serviceId: string) {
         }
 
         const data = await response.json();
+
+        // Dynamically fetch categories if missing/empty in service
+        if (data.service && (!data.service.categories || data.service.categories.length === 0)) {
+            try {
+                const linksRes = await fetch(`${apiUrl}/service_category/categories/service/${serviceId}/links`, {
+                    method: "GET",
+                    headers: {
+                        "X-API-KEY": apiKey || "",
+                    },
+                });
+                if (linksRes.ok) {
+                    const links = await linksRes.json();
+                    if (links && links.length > 0) {
+                        const catsRes = await fetch(`${apiUrl}/service_category/categories/`, {
+                            method: "GET",
+                            headers: {
+                                "X-API-KEY": apiKey || "",
+                            },
+                        });
+                        if (catsRes.ok) {
+                            const categories = await catsRes.json();
+                            const matchedCategories = links.map((link: any) => {
+                                const matchedCat = categories.find((c: any) => c.id === link.category_id);
+                                return matchedCat ? { id: matchedCat.id, name: matchedCat.name } : null;
+                            }).filter(Boolean);
+                            data.service.categories = matchedCategories;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to dynamically fetch categories on frontend:", err);
+            }
+        }
+
         return { success: true, data };
     } catch (error) {
         console.error("Get service error:", error);

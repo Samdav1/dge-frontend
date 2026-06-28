@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'dge.dgetechs.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'dgetechs.com',
+      },
+      {
+        protocol: 'https',
         hostname: '**',
       },
       {

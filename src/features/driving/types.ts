@@ -89,4 +89,8 @@ export interface Trip {
     requested_at: string;
     accepted_at?: string | null;
     completed_at?: string | null;
+    driver_name?: string | null;
+    driver_avatar?: string | null;
+    rider_name?: string | null;
+    rider_avatar?: string | null;
 }

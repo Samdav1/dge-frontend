@@ -30,7 +30,7 @@ export function HeroSection() {
                         </h1>
 
                         <p className="text-base sm:text-lg md:text-xl text-gray-100 mb-8 md:mb-12 max-w-2xl mx-auto font-light tracking-wide px-2">
-                            From skilled freelancers and local professionals to reliable rides — connect, negotiate, and transact with peace of mind. Every payment is Escrow-protected until you're 100% satisfied.
+                            From skilled freelancers and local professionals to reliable rides, connect, negotiate, and transact with peace of mind. Every payment is Escrow-protected until you're 100% satisfied.
                         </p>
 
                         <div className="max-w-2xl mx-auto relative px-2 md:px-0">

@@ -72,14 +72,14 @@ export function ConversationList({
 
     if (isLoading) {
         return (
-            <div className="bg-white rounded-2xl border border-gray-100 h-[calc(100vh-200px)] flex items-center justify-center">
+            <div className="bg-white rounded-2xl border border-gray-100 h-full flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-[#C69C2E] animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 h-[calc(100vh-200px)] flex flex-col">
+        <div className="bg-white rounded-2xl border border-gray-100 h-full min-h-0 flex flex-col">
             <div className="p-4 border-b border-gray-100">
                 <h2 className="text-lg font-bold text-gray-900 mb-4">All Messages ({conversations.length})</h2>
                 <div className="relative">

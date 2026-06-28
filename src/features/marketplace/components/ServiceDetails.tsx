@@ -170,11 +170,9 @@ export function ServiceDetails({ service, isPublic = false }: ServiceDetailsProp
                             </div>
 
                             <div className="space-y-6 text-gray-600 leading-relaxed">
-                                <p>{service.longDescription}</p>
-
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-3">About the Job:</h3>
-                                    <p>{service.aboutJob}</p>
+                                    <h3 className="text-lg font-bold text-gray-900 mb-3">About the Service:</h3>
+                                    <p className="whitespace-pre-wrap">{service.description}</p>
                                 </div>
 
                                 <div className="pt-4">
@@ -182,9 +180,9 @@ export function ServiceDetails({ service, isPublic = false }: ServiceDetailsProp
                                     <span className="font-medium text-gray-900">{service.category}</span>
                                 </div>
 
-                                {service.author.reviewsList && service.author.reviewsList.length > 0 && (
-                                    <div className="pt-8 border-t border-gray-100 mt-8">
-                                        <h3 className="text-xl font-bold text-gray-900 mb-6">Service Reviews</h3>
+                                <div className="pt-8 border-t border-gray-100 mt-8">
+                                    <h3 className="text-xl font-bold text-gray-900 mb-6">Service Reviews</h3>
+                                    {service.author.reviewsList && service.author.reviewsList.length > 0 ? (
                                         <div className="space-y-4">
                                             {service.author.reviewsList.map((rev: any, idx: number) => (
                                                 <div key={rev.id || idx} className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
@@ -220,8 +218,12 @@ export function ServiceDetails({ service, isPublic = false }: ServiceDetailsProp
                                                 </div>
                                             ))}
                                         </div>
-                                    </div>
-                                )}
+                                    ) : (
+                                        <p className="text-sm text-gray-500 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                            This service hasn't received any reviews yet.
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-4 mt-8">

@@ -93,7 +93,7 @@ export function PlatformVisionSection() {
                         </h2>
 
                         <p className="text-gray-400 text-sm md:text-base leading-relaxed max-w-md mb-8">
-                            DGE World is a unified ecosystem where every service, every transaction, and every relationship is built on a foundation of <strong className="text-white">trust, unity, and unique experiences</strong>. You are at the center of everything we do.
+                            DGE SPACE is a unified ecosystem where every service, every transaction, and every relationship is built on a foundation of <strong className="text-white">trust, unity, and unique experiences</strong>. You are at the center of everything we do.
                         </p>
 
                         <button className="group inline-flex items-center gap-3 px-6 py-3 bg-primary hover:bg-primary/90 rounded-xl text-white font-semibold text-sm transition-all duration-300 hover:shadow-lg hover:shadow-primary/20">
@@ -117,12 +117,12 @@ export function PlatformVisionSection() {
                                         style={{
                                             opacity: isActive ? 1 : isPrev || isNext ? 0.25 : 0,
                                             transform: isActive
-                                                ? 'translateY(0) scale(1)'
+                                                ? 'translateX(0) scale(1)'
                                                 : isPrev
-                                                    ? 'translateY(-80px) scale(0.92)'
+                                                    ? 'translateX(-80px) scale(0.92)'
                                                     : isNext
-                                                        ? 'translateY(80px) scale(0.92)'
-                                                        : 'translateY(40px) scale(0.85)',
+                                                        ? 'translateX(80px) scale(0.92)'
+                                                        : 'translateX(40px) scale(0.85)',
                                             zIndex: isActive ? 10 : 1,
                                             top: '50%',
                                             marginTop: '-60px',

@@ -58,7 +58,7 @@ export function ProfilePreviewModal({ isOpen, onClose, user }: ProfilePreviewMod
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="fixed right-0 top-0 z-50 h-full w-[725px] translate-x-0 translate-y-0 border-l bg-white p-0 shadow-2xl duration-300 data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100 left-auto rounded-l-2xl rounded-r-none sm:max-w-[725px]">
+            <DialogContent className="!fixed !inset-0 !left-0 !top-0 !translate-x-0 !translate-y-0 !max-w-none !w-full !h-full !rounded-none !p-0 !border-l z-50 bg-white shadow-2xl duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 sm:!inset-auto sm:!left-auto sm:!right-0 sm:!top-0 sm:!bottom-0 sm:!w-[725px] sm:!max-w-[725px] sm:!h-full sm:!rounded-l-2xl sm:!rounded-r-none sm:data-[state=open]:slide-in-from-right sm:data-[state=closed]:slide-out-to-right">
                 <div className="h-full overflow-y-auto p-6">
                     <div className="flex justify-between items-center mb-6">
                         <DialogTitle className="text-xl font-bold text-gray-900">Profile Preview</DialogTitle>
@@ -163,7 +163,7 @@ export function ProfilePreviewModal({ isOpen, onClose, user }: ProfilePreviewMod
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Portfolio Media</h3>
                             {displayUser.media && displayUser.media.length > 0 ? (
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     {displayUser.media.map((item: any, idx: number) => {
                                         const isVideo = item.media_type?.startsWith("video");
                                         const url = getBackendImageUrl(item.s3_key);

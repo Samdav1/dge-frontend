@@ -8,26 +8,28 @@ import {
     CheckCircle2, XCircle, MoreHorizontal
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const STATUS_STYLES: Record<string, string> = {
-    APPROVED: "bg-emerald-50 text-emerald-600 border border-emerald-100",
+    OPEN: "bg-[#e8f5e9] text-[#2e7d32] border border-[#c8e6c9]",
+    ASSIGNED: "bg-blue-50 text-blue-600 border border-blue-100",
     COMPLETED: "bg-emerald-50 text-emerald-600 border border-emerald-100",
-    DRAFT: "bg-slate-50 text-slate-400 border border-slate-100",
-    "IN PROGRESS": "bg-amber-50 text-amber-600 border border-amber-100",
     CANCELLED: "bg-red-50 text-red-600 border border-red-100",
 };
 
-export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function PostedJobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const router = useRouter();
     const { id } = use(params);
     const [job, setJob] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [actionLoading, setActionLoading] = useState(false);
 
     useEffect(() => {
         async function fetchJob() {
             setLoading(true);
             try {
-                const res = await fetch(`/api/admin/services/${id}`);
+                const res = await fetch(`/api/admin/posted-jobs/${id}`);
                 if (!res.ok) throw new Error("Failed to fetch job details");
                 const data = await res.json();
                 setJob(data);
@@ -39,6 +41,35 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         }
         fetchJob();
     }, [id]);
+
+    const handleStatusUpdate = async (status: string) => {
+        if (!confirm(`Are you sure you want to change this job's status to ${status}?`)) return;
+        setActionLoading(true);
+        try {
+            const res = await fetch("/api/admin/posted-jobs/status", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ jobId: id, status })
+            });
+            if (res.ok) {
+                if (status === "DELETE") {
+                    router.push("/admin/overview");
+                } else {
+                    const updatedRes = await fetch(`/api/admin/posted-jobs/${id}`);
+                    if (updatedRes.ok) {
+                        setJob(await updatedRes.json());
+                    }
+                }
+            } else {
+                const err = await res.text();
+                alert(`Error: ${err}`);
+            }
+        } catch (err: any) {
+            alert(`Error: ${err.message}`);
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -57,16 +88,14 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <AdminSidebar />
                 <main className="flex-1 flex flex-col items-center justify-center gap-4">
                     <AlertCircle size={48} className="text-red-400" />
-                    <p className="text-slate-600 font-medium">{error || "Job not found"}</p>
+                    <p className="text-slate-600 font-medium">{error || "Posted Job not found"}</p>
                     <Link href="/admin/overview" className="text-amber-600 font-bold hover:underline">Back to Overview</Link>
                 </main>
             </div>
         );
     }
 
-    const serviceData = job?.service;
-    const userData = job?.user;
-    const status = (serviceData?.status?.value || serviceData?.status || "DRAFT").toUpperCase();
+    const status = (job.status || "OPEN").toUpperCase();
 
     return (
         <div className="flex h-screen bg-[#fafafa] overflow-hidden select-none">
@@ -79,7 +108,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                             <Briefcase size={18} />
                         </div>
                         <h1 className="text-sm sm:text-base font-bold text-slate-800 tracking-tight leading-none truncate">
-                            Job Details / {serviceData?.name}
+                            Posted Job Details / {job.title}
                         </h1>
                     </div>
                 </header>
@@ -94,18 +123,18 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
                     {/* Main Job Card */}
                     <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_4px_24px_rgba(0,0,0,0.01)] overflow-hidden">
-                        {/* Service Hero Image */}
+                        {/* Hero Image */}
                         <div className="relative h-64 sm:h-80 bg-slate-100 overflow-hidden">
-                            {serviceData?.image ? (
+                            {job.image ? (
                                 <img
-                                    src={serviceData.image.startsWith('http') ? serviceData.image : `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}${serviceData.image}`}
-                                    alt={serviceData.name}
+                                    src={job.image.startsWith('http') ? job.image : `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}${job.image}`}
+                                    alt={job.title}
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
                                 <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
                                     <Briefcase size={64} className="mb-2 opacity-20" />
-                                    <span className="text-xs font-bold uppercase tracking-widest opacity-30">No Service Image</span>
+                                    <span className="text-xs font-bold uppercase tracking-widest opacity-30">No Image Provided</span>
                                 </div>
                             )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
@@ -115,38 +144,51 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                             <div className="space-y-4">
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
-                                        <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${STATUS_STYLES[status] || STATUS_STYLES.DRAFT}`}>
+                                        <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] ${STATUS_STYLES[status] || STATUS_STYLES.OPEN}`}>
                                             {status}
                                         </span>
-                                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Job Service</span>
+                                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Posted Job Request</span>
                                     </div>
-                                    <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{serviceData?.name}</h2>
+                                    <h2 className="text-2xl font-bold text-slate-800 tracking-tight">{job.title}</h2>
                                 </div>
 
                                 <div className="flex flex-wrap gap-4 text-xs font-semibold text-slate-500">
                                     <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
                                         <Tag size={14} className="text-[#b68512]" />
-                                        <span>{serviceData?.type?.value || serviceData?.type || "Remote"}</span>
+                                        <span>Category: {job.category?.name || "General"}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
                                         <Calendar size={14} className="text-[#b68512]" />
-                                        <span>Listed on {serviceData?.created_at ? new Date(serviceData.created_at).toLocaleDateString() : "N/A"}</span>
+                                        <span>Posted on {job.created_at ? new Date(job.created_at).toLocaleDateString() : "N/A"}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
-                                        <MapPin size={14} className="text-[#b68512]" />
-                                        <span>Global / Online</span>
+                                        <Briefcase size={14} className="text-[#b68512]" />
+                                        <span>{job.bid_count || 0} Bid Bids/Negotiations</span>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex flex-col items-end gap-3 justify-center">
                                 <div className="text-right">
-                                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest block mb-1">Service Price</span>
-                                    <span className="text-3xl font-bold text-slate-800 tracking-tighter">₦{(serviceData?.price || 0).toLocaleString()}</span>
+                                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest block mb-1">Budget Range</span>
+                                    <span className="text-2xl font-bold text-slate-800 tracking-tighter">
+                                        ₦{(job.min_price_cents / 100).toLocaleString()} - ₦{(job.max_price_cents / 100).toLocaleString()}
+                                    </span>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button className="px-4 py-2 bg-[#b68512] text-white rounded-xl font-bold text-xs shadow-sm hover:bg-[#9a710f] transition-all">
-                                        Manage Service
+                                    <button 
+                                        disabled={actionLoading}
+                                        onClick={() => handleStatusUpdate("CANCELLED")}
+                                        className="px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-xl font-bold text-xs shadow-sm hover:bg-red-100 transition-all disabled:opacity-50"
+                                    >
+                                        Cancel Job
+                                    </button>
+                                    <button 
+                                        disabled={actionLoading}
+                                        onClick={() => handleStatusUpdate("DELETE")}
+                                        className="px-4 py-2 bg-red-600 text-white rounded-xl font-bold text-xs shadow-sm hover:bg-red-700 transition-all disabled:opacity-50"
+                                    >
+                                        Delete Job
                                     </button>
                                 </div>
                             </div>
@@ -155,50 +197,31 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                         <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-50">
                             <div className="p-8 md:col-span-2 space-y-6">
                                 <div className="space-y-3">
-                                    <h3 className="text-sm font-bold text-slate-800 tracking-tight">Description</h3>
-                                    <p className="text-sm text-slate-600 leading-relaxed">
-                                        {serviceData?.description || "No description provided."}
+                                    <h3 className="text-sm font-bold text-slate-800 tracking-tight">Job Description</h3>
+                                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+                                        {job.description || "No description provided."}
                                     </p>
-                                </div>
-
-                                <div className="space-y-3 pt-4 border-t border-slate-50">
-                                    <h3 className="text-sm font-bold text-slate-800 tracking-tight">Keywords & Tags</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {(serviceData?.keywords?.split(",") || ["Service", "Admin", "Marketplace"]).map((tag: string) => (
-                                            <span key={tag} className="px-2.5 py-1 bg-slate-50 text-slate-500 rounded-lg text-[10px] font-bold border border-slate-100">
-                                                {tag.trim()}
-                                            </span>
-                                        ))}
-                                    </div>
                                 </div>
                             </div>
 
                             <div className="p-8 space-y-6 bg-slate-50/30">
-                                <h3 className="text-sm font-bold text-slate-800 tracking-tight">Provider Information</h3>
-                                {userData ? (
+                                <h3 className="text-sm font-bold text-slate-800 tracking-tight">Poster Information</h3>
+                                {job.user ? (
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center font-bold text-slate-700 text-lg shadow-sm overflow-hidden">
-                                                {userData.user_picture ? (
-                                                    <img
-                                                        src={userData.user_picture.startsWith('http') ? userData.user_picture : `${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'}${userData.user_picture}`}
-                                                        alt={userData.username}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    userData.username?.[0]?.toUpperCase() || "U"
-                                                )}
+                                                {job.user.username?.[0]?.toUpperCase() || "U"}
                                             </div>
                                             <div className="flex flex-col leading-tight">
-                                                <span className="text-sm font-bold text-slate-800">{userData.username}</span>
-                                                <span className="text-[10px] text-slate-400 font-semibold">{userData.email}</span>
+                                                <span className="text-sm font-bold text-slate-800">{job.user.username}</span>
+                                                <span className="text-[10px] text-slate-400 font-semibold">User ID: {job.user_id.slice(0, 8).toUpperCase()}</span>
                                             </div>
                                         </div>
                                         <Link 
-                                            href={`/admin/users/${userData.id}`}
+                                            href={`/admin/users/${job.user_id}`}
                                             className="flex items-center justify-between w-full p-3 bg-white border border-slate-100 rounded-xl hover:border-amber-200 hover:bg-amber-50/30 transition-all group"
                                         >
-                                            <span className="text-xs font-bold text-slate-500 group-hover:text-amber-700">View Full Profile</span>
+                                            <span className="text-xs font-bold text-slate-500 group-hover:text-amber-700">View Poster Profile</span>
                                             <ExternalLink size={14} className="text-slate-300 group-hover:text-amber-500" />
                                         </Link>
                                     </div>
@@ -211,16 +234,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
                                 <div className="pt-4 border-t border-slate-100 space-y-4">
                                     <div className="flex justify-between text-xs">
-                                        <span className="text-slate-400 font-medium">Service ID</span>
-                                        <span className="text-slate-700 font-bold font-mono">{serviceData?.id.slice(0, 8).toUpperCase()}</span>
+                                        <span className="text-slate-400 font-medium">Posted Job ID</span>
+                                        <span className="text-slate-700 font-bold font-mono">{job.id.slice(0, 8).toUpperCase()}</span>
                                     </div>
                                     <div className="flex justify-between text-xs">
-                                        <span className="text-slate-400 font-medium">Views</span>
-                                        <span className="text-slate-700 font-bold">124</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-slate-400 font-medium">Ongoing Orders</span>
-                                        <span className="text-slate-700 font-bold">2</span>
+                                        <span className="text-slate-400 font-medium">Status</span>
+                                        <span className="text-slate-700 font-bold">{job.status}</span>
                                     </div>
                                 </div>
                             </div>

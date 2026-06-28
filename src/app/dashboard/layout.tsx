@@ -1,5 +1,6 @@
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
 import { DashboardSidebar } from "@/features/dashboard/components/DashboardSidebar";
+import { FloatingRideWidget } from "@/features/driving/components/FloatingRideWidget";
 
 export default function DashboardLayout({
     children,
@@ -7,7 +8,7 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-[#0D0D0D]">
             <DashboardSidebar />
             <div className="lg:pl-64">
                 <DashboardHeader />
@@ -15,6 +16,7 @@ export default function DashboardLayout({
                     {children}
                 </main>
             </div>
+            <FloatingRideWidget />
         </div>
     );
 }

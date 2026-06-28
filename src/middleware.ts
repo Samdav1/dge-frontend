@@ -3,8 +3,9 @@ import { securityHeaders, getCspHeader } from './lib/security/headers';
 import { auth } from './auth';
 
 export default auth((request) => {
-    const isLoggedIn = !!request.auth;
-    const userRole = (request.auth?.user as any)?.role;
+    const session = request.auth as any;
+    const isLoggedIn = !!session && !!session.backendToken && session.error !== "RefreshAccessTokenError";
+    const userRole = session?.user?.role;
     const { pathname } = request.nextUrl;
 
     const isAdminRoute = pathname.startsWith('/admin');

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Message, WebSocketMessage, WebSocketIncoming } from '../types';
+import { getBackendToken } from '../actions';
 
 interface UseChatWebSocketOptions {
     token: string | null;
@@ -34,6 +35,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions): UseChatWebSo
     const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const connectionStableTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const retryCountRef = useRef(0);
+    const connectionAttemptRef = useRef(0);
     const [isConnected, setIsConnected] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -62,18 +64,34 @@ export function useChatWebSocket(options: UseChatWebSocketOptions): UseChatWebSo
     }, [onMessage, onCallInvite, onCallAccepted, onCallRejected, onNegotiationUpdated, onNotificationReceived, onConnect, onDisconnect, onError]);
 
     // Connect to WebSocket
-    const connect = useCallback(() => {
+    const connect = useCallback(async () => {
         if (!token) {
             return;
         }
 
-        // Clean token if needed
-        let cleanToken = token;
-        if (cleanToken.startsWith('"') && cleanToken.endsWith('"')) {
-            cleanToken = cleanToken.slice(1, -1);
-        }
+        const currentAttempt = ++connectionAttemptRef.current;
 
         try {
+            // Asynchronously fetch fresh backend token (triggers NextAuth auto-refresh if expired)
+            const freshToken = await getBackendToken();
+
+            if (currentAttempt !== connectionAttemptRef.current) {
+                console.log('WebSocket connection attempt superseded');
+                return;
+            }
+
+            if (!freshToken) {
+                console.warn('Could not fetch fresh token for WebSocket connection');
+                setError('Authentication token expired');
+                return;
+            }
+
+            // Clean token if needed
+            let cleanToken = freshToken;
+            if (cleanToken.startsWith('"') && cleanToken.endsWith('"')) {
+                cleanToken = cleanToken.slice(1, -1);
+            }
+
             // Close existing connection if any
             if (wsRef.current) {
                 // Remove onclose listener to prevent triggering reconnection logic
@@ -255,10 +273,11 @@ export function useChatWebSocket(options: UseChatWebSocketOptions): UseChatWebSo
             console.error('Failed to create WebSocket:', err);
             setError('Failed to connect');
         }
-    }, [token]); // Only reconnect if token changes
+    }, [token, conversationId]); // Reconnect if token or conversation changes
 
     // Disconnect from WebSocket
     const disconnect = useCallback(() => {
+        connectionAttemptRef.current++;
         if (reconnectTimeoutRef.current) {
             clearTimeout(reconnectTimeoutRef.current);
             reconnectTimeoutRef.current = null;
