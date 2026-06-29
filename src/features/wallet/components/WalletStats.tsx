@@ -2,7 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowDownToLine, ArrowUpFromLine, RefreshCw, Copy, CheckCircle2, Coins, TrendingUp, ShieldCheck } from "lucide-react";
+import { 
+    Plus, ArrowUpFromLine, ArrowDownToLine, Eye, EyeOff, 
+    RefreshCw, Copy, CheckCircle2, TrendingUp, ShieldCheck 
+} from "lucide-react";
 import { WithdrawalModal } from "./WithdrawalModal";
 import { WithdrawalAmountModal } from "./WithdrawalAmountModal";
 import { DepositModal } from "./DepositModal";
@@ -36,6 +39,8 @@ export function WalletStats() {
     const [wallets, setWallets] = useState<WalletData[]>([]);
     const [referralEarnings, setReferralEarnings] = useState<number>(0);
     const [loading, setLoading] = useState(true);
+    const [lastUpdated, setLastUpdated] = useState<string>("");
+    const [showBalance, setShowBalance] = useState<boolean>(true);
 
     const fetchWalletData = useCallback(async () => {
         setLoading(true);
@@ -55,6 +60,16 @@ export function WalletStats() {
                     .reduce((sum: number, txn: any) => sum + (txn.amount_cents / 100), 0);
                 setReferralEarnings(totalRefEarnings);
             }
+
+            const now = new Date();
+            const formattedTime = now.toLocaleString("en-US", {
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+            });
+            setLastUpdated(formattedTime);
 
         } catch (error) {
             console.error("Failed to fetch wallet data:", error);
@@ -76,12 +91,22 @@ export function WalletStats() {
     const depositBalance = getWalletBalance("deposit");
     const totalBalance = earningsBalance + depositBalance;
 
-    const formatAmount = (amount: number) =>
-        new Intl.NumberFormat("en-NG", {
-            style: "currency",
-            currency: wallets[0]?.currency || "NGN",
-            minimumFractionDigits: 2,
-        }).format(amount);
+    const formatAmount = (amount: number) => {
+        const currency = wallets[0]?.currency || "NGN";
+        if (currency === "NGN") {
+            return new Intl.NumberFormat("en-NG", {
+                style: "currency",
+                currency: "NGN",
+                minimumFractionDigits: 2,
+            }).format(amount);
+        } else {
+            return new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: currency,
+                minimumFractionDigits: 2,
+            }).format(amount);
+        }
+    };
 
     const handleAccountContinue = (account: BankAccount) => {
         setSelectedAccount(account);
@@ -89,11 +114,11 @@ export function WalletStats() {
         setIsAmountModalOpen(true);
     };
 
-    const referralCode = (session?.user as any)?.referral_code || "N/A";
+    const referralCode = (session?.user as any)?.referral_code || "DGE-MEMBER";
     const userName = session?.user?.name || "DGE Space Member";
 
     const copyToClipboard = () => {
-        if (referralCode !== "N/A") {
+        if (referralCode) {
             navigator.clipboard.writeText(referralCode);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
@@ -101,147 +126,248 @@ export function WalletStats() {
     };
 
     return (
-        <div className="space-y-6 max-w-5xl mx-auto">
-            {/* Premium Wallet Panel (No credit card metaphor) */}
-            <div className="relative overflow-hidden rounded-[2.5rem] bg-[#0d0c0b] border border-[#C69C2E]/20 shadow-2xl p-6 md:p-8 flex flex-col justify-between min-h-[220px] group transition-all duration-500 hover:border-[#C69C2E]/40">
-                {/* Premium Hover Shine Effect */}
-                <div className="absolute inset-0 w-[200%] -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/5 to-transparent transition-transform duration-1000 ease-out pointer-events-none" />
+        <div className="w-full max-w-7xl mx-auto space-y-6">
+            {/* Desktop split layout vs Mobile stack */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
                 
-                {/* Glowing Effects */}
-                <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-[#C69C2E]/10 to-transparent rounded-full blur-[100px] pointer-events-none group-hover:from-[#C69C2E]/20 transition-all duration-500" />
-                <div className="absolute bottom-0 left-0 w-60 h-60 bg-gradient-to-tr from-yellow-500/5 to-transparent rounded-full blur-[80px] pointer-events-none" />
-                
-                <div className="relative z-10 flex flex-col gap-6 w-full">
-                    {/* Top part: Label & Refresh */}
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#C69C2E]/20 to-[#8d6d1d]/20 border border-[#C69C2E]/30 flex items-center justify-center">
-                                <Coins className="w-4 h-4 text-[#C69C2E]" />
+                {/* LEFT COLUMN: Main Card (with integrated bottom action bar) */}
+                <div className="lg:col-span-5 space-y-6">
+                    
+                    {/* Unified Premium Card Widget (Card body + bottom action bar in one border/outline) */}
+                    <div className="relative overflow-hidden rounded-[2rem] bg-[#0A0A0C] border border-[#C69C2E]/25 shadow-2xl flex flex-col justify-between transition-all duration-500 hover:border-[#C69C2E]/40 group">
+                        
+                        {/* Premium Golden Glow Ring/Shine Effects */}
+                        <div className="absolute inset-0 w-[200%] -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-[#C69C2E]/5 to-transparent transition-transform duration-1000 ease-out pointer-events-none" />
+                        <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-[#C69C2E]/10 to-transparent rounded-full blur-[90px] pointer-events-none" />
+                        
+                        {/* TOP TIER: Balance & details */}
+                        <div className="relative z-10 p-6 flex flex-col justify-between min-h-[170px] space-y-5 w-full">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-[9px] font-extrabold tracking-widest uppercase text-[#C69C2E]/95">
+                                        DGE SPACE DIGITAL WALLET
+                                    </p>
+                                    <h4 className="text-sm font-extrabold tracking-tight mt-0.5 text-white">
+                                        {userName}
+                                    </h4>
+                                </div>
+                                <button
+                                    onClick={fetchWalletData}
+                                    className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition-all duration-200 cursor-pointer"
+                                    title="Refresh Balance"
+                                >
+                                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                                </button>
                             </div>
-                            <span className="text-gray-400 text-[10px] md:text-xs font-bold tracking-widest uppercase">
-                                Available Balance
-                            </span>
+
+                            <div className="space-y-1">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                                    Total Balance
+                                </span>
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight truncate">
+                                        {loading ? (
+                                            <span className="inline-block w-44 h-9 bg-white/10 animate-pulse rounded-lg" />
+                                        ) : !showBalance ? (
+                                            "••••••••"
+                                        ) : (
+                                            formatAmount(totalBalance)
+                                        )}
+                                    </h1>
+                                    <button
+                                        onClick={() => setShowBalance(!showBalance)}
+                                        className="p-1 rounded-full hover:bg-white/10 transition-colors text-gray-400 hover:text-white cursor-pointer"
+                                        title={showBalance ? "Hide Balance" : "Show Balance"}
+                                    >
+                                        {showBalance ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between items-center text-[9px] text-gray-400">
+                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                    Active
+                                </span>
+                                <span>
+                                    {loading ? "Syncing..." : `Updated: ${lastUpdated}`}
+                                </span>
+                            </div>
                         </div>
-                        <button
-                            onClick={fetchWalletData}
-                            className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all duration-200"
-                            title="Refresh Balance"
-                        >
-                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                        </button>
+
+                        {/* BOTTOM TIER: Connected Action Bar (Directly attached at bottom, rounded bottom corners) */}
+                        <div className="relative z-10 bg-[#121215] border-t border-[#C69C2E]/15 px-6 py-5 flex justify-center gap-16 sm:gap-24 items-center rounded-b-[2rem]">
+                            {/* Top Up Action */}
+                            <div className="flex flex-col items-center gap-2 group">
+                                <button
+                                    onClick={() => setIsDepositModalOpen(true)}
+                                    className="w-14 h-14 rounded-full bg-[#C69C2E] hover:bg-[#b08b29] text-black flex items-center justify-center transition-all duration-300 active:scale-90 cursor-pointer shadow-lg shadow-[#C69C2E]/15 hover:shadow-[#C69C2E]/30"
+                                    title="Top Up"
+                                >
+                                    <Plus className="w-6 h-6 stroke-[3]" />
+                                </button>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-white transition-colors duration-200">
+                                    Top Up
+                                </span>
+                            </div>
+
+                            {/* Withdraw Action */}
+                            <div className="flex flex-col items-center gap-2 group">
+                                <button
+                                    onClick={() => setIsWithdrawModalOpen(true)}
+                                    className="w-14 h-14 rounded-full bg-[#1D1D22] hover:bg-[#25252b] border border-[#C69C2E]/40 text-[#C69C2E] flex items-center justify-center transition-all duration-300 active:scale-90 cursor-pointer shadow-md shadow-black/40 hover:border-[#C69C2E] hover:text-[#e0b743]"
+                                    title="Withdraw"
+                                >
+                                    <ArrowUpFromLine className="w-5 h-5 stroke-[2]" />
+                                </button>
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-white transition-colors duration-200">
+                                    Withdraw
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Middle part: Balance Display */}
-                    <div>
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white tracking-tight truncate">
-                            {loading ? (
-                                <span className="inline-block w-48 h-12 bg-white/10 animate-pulse rounded-lg" />
-                            ) : formatAmount(totalBalance)}
-                        </h1>
-                        <div className="flex items-center gap-1.5 text-[10px] text-[#C69C2E]/80 mt-2">
-                            <ShieldCheck className="w-3.5 h-3.5" />
-                            <span>Secured Wallet Account</span>
-                        </div>
-                    </div>
-
-                    {/* Bottom part: Action Buttons - side-by-side */}
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3 w-full pt-2">
-                        <button
-                            onClick={() => setIsDepositModalOpen(true)}
-                            className="flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-[#C69C2E] to-[#a37e20] text-black hover:brightness-110 px-2 sm:px-4 py-2.5 sm:py-3.5 rounded-xl font-extrabold text-[11px] sm:text-sm transition-all duration-300 shadow-lg shadow-[#C69C2E]/10 active:scale-95 cursor-pointer whitespace-nowrap"
-                        >
-                            <ArrowDownToLine className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                            Fund<span className="hidden sm:inline"> Wallet</span>
-                        </button>
-                        <button
-                            onClick={() => setIsWithdrawModalOpen(true)}
-                            className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white/5 hover:bg-white/15 text-white border border-white/10 px-2 sm:px-4 py-2.5 sm:py-3.5 rounded-xl font-extrabold text-[11px] sm:text-sm transition-all duration-300 backdrop-blur-md active:scale-95 cursor-pointer whitespace-nowrap"
-                        >
-                            <ArrowUpFromLine className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-                            Withdraw<span className="hidden sm:inline"> Funds</span>
-                        </button>
-                    </div>
                 </div>
-            </div>
 
-            {/* Sub-Balances Grid with Elevated Aesthetics */}
-            <div className="grid grid-cols-2 gap-4">
-                {/* Funding Wallet Card */}
-                <div className="bg-white dark:bg-[#141414] p-3.5 sm:p-5 rounded-[1.5rem] border border-gray-100 dark:border-[#2A2A2A] flex flex-col justify-between shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
-                    <div className="absolute -right-10 -bottom-10 w-24 h-24 bg-yellow-500/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
+                {/* RIGHT COLUMN: Advanced Section & Sub-Wallets (7 cols on desktop) */}
+                <div className="lg:col-span-7 space-y-6">
+                    
+                    {/* Advanced Section Header */}
                     <div>
-                        <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
-                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-yellow-50 dark:bg-yellow-500/10 flex items-center justify-center shrink-0">
-                                <ArrowDownToLine className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#C69C2E]" />
-                            </div>
-                            <span className="text-[9px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider sm:tracking-widest">Funding</span>
-                        </div>
-                        <h3 className="text-base sm:text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight truncate">
-                            {loading ? (
-                                <span className="inline-block w-20 sm:w-28 h-6 sm:h-8 bg-gray-100 dark:bg-white/5 animate-pulse rounded-lg" />
-                            ) : formatAmount(depositBalance)}
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-[#C69C2E] mb-3 flex items-center gap-2">
+                            <ShieldCheck className="w-4 h-4" />
+                            Advanced Wallet Partition
                         </h3>
-                    </div>
-                </div>
-
-                {/* Earnings Wallet Card */}
-                <div className="bg-white dark:bg-[#141414] p-3.5 sm:p-5 rounded-[1.5rem] border border-gray-100 dark:border-[#2A2A2A] flex flex-col justify-between shadow-sm hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
-                    <div className="absolute -right-10 -bottom-10 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500" />
-                    <div>
-                        <div className="flex items-center gap-1.5 sm:gap-2 mb-2">
-                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
-                                <ArrowUpFromLine className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400" />
+                        
+                        {/* Always 1 Row Layout (grid-cols-2 for both Mobile and Desktop) */}
+                        <div className="grid grid-cols-2 gap-4">
+                            
+                            {/* Deposit Wallet Card */}
+                            <div className="bg-gradient-to-br from-[#121215] to-[#0A0A0C] p-3.5 sm:p-5 rounded-[1.25rem] border border-[#C69C2E]/30 flex flex-col justify-between shadow-md shadow-black/40 relative overflow-hidden group hover:-translate-y-1 hover:border-[#C69C2E]/60 transition-all duration-300 min-h-[100px] sm:min-h-[120px]">
+                                {/* Tech Grid Background Overlay */}
+                                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:10px_10px] opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-[#C69C2E]/5 rounded-full blur-xl pointer-events-none group-hover:bg-[#C69C2E]/8 transition-all" />
+                                
+                                <div className="space-y-2 sm:space-y-3 relative z-10 w-full flex flex-col justify-between h-full">
+                                    <div className="flex items-start justify-between gap-1 w-full">
+                                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                                            <div className="w-6 h-6 sm:w-8 h-8 rounded-lg bg-[#C69C2E]/10 flex items-center justify-center shrink-0 border border-[#C69C2E]/20">
+                                                <ArrowDownToLine className="w-3 h-3 sm:w-4 sm:h-4 text-[#C69C2E]" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <span className="block text-[8px] sm:text-[10px] font-bold text-gray-300 uppercase tracking-widest truncate">
+                                                    Deposit
+                                                </span>
+                                                <p className="hidden sm:block text-[9px] text-gray-500 font-semibold mt-0.5">Escrow & Hiring</p>
+                                            </div>
+                                        </div>
+                                        {/* Security Ledger Chip */}
+                                        <div className="w-5 h-4 sm:w-6 h-5 rounded bg-gradient-to-br from-[#C69C2E]/20 to-[#C69C2E]/5 border border-[#C69C2E]/30 flex flex-col gap-0.5 p-0.5 justify-center items-center shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" title="Secure Ledger">
+                                            <div className="w-full h-0.5 bg-[#C69C2E]/40 rounded-full" />
+                                            <div className="w-3/4 h-0.5 bg-[#C69C2E]/40 rounded-full" />
+                                            <div className="w-full h-0.5 bg-[#C69C2E]/40 rounded-full" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h3 className="text-base sm:text-xl md:text-2xl font-black text-white tracking-tight truncate">
+                                            {loading ? (
+                                                <span className="inline-block w-16 sm:w-28 h-5 sm:h-7 bg-white/10 animate-pulse rounded-lg" />
+                                            ) : !showBalance ? (
+                                                "••••••••"
+                                            ) : (
+                                                formatAmount(depositBalance)
+                                            )}
+                                        </h3>
+                                    </div>
+                                </div>
                             </div>
-                            <span className="text-[9px] sm:text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider sm:tracking-widest">Earnings</span>
-                        </div>
-                        <h3 className="text-base sm:text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight truncate">
-                            {loading ? (
-                                <span className="inline-block w-20 sm:w-28 h-6 sm:h-8 bg-gray-100 dark:bg-white/5 animate-pulse rounded-lg" />
-                            ) : formatAmount(earningsBalance)}
-                        </h3>
-                    </div>
-                </div>
-            </div>
 
-            {/* Compact Referral Banner */}
-            <div className="bg-gray-50 dark:bg-[#141414] rounded-[2rem] border border-gray-100 dark:border-[#2A2A2A] p-6 flex flex-col lg:flex-row items-center justify-between gap-6 shadow-sm mt-2 transition-all hover:shadow-md">
-                
-                <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left">
-                    <div className="flex items-center gap-1.5 text-[#C69C2E] font-bold text-xs uppercase tracking-widest mb-1.5">
-                        <TrendingUp className="w-4 h-4" />
-                        Refer & Earn
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm">
-                        Earn 5% of your friend's first deposit. Double your savings!
-                    </p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto">
-                    {/* Total Referral Earnings */}
-                    <div className="flex flex-col items-center sm:items-start w-full sm:w-auto">
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1.5">Total Earnings</span>
-                        <div className="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 px-4 py-2 sm:py-2.5 rounded-xl border border-emerald-100 dark:border-emerald-500/20 w-full text-center truncate">
-                            {formatAmount(referralEarnings)}
-                        </div>
-                    </div>
-
-                    {/* Referral Code */}
-                    <div className="flex flex-col items-center sm:items-start w-full sm:w-auto">
-                        <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-1.5">Your Referral Code</span>
-                        <div className="flex items-center w-full sm:w-auto border border-gray-200 dark:border-[#2A2A2A] rounded-xl overflow-hidden bg-white dark:bg-[#1A1A1A]">
-                            <div className="px-3 sm:px-4 py-2 sm:py-2.5 font-mono text-xs sm:text-sm md:text-base font-bold text-gray-900 dark:text-white w-full text-center tracking-wider truncate">
-                                {referralCode}
+                            {/* Earnings Wallet Card */}
+                            <div className="bg-gradient-to-br from-[#121215] to-[#0A0A0C] p-3.5 sm:p-5 rounded-[1.25rem] border border-gray-800 dark:border-[#2A2A2A] flex flex-col justify-between shadow-md shadow-black/40 relative overflow-hidden group hover:-translate-y-1 hover:border-[#C69C2E]/40 transition-all duration-300 min-h-[100px] sm:min-h-[120px]">
+                                {/* Tech Grid Background Overlay */}
+                                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:10px_10px] opacity-70 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-[#C69C2E]/5 rounded-full blur-xl pointer-events-none group-hover:bg-[#C69C2E]/8 transition-all" />
+                                
+                                <div className="space-y-2 sm:space-y-3 relative z-10 w-full flex flex-col justify-between h-full">
+                                    <div className="flex items-start justify-between gap-1 w-full">
+                                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                                            <div className="w-6 h-6 sm:w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0 border border-white/10 group-hover:border-[#C69C2E]/20 transition-colors">
+                                                <ArrowUpFromLine className="w-3  h-3 sm:w-4 sm:h-4 text-white group-hover:text-[#C69C2E] transition-colors" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <span className="block text-[8px] sm:text-[10px] font-bold text-gray-300 uppercase tracking-widest truncate">
+                                                    Earnings
+                                                </span>
+                                                <p className="hidden sm:block text-[9px] text-gray-500 font-semibold mt-0.5">Gig Revenue</p>
+                                            </div>
+                                        </div>
+                                        {/* Security Ledger Chip */}
+                                        <div className="w-5 h-4 sm:w-6 h-5 rounded bg-gradient-to-br from-white/10 to-white/5 border border-white/20 flex flex-col gap-0.5 p-0.5 justify-center items-center shrink-0 opacity-70 group-hover:opacity-100 group-hover:border-[#C69C2E]/30 transition-all" title="Secure Ledger">
+                                            <div className="w-full h-0.5 bg-white/30 group-hover:bg-[#C69C2E]/40 rounded-full" />
+                                            <div className="w-3/4 h-0.5 bg-white/30 group-hover:bg-[#C69C2E]/40 rounded-full" />
+                                            <div className="w-full h-0.5 bg-white/30 group-hover:bg-[#C69C2E]/40 rounded-full" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <h3 className="text-base sm:text-xl md:text-2xl font-black text-white tracking-tight truncate">
+                                            {loading ? (
+                                                <span className="inline-block w-16 sm:w-28 h-5 sm:h-7 bg-white/10 animate-pulse rounded-lg" />
+                                            ) : !showBalance ? (
+                                                "••••••••"
+                                            ) : (
+                                                formatAmount(earningsBalance)
+                                            )}
+                                        </h3>
+                                    </div>
+                                </div>
                             </div>
-                            <button
-                                onClick={copyToClipboard}
-                                className={`flex items-center justify-center shrink-0 h-full px-3 sm:px-4 py-3 sm:py-3.5 transition-colors cursor-pointer ${
-                                    copied ? 'bg-emerald-50 dark:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400' : 'bg-gray-50 dark:bg-[#202020] hover:bg-gray-100 dark:hover:bg-[#2A2A2A] text-gray-600 dark:text-gray-400'
-                                }`}
-                            >
-                                {copied ? <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <Copy className="w-4 h-4 sm:w-5 sm:h-5" />}
-                            </button>
+
                         </div>
                     </div>
+
+                    {/* Premium Referral Code Card */}
+                    <div className="bg-[#0A0A0C] rounded-[2rem] border border-gray-800 p-5 flex flex-col sm:flex-row items-center justify-between gap-5 shadow-sm">
+                        <div className="flex-1 flex flex-col items-center sm:items-start text-center sm:text-left">
+                            <div className="flex items-center gap-1.5 text-[#C69C2E] font-bold text-xs uppercase tracking-widest mb-1">
+                                <TrendingUp className="w-4 h-4" />
+                                Refer & Earn program
+                            </div>
+                            <p className="text-xs text-gray-400 max-w-xs leading-relaxed">
+                                Invite friends and earn 5% of their first funding deposit directly into your earnings wallet.
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                            {/* Total Referral Earnings */}
+                            <div className="flex flex-col items-center sm:items-start w-full sm:w-auto">
+                                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Earnings</span>
+                                <div className="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 px-3.5 py-2 rounded-xl border border-emerald-500/20 w-full sm:w-28 text-center truncate">
+                                    {formatAmount(referralEarnings)}
+                                </div>
+                            </div>
+
+                            {/* Referral Code */}
+                            <div className="flex flex-col items-center sm:items-start w-full sm:w-auto">
+                                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Your Code</span>
+                                <div className="flex items-center w-full sm:w-auto border border-gray-800 rounded-xl overflow-hidden bg-[#121212]">
+                                    <div className="px-3 py-2 font-mono text-xs font-bold text-white w-full sm:w-24 text-center tracking-wider truncate">
+                                        {referralCode}
+                                    </div>
+                                    <button
+                                        onClick={copyToClipboard}
+                                        className={`flex items-center justify-center shrink-0 h-full p-2 transition-colors cursor-pointer ${
+                                            copied ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/5 hover:bg-white/10 text-gray-400'
+                                        }`}
+                                    >
+                                        {copied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 

@@ -15,7 +15,9 @@ export function WalletLayout() {
             </div>
 
             <WalletStats />
-            <TransactionList />
+            <div className="mt-6">
+                <TransactionList limit={5} showSeeAll={true} />
+            </div>
         </div>
     );
 }

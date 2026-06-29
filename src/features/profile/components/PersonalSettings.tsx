@@ -42,16 +42,16 @@ function SuccessModal({
     if (!open) return null;
     return (
         <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={onClose}>
-            <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="bg-white dark:bg-[#121212] border border-gray-100 dark:border-[#2A2A2A] rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                 <div className="p-8 text-center">
-                    <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-500">
+                    <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/30 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-500">
                         <CheckCircle className="w-8 h-8" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{title}</h3>
-                    <p className="text-sm text-gray-500 mb-8">{message}</p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">{message}</p>
                     <button
                         onClick={onClose}
-                        className="w-full py-3.5 rounded-xl bg-[#C69C2E] text-white text-sm font-bold hover:bg-[#b08b29] transition-colors shadow-lg shadow-[#C69C2E]/20"
+                        className="w-full py-3.5 rounded-xl bg-[#C69C2E] text-white text-sm font-bold hover:bg-[#b08b29] transition-colors shadow-lg shadow-[#C69C2E]/20 cursor-pointer"
                     >
                         Great!
                     </button>
@@ -232,67 +232,67 @@ export function PersonalSettings() {
             {/* Grid for Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Profile Details Card */}
-                <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-shadow duration-200">
-                    <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
+                <div className="bg-white dark:bg-[#141414] rounded-3xl border border-gray-100 dark:border-[#2A2A2A] p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-shadow duration-200">
+                    <div className="flex items-center gap-3 border-b border-gray-50 dark:border-[#2A2A2A] pb-4">
                         <div className="w-9 h-9 rounded-xl bg-[#C69C2E]/10 flex items-center justify-center text-[#C69C2E]">
                             <User className="w-4 h-4" />
                         </div>
                         <div>
-                            <h3 className="text-sm font-bold text-gray-900">Personal Details</h3>
-                            <p className="text-[10px] text-gray-400">Your basic information settings</p>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white">Personal Details</h3>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500">Your basic information settings</p>
                         </div>
                     </div>
 
                     <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500">First Name</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">First Name</label>
                                 <Input
                                     name="first_name"
                                     value={formData.first_name}
                                     onChange={handleInputChange}
                                     placeholder="First name"
-                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                    className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500">Last Name</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Last Name</label>
                                 <Input
                                     name="last_name"
                                     value={formData.last_name}
                                     onChange={handleInputChange}
                                     placeholder="Last name"
-                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                    className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-500">Biography</label>
+                            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Biography</label>
                             <Textarea
                                 name="bio"
                                 value={formData.bio}
                                 onChange={handleInputChange}
                                 placeholder="Write a short bio about yourself..."
-                                className="min-h-[96px] bg-gray-50/50 border-gray-100 rounded-xl resize-none focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs py-3"
+                                className="min-h-[96px] bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl resize-none focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs py-3"
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500">Date of Birth</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Date of Birth</label>
                                 <Input
                                     name="date_of_birth"
                                     type="date"
                                     value={formData.date_of_birth}
                                     onChange={handleInputChange}
-                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                    className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500">Gender</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Gender</label>
                                 <Select value={formData.gender} onValueChange={(v) => handleSelectChange("gender", v)}>
-                                    <SelectTrigger className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white text-xs">
+                                    <SelectTrigger className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] text-xs">
                                         <SelectValue placeholder="Select Gender" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -307,34 +307,34 @@ export function PersonalSettings() {
                 </div>
 
                 {/* Contact & Location Card */}
-                <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-shadow duration-200">
-                    <div className="flex items-center gap-3 border-b border-gray-50 pb-4">
+                <div className="bg-white dark:bg-[#141414] rounded-3xl border border-gray-100 dark:border-[#2A2A2A] p-6 shadow-sm flex flex-col gap-5 hover:shadow-md transition-shadow duration-200">
+                    <div className="flex items-center gap-3 border-b border-gray-50 dark:border-[#2A2A2A] pb-4">
                         <div className="w-9 h-9 rounded-xl bg-[#C69C2E]/10 flex items-center justify-center text-[#C69C2E]">
                             <Phone className="w-4 h-4" />
                         </div>
                         <div>
-                            <h3 className="text-sm font-bold text-gray-900">Contact & Address</h3>
-                            <p className="text-[10px] text-gray-400">Manage communication and address details</p>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white">Contact & Address</h3>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500">Manage communication and address details</p>
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-gray-500">Phone Number</label>
+                            <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Phone Number</label>
                             <Input
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleInputChange}
                                 placeholder="Enter phone number"
-                                className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500">Country</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Country</label>
                                 <Select value={formData.country} onValueChange={(v) => handleSelectChange("country", v)}>
-                                    <SelectTrigger className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white text-xs">
+                                    <SelectTrigger className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] text-xs">
                                         <SelectValue placeholder="Select Country" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -345,59 +345,59 @@ export function PersonalSettings() {
                                 </Select>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500">State / Region</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">State / Region</label>
                                 <Input
                                     name="state"
                                     value={formData.state}
                                     onChange={handleInputChange}
                                     placeholder="Enter state"
-                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                    className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
                                 />
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500">City</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">City</label>
                                 <Input
                                     name="city"
                                     value={formData.city}
                                     onChange={handleInputChange}
                                     placeholder="Enter city"
-                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                    className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500">Postal Code</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Postal Code</label>
                                 <Input
                                     name="postal_code"
                                     value={formData.postal_code}
                                     onChange={handleInputChange}
                                     placeholder="Enter Postal"
-                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                    className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-4 pt-1">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500">Address Line 1</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Address Line 1</label>
                                 <Input
                                     name="address_line1"
                                     value={formData.address_line1}
                                     onChange={handleInputChange}
                                     placeholder="Address Line 1"
-                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                    className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500">Address Line 2 (Optional)</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Address Line 2 (Optional)</label>
                                 <Input
                                     name="address_line2"
                                     value={formData.address_line2}
                                     onChange={handleInputChange}
                                     placeholder="Apartment, suite, unit etc."
-                                    className="h-11 bg-gray-50/50 border-gray-100 rounded-xl focus:border-[#C69C2E]/50 focus:bg-white transition-all text-xs"
+                                    className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
                                 />
                             </div>
                         </div>
@@ -406,11 +406,11 @@ export function PersonalSettings() {
             </div>
 
             {/* Bottom Actions */}
-            <div className="flex justify-end pt-4 border-t border-gray-50">
+            <div className="flex justify-end pt-4 border-t border-gray-50 dark:border-[#2A2A2A]">
                 <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto px-8 h-12 bg-[#C69C2E] hover:bg-[#b08b29] text-white font-bold rounded-xl shadow-lg shadow-[#C69C2E]/20 transition-all duration-300 flex items-center justify-center gap-2 group"
+                    className="w-full sm:w-auto px-8 h-12 bg-[#C69C2E] hover:bg-[#b08b29] text-white font-bold rounded-xl shadow-lg shadow-[#C69C2E]/20 transition-all duration-300 flex items-center justify-center gap-2 group cursor-pointer"
                 >
                     {isSubmitting ? (
                         <>

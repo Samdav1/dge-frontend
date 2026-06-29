@@ -12,6 +12,7 @@ import { createUserPortfolio, updateUserPortfolio, getUserPortfolio } from "../a
 import { UserPortfolio } from "../types";
 import { PortfolioMediaUpload } from "./PortfolioMediaUpload";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const portfolioSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters"),
@@ -92,11 +93,10 @@ export function PortfolioSetupForm() {
                 setPortfolio(newPortfolio);
             }
             router.refresh();
-            // Show toast success (if toast component available)
-            alert("Portfolio saved successfully!");
+            toast.success("Portfolio saved successfully!");
         } catch (error) {
             console.error("Failed to save portfolio:", error);
-            alert("Failed to save portfolio. Please try again.");
+            toast.error("Failed to save portfolio. Please try again.");
         } finally {
             setIsSaving(false);
         }

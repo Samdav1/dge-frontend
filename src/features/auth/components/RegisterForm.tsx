@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 export function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false);
@@ -44,7 +45,7 @@ export function RegisterForm() {
         } catch (error) {
             console.error("Registration error:", error);
             // TODO: Handle error state (e.g., show toast)
-            alert(error instanceof Error ? error.message : "Registration failed");
+            toast.error(error instanceof Error ? error.message : "Registration failed");
         }
     };
 

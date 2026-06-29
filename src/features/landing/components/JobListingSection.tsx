@@ -1,8 +1,14 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import FallbackImage from "@/components/ui/FallbackImage";
+import { useSession } from "next-auth/react";
 
 export function JobListingSection() {
+    const { status } = useSession();
+    const isAuthenticated = status === "authenticated";
+
     return (
         <section className="py-20 bg-background">
             <div className="container mx-auto px-4 md:px-8 max-w-[1600px]">
@@ -28,7 +34,7 @@ export function JobListingSection() {
                         <p className="text-muted-foreground mb-8 leading-relaxed">
                             Review proposals, negotiate prices directly, and once you're happy, confirm the deal. Your payment is secured in Escrow until the job is done right.
                         </p>
-                        <Link href="/register">
+                        <Link href={isAuthenticated ? "/dashboard/job-board" : "/register"}>
                             <Button variant="default" className="bg-[#C69C2E] hover:bg-[#B58B1D] text-white px-8 py-5 rounded-xl font-semibold">Post a Job for Free</Button>
                         </Link>
                     </div>

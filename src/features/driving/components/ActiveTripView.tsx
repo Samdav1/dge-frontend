@@ -6,6 +6,7 @@ import { Car, MapPin, Navigation, Phone, CheckCircle, XCircle, Route, User, Aler
 import { Button } from "@/components/ui/button";
 import { useChatContext } from "@/providers/ChatProvider";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { createConversation, addParticipant, getCurrentUserId } from "../../inbox/actions";
 
 interface ActiveTripViewProps {
@@ -68,7 +69,7 @@ export function ActiveTripView({ trip, isDriver, onCancel, onComplete, onArrive,
     const handleChat = async () => {
         const targetUserId = isDriver ? trip.rider_id : trip.driver_user_id;
         if (!targetUserId) {
-            alert("Cannot start chat: user ID not available");
+            toast.error("Cannot start chat: user ID not available");
             return;
         }
 
@@ -97,7 +98,7 @@ export function ActiveTripView({ trip, isDriver, onCancel, onComplete, onArrive,
 
                 router.push(`/dashboard/inbox?conversationId=${conversationId}`);
             } else {
-                alert("Failed to create chat");
+                toast.error("Failed to create chat");
             }
         } catch (error) {
             console.error("Error starting chat:", error);

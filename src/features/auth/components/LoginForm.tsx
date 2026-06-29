@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
@@ -41,7 +42,7 @@ export function LoginForm() {
         } catch (error) {
             console.error("Login error:", error);
             // TODO: Handle error state (e.g., show toast)
-            alert("Login failed. Please check your credentials.");
+            toast.error("Login failed. Please check your credentials.");
         }
     };
 

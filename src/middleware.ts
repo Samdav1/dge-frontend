@@ -20,7 +20,7 @@ export default auth((request) => {
             }
         } else {
             if (userRole !== 'admin') {
-                return NextResponse.redirect(new URL('/dashboard', request.url));
+                return NextResponse.redirect(new URL('/dashboard/marketplace', request.url));
             } else if (isAdminLogin) {
                 return NextResponse.redirect(new URL('/admin/overview', request.url));
             }
@@ -29,12 +29,15 @@ export default auth((request) => {
         if (!isLoggedIn) {
             return NextResponse.redirect(new URL('/login', request.url));
         }
+        if (pathname === '/dashboard' || pathname === '/dashboard/') {
+            return NextResponse.redirect(new URL('/dashboard/marketplace', request.url));
+        }
     } else if (isAuthPage) {
         if (isLoggedIn) {
             if (userRole === 'admin') {
                 return NextResponse.redirect(new URL('/admin/overview', request.url));
             } else {
-                return NextResponse.redirect(new URL('/dashboard', request.url));
+                return NextResponse.redirect(new URL('/dashboard/marketplace', request.url));
             }
         }
     }

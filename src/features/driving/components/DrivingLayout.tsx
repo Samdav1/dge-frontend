@@ -17,6 +17,7 @@ import { ActiveTripView } from "./ActiveTripView";
 import { getUserKyc } from "@/features/profile/actions";
 import { pingDriverLocation, requestRide, acceptRide, getDriversNearby, cancelTrip, completeTrip, arriveAtPickup, startTrip, confirmStartTrip, counterRide, acceptCounterOffer } from "../actions";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 import { useChatContext } from "@/providers/ChatProvider";
 import {
     Loader2, Car, Navigation, Clock, History, UserCircle,
@@ -561,7 +562,7 @@ export function DrivingLayout() {
                                                     message: "You have accepted the driver's offer."
                                                 });
                                             } else {
-                                                alert("Failed to accept counter offer: " + res.error);
+                                                toast.error("Failed to accept counter offer: " + res.error);
                                             }
                                         }}
                                         className="w-full text-xs h-10 bg-[#C69C2E] hover:bg-[#b08b29] text-white font-bold"
@@ -580,7 +581,7 @@ export function DrivingLayout() {
                                                     message: "You declined the offer and cancelled the ride request."
                                                 });
                                             } else {
-                                                alert("Failed to cancel: " + res.error);
+                                                toast.error("Failed to cancel: " + res.error);
                                             }
                                         }}
                                         className="w-full text-xs h-10 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"

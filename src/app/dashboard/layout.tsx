@@ -1,6 +1,6 @@
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
 import { DashboardSidebar } from "@/features/dashboard/components/DashboardSidebar";
-import { FloatingRideWidget } from "@/features/driving/components/FloatingRideWidget";
+import { MobileBottomNav } from "@/features/dashboard/components/MobileBottomNav";
 
 export default function DashboardLayout({
     children,
@@ -12,11 +12,12 @@ export default function DashboardLayout({
             <DashboardSidebar />
             <div className="lg:pl-64">
                 <DashboardHeader />
-                <main className="p-4 md:p-8">
+                <main className="p-4 md:p-8 pb-24 lg:pb-8">
                     {children}
                 </main>
             </div>
-            <FloatingRideWidget />
+            <MobileBottomNav />
         </div>
     );
 }
+

@@ -9,32 +9,88 @@ import {
     Coffee, ShoppingBag, Globe, Smartphone, BarChart, Shield
 } from "lucide-react";
 
-// Helper function to get an icon based on category name
-const getCategoryIcon = (categoryName: string) => {
+// Helper function to get an emoji based on category name
+const getCategoryEmoji = (categoryName: string) => {
     const name = categoryName.toLowerCase();
     
-    if (name.includes('web') || name.includes('dev') || name.includes('code') || name.includes('tech') || name.includes('software')) return Code;
-    if (name.includes('design') || name.includes('art') || name.includes('graphics')) return Paintbrush;
-    if (name.includes('write') || name.includes('content') || name.includes('copy') || name.includes('translate')) return PenTool;
-    if (name.includes('photo') || name.includes('camera')) return Camera;
-    if (name.includes('video') || name.includes('film') || name.includes('animation')) return Video;
-    if (name.includes('music') || name.includes('audio') || name.includes('sound')) return Music;
-    if (name.includes('business') || name.includes('consult') || name.includes('finance')) return Briefcase;
-    if (name.includes('plumb') || name.includes('fix') || name.includes('repair') || name.includes('handyman') || name.includes('mechanic')) return Wrench;
-    if (name.includes('home') || name.includes('clean') || name.includes('house')) return Home;
-    if (name.includes('car') || name.includes('auto') || name.includes('drive')) return Car;
-    if (name.includes('beauty') || name.includes('hair') || name.includes('salon') || name.includes('spa')) return Scissors;
-    if (name.includes('health') || name.includes('care') || name.includes('fitness')) return Heart;
-    if (name.includes('tutor') || name.includes('teach') || name.includes('education')) return BookOpen;
-    if (name.includes('food') || name.includes('cook') || name.includes('bake') || name.includes('cater') || name.includes('chef')) return Coffee;
-    if (name.includes('shop') || name.includes('store') || name.includes('retail')) return ShoppingBag;
-    if (name.includes('market') || name.includes('seo') || name.includes('social')) return BarChart;
-    if (name.includes('security') || name.includes('guard')) return Shield;
-    if (name.includes('app') || name.includes('mobile')) return Smartphone;
-    if (name.includes('network') || name.includes('internet')) return Globe;
-    if (name.includes('it') || name.includes('computer')) return Laptop;
+    // Tech & Coding / Web / IT
+    if (name.includes('web') || name.includes('dev') || name.includes('code') || name.includes('tech') || name.includes('software') || name.includes('computer') || name.includes('network') || name.includes('it consultant') || name.includes('database') || name.includes('cloud') || name.includes('sysadmin') || name.includes('wi-fi') || name.includes('wifi') || name.includes('server') || name.includes('pos system') || name.includes('cable') || name.includes('printer') || name.includes('game console') || name.includes('cybersecurity') || name.includes('data recovery')) return '💻';
+
+    // Home Maintenance, Handyman, Construction & Trades
+    if (name.includes('plumb')) return '🪠';
+    if (name.includes('electrician') || name.includes('electrical')) return '⚡';
+    if (name.includes('hvac') || name.includes('air conditioning') || name.includes('heating')) return '❄️';
+    if (name.includes('painter') || name.includes('painting')) return '🖌️';
+    if (name.includes('roofer') || name.includes('roofing')) return '🏠';
+    if (name.includes('carpenter') || name.includes('carpentry')) return '🔨';
+    if (name.includes('locksmith')) return '🔑';
+    if (name.includes('pest') || name.includes('exterminator')) return '🪳';
+    if (name.includes('appliance repair') || name.includes('appliance delivery')) return '🔌';
+    if (name.includes('masonry') || name.includes('mason')) return '🧱';
+    if (name.includes('flooring') || name.includes('floor')) return '🪵';
+    if (name.includes('tile setter') || name.includes('tile and grout')) return '🧱';
+    if (name.includes('drywall') || name.includes('insulation') || name.includes('foundation') || name.includes('glass installer') || name.includes('awning') || name.includes('gutter') || name.includes('chimney') || name.includes('demolition') || name.includes('waterproofing') || name.includes('soundproofing')) return '🛠️';
+    if (name.includes('solar')) return '☀️';
+
+    // Cleaning Services
+    if (name.includes('clean') || name.includes('janitor') || name.includes('washer') || name.includes('wash') || name.includes('trash') || name.includes('waste') || name.includes('odor removal') || name.includes('hoarding') || name.includes('biohazard') || name.includes('dust')) return '🧹';
+
+    // Automotive & Vehicles
+    if (name.includes('mechanic') || name.includes('auto') || name.includes('towing') || name.includes('tire') || name.includes('windshield') || name.includes('motorcycle') || name.includes('boat') || name.includes('rv') || name.includes('battery jump') || name.includes('car wash') || name.includes('dent') || name.includes('fleet') || name.includes('truck') || name.includes('heavy equipment')) return '🚗';
+
+    // Landscaping & Outdoors
+    if (name.includes('lawn') || name.includes('garden') || name.includes('tree') || name.includes('arborist') || name.includes('snow removal') || name.includes('fence') || name.includes('sprinkler') || name.includes('landscape') || name.includes('weed') || name.includes('stump') || name.includes('pond') || name.includes('patio') || name.includes('deck') || name.includes('shed') || name.includes('greenhouse') || name.includes('soil') || name.includes('plant') || name.includes('bee')) return '🌱';
+
+    // Moving, Transport & Delivery
+    if (name.includes('mover') || name.includes('moving') || name.includes('furniture assembler') || name.includes('junk') || name.includes('courier') || name.includes('delivery') || name.includes('freight') || name.includes('driver') || name.includes('transport') || name.includes('haul') || name.includes('valet') || name.includes('chauffeur') || name.includes('pilot') || name.includes('dispatch') || name.includes('baggage')) return '📦';
+
+    // Design, Writing & Creative Art
+    if (name.includes('design') || name.includes('art') || name.includes('illustrator') || name.includes('animator') || name.includes('creative') || name.includes('interior') || name.includes('stager') || name.includes('curator')) return '🎨';
+    if (name.includes('write') || name.includes('content') || name.includes('copy') || name.includes('translate') || name.includes('proofread') || name.includes('resume') || name.includes('blog') || name.includes('edit') || name.includes('transcription') || name.includes('interpreter')) return '✍️';
+    if (name.includes('photo') || name.includes('camera') || name.includes('photographer')) return '📸';
+    if (name.includes('video') || name.includes('film') || name.includes('cinema') || name.includes('director') || name.includes('foley') || name.includes('set design') || name.includes('location scout') || name.includes('casting')) return '🎬';
+    if (name.includes('music') || name.includes('audio') || name.includes('sound') || name.includes('dj') || name.includes('band') || name.includes('musician') || name.includes('sing') || name.includes('vocal') || name.includes('piano') || name.includes('voice') || name.includes('podcast')) return '🎧';
+
+    // Beauty, Hair & Styling
+    if (name.includes('hair') || name.includes('barber') || name.includes('stylist') || name.includes('color consultant')) return '💈';
+    if (name.includes('makeup') || name.includes('cosmetics')) return '💄';
+    if (name.includes('nail')) return '💅';
+    if (name.includes('massage') || name.includes('spa') || name.includes('healer') || name.includes('reiki') || name.includes('wellness') || name.includes('sound bath')) return '💆';
+    if (name.includes('esthet') || name.includes('lash') || name.includes('brow') || name.includes('wax') || name.includes('tan')) return '✨';
+
+    // Fitness, Health & Medical
+    if (name.includes('gym') || name.includes('trainer') || name.includes('fitness') || name.includes('yoga') || name.includes('pilates') || name.includes('athlete') || name.includes('sport') || name.includes('swim') || name.includes('climb') || name.includes('dive') || name.includes('skydive') || name.includes('paragliding') || name.includes('hang gliding') || name.includes('rafting') || name.includes('mountaineer') || name.includes('run')) return '🏋️';
+    if (name.includes('diet') || name.includes('nutrition')) return '🍏';
+    if (name.includes('health') || name.includes('care') || name.includes('medical') || name.includes('doctor') || name.includes('nurse') || name.includes('dentist') || name.includes('dental') || name.includes('optician') || name.includes('physio') || name.includes('chiropractor') || name.includes('acupunct') || name.includes('therapy') || name.includes('therapist') || name.includes('phleb') || name.includes('cardio') || name.includes('radio') || name.includes('ultra') || name.includes('mri') || name.includes('surgical') || name.includes('laboratory') || name.includes('pathology') || name.includes('pharmaco') || name.includes('clinical') || name.includes('doula') || name.includes('midwife') || name.includes('lactation') || name.includes('hospice')) return '🏥';
+
+    // Event Planning, Food & Hospitality
+    if (name.includes('food') || name.includes('cook') || name.includes('bake') || name.includes('cater') || name.includes('chef') || name.includes('sommelier') || name.includes('bartend') || name.includes('restaurant') || name.includes('wait') || name.includes('host') || name.includes('tour guide') || name.includes('travel') || name.includes('cruise')) return '🍳';
+    if (name.includes('event planner') || name.includes('party') || name.includes('decorator') || name.includes('celebrant') || name.includes('wedding') || name.includes('officiant') || name.includes('magician') || name.includes('clown') || name.includes('face paint') || name.includes('balloon') || name.includes('caricature') || name.includes('festival') || name.includes('concert')) return '📅';
+    if (name.includes('florist') || name.includes('flower')) return '💐';
+
+    // Education, Coaching & Teaching
+    if (name.includes('tutor') || name.includes('teach') || name.includes('educat') || name.includes('school') || name.includes('math') || name.includes('science') || name.includes('language') || name.includes('test prep') || name.includes('acting coach') || name.includes('public speaking') || name.includes('sewing instructor') || name.includes('librarian') || name.includes('researcher')) return '🎓';
+
+    // Finance, Business, Legal & Admin
+    if (name.includes('business') || name.includes('consult') || name.includes('finance') || name.includes('tax') || name.includes('bookkeeper') || name.includes('accountant') || name.includes('payroll') || name.includes('advisor') || name.includes('broker') || name.includes('bank') || name.includes('invest') || name.includes('crypto') || name.includes('forex') || name.includes('trader') || name.includes('fundrais') || name.includes('insurance') || name.includes('grant') || name.includes('merchandiser') || name.includes('e-commerce') || name.includes('dropshipper') || name.includes('shopify') || name.includes('amazon') || name.includes('sale') || name.includes('marketing') || name.includes('telemarket') || name.includes('lead gen') || name.includes('operations') || name.includes('logistics') || name.includes('supply chain') || name.includes('inventory') || name.includes('quality') || name.includes('iso auditor') || name.includes('compliance') || name.includes('risk') || name.includes('community manager') || name.includes('moderator') || name.includes('discord manager') || name.includes('twitch') || name.includes('influencer') || name.includes('ambassador') || name.includes('secret shopper') || name.includes('store detective') || name.includes('loss prevention')) return '💼';
+    if (name.includes('notary') || name.includes('legal') || name.includes('lawyer') || name.includes('paralegal') || name.includes('mediat') || name.includes('private eye') || name.includes('investigator') || name.includes('process server') || name.includes('court reporter') || name.includes('bailiff') || name.includes('bounty hunter') || name.includes('polygraph') || name.includes('skip tracer') || name.includes('repossession') || name.includes('cop') || name.includes('police')) return '⚖️';
+
+    // Pet & Animal Services
+    if (name.includes('pet') || name.includes('dog') || name.includes('cat') || name.includes('groomer') || name.includes('vet') || name.includes('walker') || name.includes('sitter') || name.includes('trainer') || name.includes('aquarium') || name.includes('animal') || name.includes('equine') || name.includes('farrier') || name.includes('reptile') || name.includes('bird') || name.includes('boarding') || name.includes('falconry') || name.includes('horse') || name.includes('livestock')) return '🐕';
+
+    // Security & Safety
+    if (name.includes('security') || name.includes('guard') || name.includes('bodyguard') || name.includes('bouncer') || name.includes('fire safety') || name.includes('alarm') || name.includes('safety') || name.includes('ergo') || name.includes('hygienist') || name.includes('toxicologist') || name.includes('epidemiologist')) return '🛡️';
+
+    // Specialized Crafts & Custom Trades
+    if (name.includes('tailor') || name.includes('seamstress') || name.includes('sewing') || name.includes('custom') || name.includes('jewel') || name.includes('blacksmith') || name.includes('welder') || name.includes('potter') || name.includes('glassblow') || name.includes('woodworker') || name.includes('leather') || name.includes('cobbler') || name.includes('watch') || name.includes('clock') || name.includes('upholsterer') || name.includes('calligrapher') || name.includes('engraver') || name.includes('framer') || name.includes('knit') || name.includes('crochet') || name.includes('quilt') || name.includes('candle') || name.includes('soap') || name.includes('perfumer') || name.includes('machinist') || name.includes('cnc') || name.includes('millwright') || name.includes('industrial') || name.includes('operator')) return '🛠️';
+
+    // Real Estate, Property & Environment
+    if (name.includes('real estate') || name.includes('property') || name.includes('leasing') || name.includes('title agent') || name.includes('escrow officer') || name.includes('foreclosure') || name.includes('hoa') || name.includes('tenant') || name.includes('recycle') || name.includes('compost') || name.includes('sustainability') || name.includes('environment')) return '🏡';
+
+    // Farming & Outdoors (Agricultural)
+    if (name.includes('farm') || name.includes('tractor') || name.includes('crop') || name.includes('irrigation') || name.includes('beekeeper') || name.includes('shearer') || name.includes('orchard') || name.includes('dairy') || name.includes('park ranger') || name.includes('forest ranger') || name.includes('wildlife') || name.includes('biologist') || name.includes('botanist') || name.includes('zoologist')) return '🚜';
     
-    return Grid3X3; // Default fallback icon
+    return '📦'; // Default fallback emoji
 };
 
 import {
@@ -133,7 +189,7 @@ export default function EcosystemPage() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="flex flex-row gap-2 w-full lg:w-auto">
+                <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
                     {/* Category quick filter (only show if already in a category to switch quickly) */}
                     {selectedCategory !== "all" && (
                         <Select value={selectedCategory} onValueChange={handleCategorySelect}>
@@ -186,7 +242,7 @@ export default function EcosystemPage() {
                     <div className={selectedCategory === "all" ? "block" : "hidden"}>
                         <div className="grid grid-cols-4 lg:grid-cols-5 gap-2 md:gap-6">
                              {filteredCategories.map((cat: any, i: number) => {
-                                 const CategoryIcon = getCategoryIcon(cat.name);
+                                 const categoryEmoji = getCategoryEmoji(cat.name);
                                  const isLoading = clickedCategoryId === cat.id;
                                  return (
                                      <button
@@ -208,9 +264,7 @@ export default function EcosystemPage() {
                                              {isLoading ? (
                                                  <Loader2 className="h-5 w-5 md:h-8 md:w-8 text-[#C69C2E] animate-spin" />
                                              ) : (
-                                                 <CategoryIcon
-                                                     className="h-5 w-5 md:h-8 md:w-8 text-[#C69C2E]"
-                                                 />
+                                                 <span className="text-xl md:text-3xl leading-none">{categoryEmoji}</span>
                                              )}
                                          </div>
                                          <span className="text-[10px] md:text-base font-semibold text-center leading-tight text-gray-800 dark:text-gray-100 group-hover:text-[#C69C2E] transition-colors line-clamp-2 md:line-clamp-none">
