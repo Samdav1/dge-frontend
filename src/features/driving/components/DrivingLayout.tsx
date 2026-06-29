@@ -105,7 +105,12 @@ export function DrivingLayout() {
 
         const token = session.backendToken.replace(/^"|"$/g, '');
         // We use the general chat WS since it uses ConnectionManager that routes per user
-        const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'ws://127.0.0.1:8000'}/chat/ws?token=${token}`;
+        const getWsUrl = () => {
+            if (process.env.NEXT_PUBLIC_WS_URL) return process.env.NEXT_PUBLIC_WS_URL;
+            if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace(/^http/, 'ws');
+            return 'wss://dge-tech-web-cjhe4jg72a-ew.a.run.app';
+        };
+        const wsUrl = `${getWsUrl()}/chat/ws?token=${token}`;
 
         let ws: WebSocket;
         let isComponentMounted = true;
@@ -827,8 +832,8 @@ export function DrivingLayout() {
                 {activeTrip ? (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-full animate-in fade-in duration-300">
                         <div className="lg:col-span-1 h-auto lg:h-[calc(100vh-380px)] min-h-0">
-                            <ActiveTripView 
-                                trip={activeTrip} 
+                            <ActiveTripView
+                                trip={activeTrip}
                                 isDriver={isDriverVerified}
                                 driverLocation={driverLocation}
                                 onCancel={async (id) => {

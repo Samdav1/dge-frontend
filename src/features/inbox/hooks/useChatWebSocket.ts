@@ -26,7 +26,12 @@ interface UseChatWebSocketReturn {
     error: string | null;
 }
 
-const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000';
+const getWsUrl = () => {
+    if (process.env.NEXT_PUBLIC_WS_URL) return process.env.NEXT_PUBLIC_WS_URL;
+    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace(/^http/, 'ws');
+    return 'wss://dge-tech-web-cjhe4jg72a-ew.a.run.app';
+};
+const WS_BASE_URL = getWsUrl();
 const MAX_RETRIES = 5;
 
 export function useChatWebSocket(options: UseChatWebSocketOptions): UseChatWebSocketReturn {
@@ -178,7 +183,7 @@ export function useChatWebSocket(options: UseChatWebSocketOptions): UseChatWebSo
                     // Handle global ride requests
                     if (data.type === 'ride_requested') {
                         console.log('WebSocket: Received global ride_requested:', data);
-                        
+
                         // Show toast notification using Sonner
                         toast.success("New Ride Request!", {
                             description: "A passenger has requested a ride from you. Check your Driving tab to accept it.",

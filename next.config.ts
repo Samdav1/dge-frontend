@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dge-tech-web-cjhe4jg72a-ew.a.run.app';
     const proxyUrl = apiUrl.replace('0.0.0.0', '127.0.0.1');
     console.log('NextConfig: Proxying /api to:', proxyUrl);
     return [
