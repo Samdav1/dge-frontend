@@ -9,7 +9,7 @@ export async function googleSignIn() {
 }
 
 export async function registerUser(data: RegisterInput) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dge-tech-web-cjhe4jg72a-ew.a.run.app";
     const apiKey = process.env.BACKEND_API_KEY;
 
     try {
@@ -64,7 +64,7 @@ export async function registerUser(data: RegisterInput) {
 }
 
 export async function sendPasswordResetLink(email: string) {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dge-tech-web-cjhe4jg72a-ew.a.run.app";
     const apiKey = process.env.BACKEND_API_KEY;
 
     try {
@@ -113,7 +113,7 @@ export async function createUserKyc(formData: FormData) {
         token = token.slice(1, -1);
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dge-tech-web-cjhe4jg72a-ew.a.run.app";
     const apiKey = process.env.BACKEND_API_KEY;
 
     console.log("Debug: createUserKyc - API URL:", apiUrl);

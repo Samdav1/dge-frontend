@@ -12,11 +12,38 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Public env vars — inlined into client JS bundles at build time
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-
 ARG NEXT_PUBLIC_WS_URL
+
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
+
+# Server-only env vars — needed by next build for server components/actions
+ARG AUTH_SECRET
+ARG AUTH_URL
+ARG BACKEND_API_KEY
+ARG GOOGLE_CLIENT_ID
+ARG GOOGLE_CLIENT_SECRET
+
+ENV AUTH_SECRET=${AUTH_SECRET}
+ENV AUTH_URL=${AUTH_URL}
+ENV BACKEND_API_KEY=${BACKEND_API_KEY}
+ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+ENV GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+# Also set AUTH_GOOGLE_* aliases used by next-auth
+ENV AUTH_GOOGLE_ID=${GOOGLE_CLIENT_ID}
+ENV AUTH_GOOGLE_SECRET=${GOOGLE_CLIENT_SECRET}
+
+# Debug: print env vars to confirm they're set (values are masked in logs)
+RUN echo "=== Build-time env check ===" && \
+    echo "NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}" && \
+    echo "NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}" && \
+    echo "AUTH_URL=${AUTH_URL}" && \
+    echo "AUTH_SECRET is set: $(test -n \"$AUTH_SECRET\" && echo YES || echo NO)" && \
+    echo "BACKEND_API_KEY is set: $(test -n \"$BACKEND_API_KEY\" && echo YES || echo NO)" && \
+    echo "GOOGLE_CLIENT_ID is set: $(test -n \"$GOOGLE_CLIENT_ID\" && echo YES || echo NO)" && \
+    echo "==========================="
 
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build

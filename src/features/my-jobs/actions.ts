@@ -34,7 +34,7 @@ export async function createService(formData: FormData) {
         token = token.slice(1, -1);
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dge-tech-web-cjhe4jg72a-ew.a.run.app";
     const apiKey = process.env.BACKEND_API_KEY;
 
     console.log("Debug: createService - API URL:", `${apiUrl}/services/services/`);
@@ -117,7 +117,7 @@ export async function listServices(onlyMine: boolean = false) {
         token = token.slice(1, -1);
     }
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dge-tech-web-cjhe4jg72a-ew.a.run.app";
     const apiKey = process.env.BACKEND_API_KEY;
 
     try {
