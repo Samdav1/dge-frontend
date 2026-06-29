@@ -1,49 +1,64 @@
 steps:
-  # 1. Build the container image
-  - name: 'gcr.io/cloud-builders/docker'
+  - name: gcr.io/cloud-builders/docker
     args:
-      - 'build'
+      - build
+      - '--no-cache'
       - '--build-arg'
       - 'NEXT_PUBLIC_API_URL=$_NEXT_PUBLIC_API_URL'
       - '--build-arg'
       - 'NEXT_PUBLIC_WS_URL=$_NEXT_PUBLIC_WS_URL'
       - '-t'
-      - '$_AR_LOCATION-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
-      - '.'
-
-  # 2. Push the container image to Artifact Registry
-  - name: 'gcr.io/cloud-builders/docker'
+      - >-
+        $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+      - .
+      - '-f'
+      - Dockerfile
+    id: Build
+  - name: gcr.io/cloud-builders/docker
     args:
-      - 'push'
-      - '$_AR_LOCATION-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
-
-  # 3. Deploy container image to Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
+      - push
+      - >-
+        $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+    id: Push
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
     args:
-      - 'run'
-      - 'deploy'
-      - '$_SERVICE_NAME'
-      - '--image'
-      - '$_AR_LOCATION-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
-      - '--region'
-      - '$_REGION'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
+      - run
+      - services
+      - update
+      - $_SERVICE_NAME
+      - '--platform=managed'
+      - >-
+        --image=$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+      - >-
+        --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
+      - '--region=$_DEPLOY_REGION'
       - '--set-env-vars'
-      - 'NEXT_PUBLIC_API_URL=$_NEXT_PUBLIC_API_URL,NEXT_PUBLIC_WS_URL=$_NEXT_PUBLIC_WS_URL'
-
+      - 'NEXT_PUBLIC_API_URL=$_NEXT_PUBLIC_API_URL,NEXT_PUBLIC_WS_URL=$_NEXT_PUBLIC_WS_URL,AUTH_URL=$_AUTH_URL,AUTH_SECRET=$_AUTH_SECRET,BACKEND_API_KEY=$_BACKEND_API_KEY,GOOGLE_CLIENT_ID=$_GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET=$_GOOGLE_CLIENT_SECRET'
+      - '--quiet'
+    id: Deploy
+    entrypoint: gcloud
 images:
-  - '$_AR_LOCATION-docker.pkg.dev/$PROJECT_ID/$_AR_REPOSITORY/$_SERVICE_NAME:$COMMIT_SHA'
-
+  - >-
+    $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+options:
+  substitutionOption: ALLOW_LOOSE
+  logging: CLOUD_LOGGING_ONLY
 substitutions:
-  _AR_LOCATION: us-central1
-  _AR_REPOSITORY: dge-repo
+  _DEPLOY_REGION: europe-west1
+  _AR_HOSTNAME: europe-west1-docker.pkg.dev
+  _AR_REPOSITORY: cloud-run-source-deploy
+  _AR_PROJECT_ID: project-3713dfb4-6045-440c-9d4
+  _TRIGGER_ID: 84c73dfc-bdf4-45cd-8a0a-4631bc988e84
+  _PLATFORM: managed
   _SERVICE_NAME: dge-frontend
-  _REGION: us-central1
   _NEXT_PUBLIC_API_URL: https://dge-tech-web-cjhe4jg72a-ew.a.run.app
   _NEXT_PUBLIC_WS_URL: wss://dge-tech-web-cjhe4jg72a-ew.a.run.app
-
-options:
-  logging: CLOUD_LOGGING_ONLY
+  _AUTH_URL: https://dgetechs.com
+  _AUTH_SECRET: change-me-in-gcp-trigger
+  _BACKEND_API_KEY: change-me-in-gcp-trigger
+  _GOOGLE_CLIENT_ID: change-me-in-gcp-trigger
+  _GOOGLE_CLIENT_SECRET: change-me-in-gcp-trigger
+tags:
+  - gcp-cloud-build-deploy-cloud-run
+  - gcp-cloud-build-deploy-cloud-run-managed
+  - dge-frontend

@@ -132,7 +132,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (account?.provider === "google") {
                 try {
                     // TODO: Update this URL to your actual backend endpoint
-                    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+                    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dge-tech-web-cjhe4jg72a-ew.a.run.app';
                     const apiKey = process.env.BACKEND_API_KEY;
 
                     if (!apiKey) {
@@ -239,7 +239,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             const cookieStore = await cookies();
                             const refreshToken = cookieStore.get("refresh_token")?.value;
                             if (refreshToken) {
-                                const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+                                const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://dge-tech-web-cjhe4jg72a-ew.a.run.app';
                                 const apiKey = process.env.BACKEND_API_KEY;
                                 const refreshRes = await fetch(`${backendUrl}/auth/refresh?refresh_token=${refreshToken}`, {
                                     method: 'POST',

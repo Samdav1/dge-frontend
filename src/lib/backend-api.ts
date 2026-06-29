@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { cookies } from "next/headers";
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || "https://dge-tech-web-cjhe4jg72a-ew.a.run.app";
 const API_KEY = process.env.BACKEND_API_KEY || "";
 
 /**
@@ -18,7 +18,7 @@ export async function backendFetch(endpoint: string, init?: RequestInit) {
     const refreshToken = cookieStore.get("refresh_token")?.value;
 
     const headers = new Headers(init?.headers);
-    
+
     // 1. Add API Key
     if (!headers.has("X-API-KEY")) {
         headers.set("X-API-KEY", API_KEY);
@@ -45,7 +45,7 @@ export async function backendFetch(endpoint: string, init?: RequestInit) {
     }
 
     const url = endpoint.startsWith("http") ? endpoint : `${BACKEND_URL}${endpoint}`;
-    
+
     const response = await fetch(url, {
         ...init,
         headers,
