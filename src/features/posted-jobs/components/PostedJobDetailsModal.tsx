@@ -105,8 +105,7 @@ export function PostedJobDetailsModal({ job, open, onClose }: Props) {
                                 </div>
                             )}
                             <div className="flex items-center gap-1.5 text-sm font-semibold text-[#C69C2E] bg-amber-50 px-3 py-1.5 rounded-xl">
-                                <DollarSign className="w-3.5 h-3.5" />
-                                <span>${minPrice} – ${maxPrice}</span>
+                                <span>₦{minPrice} – ₦{maxPrice}</span>
                             </div>
                             <div className="flex items-center gap-1.5 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-xl">
                                 <Calendar className="w-3.5 h-3.5" />

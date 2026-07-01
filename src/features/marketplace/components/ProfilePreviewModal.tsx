@@ -66,13 +66,13 @@ export function ProfilePreviewModal({ isOpen, onClose, user }: ProfilePreviewMod
 
                     <div className="flex flex-col items-center text-center mb-8">
                         <div className="w-24 h-24 rounded-full overflow-hidden bg-blue-100 mb-4 border-4 border-white shadow-sm flex items-center justify-center">
-                            {displayUser.image ? (
-                                <FallbackImage src={getBackendImageUrl(displayUser.image)} alt={displayUser.name} className="w-full h-full object-cover" />
-                            ) : (
-                                <span className="text-3xl font-bold text-blue-500">
-                                    {displayUser.name.charAt(0).toUpperCase()}
-                                </span>
-                            )}
+                            <FallbackImage 
+                                src={displayUser.image ? getBackendImageUrl(displayUser.image) : undefined} 
+                                alt={displayUser.name} 
+                                username={displayUser.name}
+                                isAvatar={true}
+                                className="w-full h-full object-cover" 
+                            />
                         </div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-1">{displayUser.name}</h2>
                         <p className="text-gray-500 text-sm mb-2">{displayUser.title}</p>
@@ -199,11 +199,13 @@ export function ProfilePreviewModal({ isOpen, onClose, user }: ProfilePreviewMod
                                             <div className="flex items-start justify-between mb-2">
                                                 <div className="flex items-center gap-2.5">
                                                     <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center shrink-0">
-                                                        {rev.reviewer_avatar ? (
-                                                            <FallbackImage src={getBackendImageUrl(rev.reviewer_avatar)} alt={rev.reviewer_name} className="w-full h-full object-cover" />
-                                                        ) : (
-                                                            <span className="text-xs font-bold text-gray-500">{rev.reviewer_name?.charAt(0).toUpperCase() || 'A'}</span>
-                                                        )}
+                                                        <FallbackImage 
+                                                            src={rev.reviewer_avatar ? getBackendImageUrl(rev.reviewer_avatar) : undefined} 
+                                                            alt={rev.reviewer_name} 
+                                                            username={rev.reviewer_name}
+                                                            isAvatar={true}
+                                                            className="w-full h-full object-cover" 
+                                                        />
                                                     </div>
                                                     <div>
                                                         <h4 className="text-xs font-bold text-gray-900 leading-tight">{rev.reviewer_name}</h4>

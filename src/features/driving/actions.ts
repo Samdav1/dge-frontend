@@ -187,7 +187,7 @@ export async function getDriverProfile() {
     }
 }
 
-export async function createDriverProfile(data: { car_name: string; car_model: string; plate_number: string }) {
+export async function createDriverProfile(data: { car_name: string; car_model: string; plate_number: string; vehicle_type?: string }) {
     const headers = await getAuthHeaders();
     if (!headers) {
         return { success: false, error: "Unauthorized" };
@@ -214,7 +214,7 @@ export async function createDriverProfile(data: { car_name: string; car_model: s
     }
 }
 
-export async function updateDriverProfile(data: { car_name?: string; car_model?: string; plate_number?: string }) {
+export async function updateDriverProfile(data: { car_name?: string; car_model?: string; plate_number?: string; vehicle_type?: string }) {
     const headers = await getAuthHeaders();
     if (!headers) {
         return { success: false, error: "Unauthorized" };
@@ -237,6 +237,35 @@ export async function updateDriverProfile(data: { car_name?: string; car_model?:
         return { success: true, data: result };
     } catch (error) {
         console.error("Update driver profile error:", error);
+        return { success: false, error: "Network error" };
+    }
+}
+
+export async function uploadDriverCarPicture(formData: FormData) {
+    const headers = await getAuthHeaders();
+    if (!headers) {
+        return { success: false, error: "Unauthorized" };
+    }
+    const multipartHeaders = { ...headers };
+    delete (multipartHeaders as any)["Content-Type"];
+
+    try {
+        const targetUrl = `${apiUrl.replace('0.0.0.0', '127.0.0.1')}/drivers/car-picture`;
+        const response = await fetch(targetUrl, {
+            method: 'PATCH',
+            headers: multipartHeaders,
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.detail || "Failed to upload vehicle picture" };
+        }
+
+        const result = await response.json();
+        return { success: true, data: result };
+    } catch (error) {
+        console.error("Upload vehicle picture error:", error);
         return { success: false, error: "Network error" };
     }
 }
@@ -304,6 +333,7 @@ export async function broadcastRideIntent(data: {
     dropoff_lng: number;
     pickup_address?: string;
     dropoff_address?: string;
+    vehicle_type?: string;
 }) {
     const headers = await getAuthHeaders();
     if (!headers) {
@@ -365,6 +395,7 @@ export async function requestRide(data: {
     dropoff_address?: string;
     driver_id?: string;
     negotiated_fare?: number;
+    vehicle_type?: string;
 }) {
     const headers = await getAuthHeaders();
     if (!headers) {

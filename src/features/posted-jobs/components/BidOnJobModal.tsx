@@ -53,7 +53,7 @@ export function BidOnJobModal({ job, open, onClose }: Props) {
         const priceCents = Math.round(parseFloat(price) * 100);
         if (isNaN(priceCents) || priceCents <= 0) { setError("Please enter a valid price."); return; }
         if (priceCents < job.min_price_cents) {
-            setError(`Your bid must be at least $${minK.toLocaleString()}.`);
+            setError(`Your bid must be at least ₦${minK.toLocaleString()}.`);
             return;
         }
 
@@ -94,8 +94,8 @@ export function BidOnJobModal({ job, open, onClose }: Props) {
                     </div>
                     <p className="text-white/80 text-sm line-clamp-1">{job.title}</p>
                     <div className="mt-2 flex items-center gap-1 text-white/90 text-sm">
-                        <DollarSign className="w-4 h-4" />
-                        <span>Budget: ${minK.toLocaleString()} – ${maxK.toLocaleString()}</span>
+                        <span className="font-bold mr-1">₦</span>
+                        <span>Budget: ₦{minK.toLocaleString()} – ₦{maxK.toLocaleString()}</span>
                     </div>
                 </div>
 
@@ -143,10 +143,10 @@ export function BidOnJobModal({ job, open, onClose }: Props) {
                             {/* Price */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Your Bid Price (USD) <span className="text-red-500">*</span>
+                                    Your Bid Price (NGN) <span className="text-red-500">*</span>
                                 </label>
                                 <div className="relative">
-                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-gray-400 text-sm">₦</span>
                                     <input
                                         type="number"
                                         min={minK}
@@ -158,7 +158,7 @@ export function BidOnJobModal({ job, open, onClose }: Props) {
                                         className="w-full border border-gray-200 rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C69C2E]/30 bg-gray-50"
                                     />
                                 </div>
-                                <p className="text-[11px] text-gray-400 mt-1">Budget range: ${minK.toLocaleString()} – ${maxK.toLocaleString()}</p>
+                                <p className="text-[11px] text-gray-400 mt-1">Budget range: ₦{minK.toLocaleString()} – ₦{maxK.toLocaleString()}</p>
                             </div>
 
                             {/* Message */}

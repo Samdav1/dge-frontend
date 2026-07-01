@@ -25,9 +25,12 @@ export function ConversationList({
 }: ConversationListProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
-    const filteredConversations = conversations.filter((conv) =>
-        (conv.title || "").toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredConversations = conversations.filter((conv) => {
+        if (!searchQuery) return true;
+        const query = searchQuery.toLowerCase();
+        const title = getConversationTitle(conv).toLowerCase();
+        return title.includes(query);
+    });
 
     const formatTime = (dateString: string) => {
         const date = new Date(dateString);
@@ -35,21 +38,26 @@ export function ConversationList({
     };
 
     const getConversationTitle = (conv: Conversation) => {
-        if (conv.title) return conv.title;
-        // For private chats, show the other participant's name
+        // For private chats, always prefer the other participant's username
         if (conv.participants && conv.participants.length > 0) {
             const otherParticipant = conv.participants.find(p => p.user_id !== currentUserId);
-            return otherParticipant?.username || 'Unknown User';
+            if (otherParticipant?.username) {
+                return otherParticipant.username;
+            }
         }
-        return conv.type === 'group' ? 'Group Chat' : 'New Conversation';
+        // Fall back to title for group chats or if no participant info
+        if (conv.title && conv.title !== 'New Conversation' && conv.title.trim() !== '') {
+            return conv.title;
+        }
+        return conv.type === 'group' ? 'Group Chat' : 'Chat';
     };
 
     const getParticipantAvatar = (conv: Conversation) => {
         if (conv.participants && conv.participants.length > 0) {
             const otherParticipant = conv.participants.find(p => p.user_id !== currentUserId);
-            return otherParticipant?.avatar_url || `https://i.pravatar.cc/150?u=${conv.id}`;
+            return otherParticipant?.avatar_url || "";
         }
-        return `https://i.pravatar.cc/150?u=${conv.id}`;
+        return "";
     };
 
     const isParticipantOnline = (conv: Conversation) => {
@@ -111,6 +119,8 @@ export function ConversationList({
                                 <FallbackImage
                                     src={getParticipantAvatar(conv)}
                                     alt={getConversationTitle(conv)}
+                                    username={getConversationTitle(conv)}
+                                    isAvatar={true}
                                     className="w-10 h-10 rounded-full object-cover"
                                 />
                                 {isParticipantOnline(conv) && (

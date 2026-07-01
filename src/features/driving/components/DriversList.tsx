@@ -11,9 +11,10 @@ interface DriversListProps {
     onContinue: (driver: DriverNearbyResponse) => void;
     tripDistance?: number;
     onViewDriverProfile: (driverId: string) => void;
+    vehicleType?: string;
 }
 
-export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriverProfile }: DriversListProps) {
+export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriverProfile, vehicleType }: DriversListProps) {
     const [drivers, setDrivers] = useState<DriverNearbyResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -21,7 +22,7 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
 
     useEffect(() => {
         const fetchDrivers = async () => {
-            console.log("DriversList: fetchDrivers called");
+            console.log("DriversList: fetchDrivers called, filtering by vehicleType:", vehicleType);
             try {
                 if (navigator.geolocation) {
                     console.log("DriversList: requesting geolocation");
@@ -34,7 +35,10 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
                                     position.coords.longitude
                                 );
                                 console.log("DriversList: drivers fetched", data);
-                                setDrivers(data);
+                                const filtered = vehicleType
+                                    ? data.filter(d => d.supported_vehicles && d.supported_vehicles.map(v => v.toLowerCase()).includes(vehicleType.toLowerCase()))
+                                    : data;
+                                setDrivers(filtered);
                                 setLoading(false);
                             } catch (err) {
                                 console.error("DriversList: Failed to fetch drivers with location:", err);
@@ -47,7 +51,10 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
                             try {
                                 console.log("DriversList: fetching with default location");
                                 const data = await getDriversNearby(6.5244, 3.3792);
-                                setDrivers(data);
+                                const filtered = vehicleType
+                                    ? data.filter(d => d.supported_vehicles && d.supported_vehicles.map(v => v.toLowerCase()).includes(vehicleType.toLowerCase()))
+                                    : data;
+                                setDrivers(filtered);
                             } catch (apiErr) {
                                 console.error("DriversList: Failed to fetch drivers with default location:", apiErr);
                                 setError("Failed to load drivers.");
@@ -58,7 +65,10 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
                 } else {
                     console.log("DriversList: geolocation not supported");
                     const data = await getDriversNearby(6.5244, 3.3792);
-                    setDrivers(data);
+                    const filtered = vehicleType
+                        ? data.filter(d => d.supported_vehicles && d.supported_vehicles.map(v => v.toLowerCase()).includes(vehicleType.toLowerCase()))
+                        : data;
+                    setDrivers(filtered);
                     setLoading(false);
                 }
             } catch (err) {

@@ -42,8 +42,10 @@ export function WalletStats() {
     const [lastUpdated, setLastUpdated] = useState<string>("");
     const [showBalance, setShowBalance] = useState<boolean>(true);
 
-    const fetchWalletData = useCallback(async () => {
-        setLoading(true);
+    const fetchWalletData = useCallback(async (isSilent = false) => {
+        if (!isSilent) {
+            setLoading(true);
+        }
         try {
             const [walletResult, txnResult] = await Promise.all([
                 getUserWallet(),
@@ -74,12 +76,21 @@ export function WalletStats() {
         } catch (error) {
             console.error("Failed to fetch wallet data:", error);
         } finally {
-            setLoading(false);
+            if (!isSilent) {
+                setLoading(false);
+            }
         }
     }, []);
 
     useEffect(() => {
-        fetchWalletData();
+        fetchWalletData(false);
+
+        // Poll silently in the background every 8 seconds to update the user balance without page reload
+        const interval = setInterval(() => {
+            fetchWalletData(true);
+        }, 8000);
+
+        return () => clearInterval(interval);
     }, [fetchWalletData]);
 
     const getWalletBalance = (type: "earnings" | "deposit") => {
@@ -152,7 +163,7 @@ export function WalletStats() {
                                     </h4>
                                 </div>
                                 <button
-                                    onClick={fetchWalletData}
+                                    onClick={() => fetchWalletData(false)}
                                     className="text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition-all duration-200 cursor-pointer"
                                     title="Refresh Balance"
                                 >

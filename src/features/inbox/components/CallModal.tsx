@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { X, Phone, PhoneOff, Mic, MicOff, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CallState } from "../call-types";
+import FallbackImage from "@/components/ui/FallbackImage";
 
 export interface CallModalProps {
     isOpen: boolean;
@@ -125,15 +126,13 @@ export function CallModal({
                         )}
 
                         <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-[#C69C2E] to-[#8B6914] flex items-center justify-center overflow-hidden">
-                            {targetUserAvatar ? (
-                                <img
-                                    src={targetUserAvatar}
-                                    alt={targetUserName || "User"}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <User className="w-14 h-14 text-white/80" />
-                            )}
+                            <FallbackImage
+                                src={targetUserAvatar}
+                                alt={targetUserName || "User"}
+                                username={targetUserName || "User"}
+                                isAvatar={true}
+                                className="w-full h-full object-cover"
+                            />
                         </div>
                     </div>
 

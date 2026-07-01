@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Car, AlertTriangle, CheckCircle, Shield, Star, TrendingUp } from "lucide-react";
-import { getDriverProfile, createDriverProfile, updateDriverProfile } from "../actions";
+import { Loader2, Car, AlertTriangle, CheckCircle, Shield, Star, TrendingUp, Camera } from "lucide-react";
+import { getDriverProfile, createDriverProfile, updateDriverProfile, uploadDriverCarPicture } from "../actions";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 interface DriverProfileFormProps {
     isAccepting?: boolean;
@@ -15,11 +22,14 @@ export function DriverProfileForm({ isAccepting, onToggleAccepting }: DriverProf
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isExisting, setIsExisting] = useState(false);
+    const [carPictureFile, setCarPictureFile] = useState<File | null>(null);
+    const [carPicturePreview, setCarPicturePreview] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         car_name: "",
         car_model: "",
         plate_number: "",
+        vehicle_type: "car",
     });
 
     const fetchProfile = async () => {
@@ -31,7 +41,16 @@ export function DriverProfileForm({ isAccepting, onToggleAccepting }: DriverProf
                 car_name: res.data.car_name || "",
                 car_model: res.data.car_model || "",
                 plate_number: res.data.plate_number || "",
+                vehicle_type: res.data.vehicle_type || "car",
             });
+            if (res.data.car_picture_url) {
+                let previewUrl = res.data.car_picture_url;
+                if (!previewUrl.startsWith("http")) {
+                    const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+                    previewUrl = `${BASE_URL.replace('0.0.0.0', '127.0.0.1')}${previewUrl}`;
+                }
+                setCarPicturePreview(previewUrl);
+            }
         } else {
             setIsExisting(false);
         }
@@ -67,8 +86,19 @@ export function DriverProfileForm({ isAccepting, onToggleAccepting }: DriverProf
             }
 
             if (result.success) {
+                if (carPictureFile) {
+                    const uploadData = new FormData();
+                    uploadData.append("file", carPictureFile);
+                    const uploadResult = await uploadDriverCarPicture(uploadData);
+                    if (!uploadResult.success) {
+                        setError(uploadResult.error || "Profile saved, but vehicle picture upload failed.");
+                        setIsSubmitting(false);
+                        return;
+                    }
+                }
                 setSuccessMessage(isExisting ? "Driver profile updated successfully!" : "Driver profile created successfully!");
                 setIsExisting(true);
+                await fetchProfile();
             } else {
                 setError(result.error || "Failed to save driver profile.");
             }
@@ -165,6 +195,49 @@ export function DriverProfileForm({ isAccepting, onToggleAccepting }: DriverProf
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div>
+                            <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Vehicle / Card Photo</label>
+                            <div 
+                                onClick={() => document.getElementById("car-picture-input")?.click()}
+                                className="group relative border-2 border-dashed border-gray-200 hover:border-[#C69C2E]/40 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition-all bg-gray-50/50 hover:bg-gray-50 text-center"
+                            >
+                                <input
+                                    id="car-picture-input"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            setCarPictureFile(file);
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                                setCarPicturePreview(reader.result as string);
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }}
+                                    className="hidden"
+                                />
+                                {carPicturePreview ? (
+                                    <div className="relative w-full h-40 rounded-xl overflow-hidden shadow-sm">
+                                        <img src={carPicturePreview} alt="Vehicle Preview" className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white transition-opacity duration-200 gap-1.5">
+                                            <Camera className="w-6 h-6 text-[#C69C2E]" />
+                                            <span className="text-xs font-bold">Change Photo</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="py-4 flex flex-col items-center gap-2">
+                                        <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center border border-gray-100 group-hover:scale-110 transition-transform">
+                                            <Camera className="w-5 h-5 text-gray-400 group-hover:text-[#C69C2E]" />
+                                        </div>
+                                        <div className="text-xs font-bold text-gray-700">Upload car image or document</div>
+                                        <div className="text-[10px] text-gray-400">PNG, JPG or WEBP up to 5MB</div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div>
                             <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Car Make</label>
                             <Input
                                 name="car_name"
@@ -184,6 +257,22 @@ export function DriverProfileForm({ isAccepting, onToggleAccepting }: DriverProf
                                 placeholder="e.g. Camry"
                                 className="h-12 bg-gray-50/80 border-gray-100 rounded-xl text-sm focus:ring-[#C69C2E]/20 focus:border-[#C69C2E]/30"
                             />
+                        </div>
+
+                        <div>
+                            <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5 block">Vehicle Type</label>
+                            <Select value={formData.vehicle_type} onValueChange={(value) => setFormData(prev => ({ ...prev, vehicle_type: value }))}>
+                                <SelectTrigger className="h-12 bg-gray-50/80 border-gray-100 rounded-xl text-sm focus:ring-[#C69C2E]/20 focus:border-[#C69C2E]/30 w-full text-left">
+                                    <SelectValue placeholder="Select Vehicle Type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="car">Car (Standard)</SelectItem>
+                                    <SelectItem value="van">Van</SelectItem>
+                                    <SelectItem value="truck">Truck</SelectItem>
+                                    <SelectItem value="bike">Bike (Motorcycle)</SelectItem>
+                                    <SelectItem value="tricycle">Tricycle (Keke)</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div>

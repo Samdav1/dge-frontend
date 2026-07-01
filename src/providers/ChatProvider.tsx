@@ -194,7 +194,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 action: "call_invite",
                 conversation_id: conversationId,
                 channel_name: channelName,
-                caller_name: targetUserName ? `Call from ${targetUserName}` : "Incoming call",
             });
         }
 

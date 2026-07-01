@@ -66,8 +66,7 @@ function JobCard({ job, onClick }: { job: PostedJob; onClick: () => void }) {
 
                 <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-1 text-[#C69C2E]">
-                        <DollarSign className="w-3 h-3" />
-                        <span className="text-xs font-bold">${minK} – ${maxK}</span>
+                        <span className="text-xs font-bold">₦{minK} – ₦{maxK}</span>
                     </div>
                     {job.bid_count !== undefined && (
                         <div className="flex items-center gap-1 text-gray-400">

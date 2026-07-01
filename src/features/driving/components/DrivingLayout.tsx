@@ -57,7 +57,7 @@ export function DrivingLayout() {
     const [rideRequests, setRideRequests] = React.useState<RideIntent[]>([]);
     const [isAcceptingRequests, setIsAcceptingRequests] = React.useState(true);
     const [isCountryWide, setIsCountryWide] = React.useState(false);
-    const [liveDrivers, setLiveDrivers] = React.useState<{ id: string, lat: number, lng: number, details?: any }[]>([]);
+    const [liveDrivers, setLiveDrivers] = React.useState<{ id: string, lat: number, lng: number, supported_vehicles?: string[], details?: any }[]>([]);
 
     // Driver: incoming ride request dialog (shown as a prominent modal for direct requests)
     const [incomingRequestDialog, setIncomingRequestDialog] = React.useState<RideIntent | null>(null);
@@ -70,6 +70,23 @@ export function DrivingLayout() {
     const [driverLocation, setDriverLocation] = React.useState<{ lat: number; lng: number } | null>(null);
     const [viewDriverProfileId, setViewDriverProfileId] = React.useState<string | null>(null);
     const [counterOffer, setCounterOffer] = React.useState<{ tripId: string; counterFare: number } | null>(null);
+
+    const vehicleRates: Record<string, { base: number, rate: number, min: number }> = {
+        car: { base: 500, rate: 300, min: 1000 },
+        van: { base: 800, rate: 450, min: 1500 },
+        truck: { base: 1500, rate: 600, min: 3000 },
+        bike: { base: 250, rate: 150, min: 500 },
+        tricycle: { base: 300, rate: 200, min: 600 },
+    };
+
+    const getEstimatedFare = () => {
+        if (!tripData) return 0;
+        const vType = tripData.vehicle_type || "car";
+        const rates = vehicleRates[vType] || vehicleRates.car;
+        const dist = tripData.estimated_distance || 0;
+        const subtotal = rates.base + rates.rate * dist;
+        return Math.max(rates.min, subtotal);
+    };
 
     const isWaitingForDriverRef = React.useRef(isWaitingForDriver);
     const waitingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -150,11 +167,13 @@ export function DrivingLayout() {
                     } else if (data.type === "driver_location") {
                         // Handle driver location updates for riders browsing map
                         setLiveDrivers(prev => {
+                            const existing = prev.find(d => d.id === data.driver_id);
                             const filtered = prev.filter(d => d.id !== data.driver_id);
                             return [...filtered, {
                                 id: data.driver_id,
                                 lat: data.lat,
                                 lng: data.lng,
+                                supported_vehicles: data.supported_vehicles || existing?.supported_vehicles || ["car"],
                                 details: data.details
                             }];
                         });
@@ -366,6 +385,7 @@ export function DrivingLayout() {
                             id: d.driver_id,
                             lat: d.latitude,
                             lng: d.longitude,
+                            supported_vehicles: d.supported_vehicles || ["car"],
                             details: {
                                 name: d.driver_name,
                                 car_name: d.car_name,
@@ -503,12 +523,7 @@ export function DrivingLayout() {
                 <RideNegotiationModal
                     onClose={() => setShowNegotiation(false)}
                     onSubmit={handleNegotiationSubmit}
-                    estimatedFare={(() => {
-                        if (!selectedDriver) return 0;
-                        const base = 2000;
-                        const dist = Math.ceil((tripData?.estimated_distance || 0) * 500);
-                        return base + dist + Math.ceil((base + dist) * 0.1);
-                    })()}
+                    estimatedFare={getEstimatedFare()}
                 />
             )}
             {showPayment && (
@@ -962,11 +977,7 @@ export function DrivingLayout() {
                                 <RideConfirmation
                                     driver={selectedDriver}
                                     tripData={tripData}
-                                    estimatedFare={(() => {
-                                        const base = 2000;
-                                        const dist = Math.ceil((tripData?.estimated_distance || 0) * 500);
-                                        return base + dist + Math.ceil((base + dist) * 0.1);
-                                    })()}
+                                    estimatedFare={getEstimatedFare()}
                                     onBack={() => setShowConfirmation(false)}
                                     onNegotiate={() => setShowNegotiation(true)}
                                     onBook={async () => {
@@ -1002,9 +1013,11 @@ export function DrivingLayout() {
                                         setShowConfirmation(true);
                                     }}
                                     onViewDriverProfile={setViewDriverProfileId}
+                                    vehicleType={tripData?.vehicle_type}
                                 />
                             ) : (
                                 <RideRequestForm
+                                    liveDrivers={liveDrivers}
                                     onSubmit={(data) => {
                                         setTripData(data);
                                         setShowDriversList(true);

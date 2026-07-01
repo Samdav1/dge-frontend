@@ -58,14 +58,22 @@ export function InboxLayout() {
                     const uniqueConversations = Array.from(
                         new Map((result.data as Conversation[]).map(c => [c.id, c])).values()
                     );
-                    setConversations(uniqueConversations);
+                    const enrichedConversations = await Promise.all(
+                        uniqueConversations.map(async (c) => {
+                            const partResult = await getParticipants(c.id);
+                            if (partResult.success && partResult.data) {
+                                return { ...c, participants: partResult.data };
+                            }
+                            return c;
+                        })
+                    );
+                    setConversations(enrichedConversations);
 
                     if (conversationIdParam) {
-                        const targetConversation = (result.data as Conversation[]).find(c => c.id === conversationIdParam);
+                        const targetConversation = enrichedConversations.find(c => c.id === conversationIdParam);
                         if (targetConversation) {
                             setSelectedConversation(targetConversation);
                             setMobileView("chat");
-                            fetchParticipants(targetConversation.id);
                         }
                     }
                 }

@@ -1,22 +1,40 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { MapPin, Navigation2, Clock, Shield, Sparkles, ArrowRight, Locate } from "lucide-react";
+import { MapPin, Navigation2, Clock, Shield, Sparkles, ArrowRight, Locate, Car, Truck, Bike } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocationInput } from "./LocationInput";
 import { reverseGeocode, broadcastRideIntent } from "../actions";
 
 interface RideRequestFormProps {
-    onSubmit: (data: { pickup_lat: number, pickup_lng: number, dropoff_lat: number, dropoff_lng: number, pickup_address: string, dropoff_address: string, estimated_distance: number }) => void;
+    onSubmit: (data: { pickup_lat: number, pickup_lng: number, dropoff_lat: number, dropoff_lng: number, pickup_address: string, dropoff_address: string, estimated_distance: number, vehicle_type: string }) => void;
     onLocationSelect?: (lat: number, lon: number) => void;
+    liveDrivers?: { id: string, lat: number, lng: number, supported_vehicles?: string[], details?: any }[];
 }
 
-export function RideRequestForm({ onSubmit, onLocationSelect }: RideRequestFormProps) {
+export function RideRequestForm({ onSubmit, onLocationSelect, liveDrivers }: RideRequestFormProps) {
     const [pickupLocation, setPickupLocation] = useState("");
     const [destinationLocation, setDestinationLocation] = useState("");
     const [pickupCoords, setPickupCoords] = useState<{ lat: number, lon: number } | null>(null);
     const [destinationCoords, setDestinationCoords] = useState<{ lat: number, lon: number } | null>(null);
     const [isLocating, setIsLocating] = useState(false);
+    const [vehicleType, setVehicleType] = useState("car");
+
+    const vehicles = [
+        { id: "car", name: "Car", label: "Standard Ride", icon: Car },
+        { id: "van", name: "Van", label: "Spacious Group", icon: Car },
+        { id: "truck", name: "Truck", label: "Cargo Haul", icon: Truck },
+        { id: "bike", name: "Bike", label: "Express Ride", icon: Bike },
+        { id: "tricycle", name: "Tricycle", label: "Keke Local", icon: Bike }
+    ];
+
+    const vehicleRates: Record<string, { base: number, rate: number, min: number }> = {
+        car: { base: 500, rate: 300, min: 1000 },
+        van: { base: 800, rate: 450, min: 1500 },
+        truck: { base: 1500, rate: 600, min: 3000 },
+        bike: { base: 250, rate: 150, min: 500 },
+        tricycle: { base: 300, rate: 200, min: 600 },
+    };
 
     useEffect(() => {
         if (navigator.geolocation) {
@@ -67,9 +85,10 @@ export function RideRequestForm({ onSubmit, onLocationSelect }: RideRequestFormP
 
     const estimatedTime = estimatedDistance ? Math.ceil(parseFloat(estimatedDistance) * 2.5) : null;
     const estimatedFare = estimatedDistance ? (() => {
-        const base = 2000;
-        const dist = Math.ceil(parseFloat(estimatedDistance) * 500);
-        return base + dist + Math.ceil((base + dist) * 0.1);
+        const rates = vehicleRates[vehicleType] || vehicleRates.car;
+        const dist = parseFloat(estimatedDistance);
+        const subtotal = rates.base + rates.rate * dist;
+        return Math.max(rates.min, subtotal);
     })() : null;
 
     return (
@@ -94,7 +113,7 @@ export function RideRequestForm({ onSubmit, onLocationSelect }: RideRequestFormP
             </div>
 
             {/* Route Inputs */}
-            <div className="flex-1 px-5 py-5">
+            <div className="flex-1 px-5 py-5 overflow-y-auto">
                 <div className="relative flex gap-3">
                     {/* Visual Route Connector */}
                     <div className="flex flex-col items-center pt-4 gap-0">
@@ -132,6 +151,59 @@ export function RideRequestForm({ onSubmit, onLocationSelect }: RideRequestFormP
                         </div>
                     </div>
                 </div>
+
+                {/* Vehicle Selection Grid */}
+                <div className="mt-5 space-y-2">
+                    <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block">Select Vehicle Type</label>
+                    <div className="grid grid-cols-2 gap-2">
+                        {vehicles.map((v) => {
+                            const IconComponent = v.icon;
+                            const isSelected = vehicleType === v.id;
+                            return (
+                                <button
+                                    key={v.id}
+                                    type="button"
+                                    onClick={() => setVehicleType(v.id)}
+                                    className={`p-3 rounded-xl border text-left transition-all ${
+                                        isSelected
+                                            ? "border-[#C69C2E] bg-[#C69C2E]/5 shadow-sm shadow-[#C69C2E]/10"
+                                            : "border-gray-100 bg-gray-50/50 hover:bg-gray-50"
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <div className={`p-1.5 rounded-lg ${isSelected ? "bg-[#C69C2E]/20 text-[#C69C2E]" : "bg-gray-100 text-gray-500"}`}>
+                                            <IconComponent className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-gray-900">{v.name}</p>
+                                            <p className="text-[9px] text-gray-400 font-medium">{v.label}</p>
+                                        </div>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {(() => {
+                    const hasNearbyDriverForType = !liveDrivers || liveDrivers.length === 0 || liveDrivers.some(driver => 
+                        driver.supported_vehicles && driver.supported_vehicles.map(v => v.toLowerCase()).includes(vehicleType.toLowerCase())
+                    );
+                    if (!hasNearbyDriverForType) {
+                        return (
+                            <div className="mt-2.5 p-3 rounded-xl bg-amber-50/80 border border-amber-200/60 text-amber-800 flex items-start gap-2.5 shadow-sm animate-in fade-in duration-200">
+                                <Shield className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-[11px] font-bold">No {vehicleType} Drivers Nearby</p>
+                                    <p className="text-[10px] text-amber-700/95 leading-normal">
+                                        There are currently no active verified drivers nearby for the {vehicleType} transport method. You can still submit the request, but match times may be significantly longer.
+                                    </p>
+                                </div>
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
 
                 {/* Trip Estimate (shows when both locations set) */}
                 {estimatedDistance && (
@@ -186,7 +258,8 @@ export function RideRequestForm({ onSubmit, onLocationSelect }: RideRequestFormP
                                 dropoff_lng: destinationCoords.lon,
                                 pickup_address: pickupLocation,
                                 dropoff_address: destinationLocation,
-                                estimated_distance: parseFloat(estimatedDistance as string) || 0
+                                estimated_distance: parseFloat(estimatedDistance as string) || 0,
+                                vehicle_type: vehicleType,
                             };
                             broadcastRideIntent(payload).catch(err => console.error("Broadcast intent failed:", err));
                             onSubmit(payload);

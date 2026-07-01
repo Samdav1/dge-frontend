@@ -10,6 +10,14 @@ import {
     Folder,
     X
 } from "lucide-react";
+import { getCategoryEmoji, resolveCategoryEmoji } from "@/features/marketplace/helpers";
+
+const SUGGESTED_EMOJIS = [
+    // Top services
+    "🧑‍🍳", "🍳", "🍽️", "🍹", "🧹", "🧼", "🪣", "🪠", "⚡", "❄️", "🛠️", "🖌️", "🚗", "🛞", "📦", "🚛",
+    "🌱", "🧑‍🌾", "💻", "🌐", "📱", "✂️", "💈", "💅", "💆", "🏋️", "🧘", "📸", "🎧", "🎤", "🎨", "✍️",
+    "💵", "⚖️", "🔑", "🏠", "🚪", "📞", "📅", "🛡️", "🛍️", "🩺", "🐾", "🐕", "🐈", "🧬", "🧪", "🍕"
+];
 
 export default function CategoryManagementView() {
     const [categoriesList, setCategoriesList] = useState<any[]>([]);
@@ -22,6 +30,7 @@ export default function CategoryManagementView() {
 
     // Form states
     const [catName, setCatName] = useState("");
+    const [catIcon, setCatIcon] = useState("");
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
     const [editTargetIndex, setEditTargetIndex] = useState<number | null>(null);
@@ -39,6 +48,7 @@ export default function CategoryManagementView() {
                     setCategoriesList(data.map((item: any) => ({
                         id: item.id,
                         name: item.name,
+                        icon: item.icon || "",
                         created: item.created_at ? new Date(item.created_at).toLocaleDateString("en-GB") : "N/A"
                     })));
                 }
@@ -91,11 +101,12 @@ export default function CategoryManagementView() {
             const res = await fetch("/api/admin/categories", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name: catName })
+                body: JSON.stringify({ name: catName, icon: catIcon })
             });
             if (res.ok) {
                 alert("Category added successfully!");
                 setCatName("");
+                setCatIcon("");
                 setAddCategoryModalOpen(false);
                 fetchCategories();
             } else {
@@ -139,7 +150,7 @@ export default function CategoryManagementView() {
                     <button className="px-3 py-1.5 bg-white border border-slate-100 rounded-xl font-bold text-[10px] text-slate-500 flex items-center gap-1 select-none shadow-sm">
                         Roles <ChevronDown size={12} />
                     </button>
-
+ 
                     <button
                         onClick={() => setIsCategoryEmpty(!isCategoryEmpty)}
                         className="px-3 py-1.5 bg-white border border-slate-100 rounded-xl font-bold text-[10px] text-slate-400 select-none shadow-sm ml-4"
@@ -147,7 +158,7 @@ export default function CategoryManagementView() {
                         Toggle Empty State
                     </button>
                 </div>
-
+ 
                 <div className="flex items-center gap-3 select-none">
                     {selectedRows.length > 0 ? (
                         /* Selected Context Actions */
@@ -157,6 +168,7 @@ export default function CategoryManagementView() {
                                     if (selectedRows.length === 1) {
                                         const idx = selectedRows[0];
                                         setCatName(categoriesList[idx].name);
+                                        setCatIcon(categoriesList[idx].icon && !/[a-zA-Z0-9]/.test(categoriesList[idx].icon) ? categoriesList[idx].icon : "");
                                         setEditTargetIndex(idx);
                                         setEditCategoryModalOpen(true);
                                     } else {
@@ -185,6 +197,7 @@ export default function CategoryManagementView() {
                             <button
                                 onClick={() => {
                                     setCatName("");
+                                    setCatIcon("");
                                     setAddCategoryModalOpen(true);
                                 }}
                                 className="px-4 py-2 bg-[#b68512] hover:bg-[#9d720f] active:bg-[#85610d] rounded-xl text-white font-bold text-[11px] select-none hover:scale-[1.01] shadow-sm transition-all flex items-center gap-1"
@@ -260,8 +273,9 @@ export default function CategoryManagementView() {
                                             className="w-4 h-4 rounded border-slate-200 focus:ring-amber-500 text-amber-600 bg-white"
                                         />
                                     </td>
-                                    <td className="py-4 px-2 text-xs font-bold text-slate-800 leading-none select-none">
-                                        {cat.name}
+                                    <td className="py-4 px-2 text-xs font-bold text-slate-800 leading-none select-none flex items-center gap-2">
+                                        <span className="text-sm font-normal">{resolveCategoryEmoji(cat.icon, cat.name)}</span>
+                                        <span>{cat.name}</span>
                                     </td>
                                     <td className="py-4 px-2 text-xs text-slate-400 font-medium select-none leading-none">
                                         {cat.created || cat.created_at || "N/A"}
@@ -293,6 +307,7 @@ export default function CategoryManagementView() {
                                     e.stopPropagation();
                                     const cat = categoriesList[activeRowPopup];
                                     setCatName(cat.name);
+                                    setCatIcon(cat.icon && !/[a-zA-Z0-9]/.test(cat.icon) ? cat.icon : "");
                                     setEditTargetIndex(activeRowPopup);
                                     setActiveRowPopup(null);
                                     setEditCategoryModalOpen(true);
@@ -385,6 +400,51 @@ export default function CategoryManagementView() {
                                         className="w-full h-10 px-3 bg-white rounded-xl border border-slate-100 focus:border-amber-500/50 focus:ring-4 focus:ring-amber-50 text-xs text-slate-700 placeholder:text-slate-300 transition-all outline-none"
                                     />
                                 </div>
+
+                                <div className="space-y-2 select-none">
+                                    <label className="text-xs font-bold text-slate-700 block select-none">
+                                        Category Icon (Emoji)
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-center text-2xl shadow-sm">
+                                            {catIcon || "📦"}
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={catIcon}
+                                            onChange={(e) => setCatIcon(e.target.value)}
+                                            placeholder="Paste emoji or choose below"
+                                            maxLength={8}
+                                            className="flex-1 h-10 px-3 bg-white rounded-xl border border-slate-100 focus:border-amber-500/50 focus:ring-4 focus:ring-amber-50 text-xs text-slate-700 placeholder:text-slate-300 transition-all outline-none"
+                                        />
+                                        {catIcon && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setCatIcon("")}
+                                                className="px-2.5 py-1.5 border border-slate-200 rounded-xl text-[10px] font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                                            >
+                                                Clear
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="border border-slate-50 rounded-xl p-2.5 bg-slate-50/50">
+                                        <span className="text-[10px] font-bold text-slate-400 block mb-1.5">Suggested Icons Library</span>
+                                        <div className="grid grid-cols-8 gap-1.5 max-h-32 overflow-y-auto pr-1">
+                                            {SUGGESTED_EMOJIS.map((emoji) => (
+                                                <button
+                                                    key={emoji}
+                                                    type="button"
+                                                    onClick={() => setCatIcon(emoji)}
+                                                    className={`w-7 h-7 flex items-center justify-center text-base rounded-lg hover:bg-white hover:shadow-sm border transition-all ${
+                                                        catIcon === emoji ? "bg-white border-amber-500 shadow-sm" : "bg-transparent border-transparent"
+                                                    }`}
+                                                >
+                                                    {emoji}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -442,6 +502,51 @@ export default function CategoryManagementView() {
                                         className="w-full h-10 px-3 bg-white rounded-xl border border-slate-100 focus:border-amber-500/50 focus:ring-4 focus:ring-amber-50 text-xs text-slate-700 placeholder:text-slate-300 transition-all outline-none"
                                     />
                                 </div>
+
+                                <div className="space-y-2 select-none">
+                                    <label className="text-xs font-bold text-slate-700 block select-none">
+                                        Category Icon (Emoji)
+                                    </label>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-12 h-12 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-center text-2xl shadow-sm">
+                                            {catIcon || "📦"}
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={catIcon}
+                                            onChange={(e) => setCatIcon(e.target.value)}
+                                            placeholder="Paste emoji or choose below"
+                                            maxLength={8}
+                                            className="flex-1 h-10 px-3 bg-white rounded-xl border border-slate-100 focus:border-amber-500/50 focus:ring-4 focus:ring-amber-50 text-xs text-slate-700 placeholder:text-slate-300 transition-all outline-none"
+                                        />
+                                        {catIcon && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setCatIcon("")}
+                                                className="px-2.5 py-1.5 border border-slate-200 rounded-xl text-[10px] font-bold text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                                            >
+                                                Clear
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="border border-slate-50 rounded-xl p-2.5 bg-slate-50/50">
+                                        <span className="text-[10px] font-bold text-slate-400 block mb-1.5">Suggested Icons Library</span>
+                                        <div className="grid grid-cols-8 gap-1.5 max-h-32 overflow-y-auto pr-1">
+                                            {SUGGESTED_EMOJIS.map((emoji) => (
+                                                <button
+                                                    key={emoji}
+                                                    type="button"
+                                                    onClick={() => setCatIcon(emoji)}
+                                                    className={`w-7 h-7 flex items-center justify-center text-base rounded-lg hover:bg-white hover:shadow-sm border transition-all ${
+                                                        catIcon === emoji ? "bg-white border-amber-500 shadow-sm" : "bg-transparent border-transparent"
+                                                    }`}
+                                                >
+                                                    {emoji}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -463,7 +568,7 @@ export default function CategoryManagementView() {
                                         const res = await fetch(`/api/admin/categories?category_id=${catId}`, {
                                             method: "PUT",
                                             headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({ name: catName })
+                                            body: JSON.stringify({ name: catName, icon: catIcon })
                                         });
                                         if (res.ok) {
                                             alert("Category updated successfully!");

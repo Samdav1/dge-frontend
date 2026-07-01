@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { updateProfile, getProfile } from "../actions";
 import FallbackImage from "@/components/ui/FallbackImage";
+import { COUNTRIES, STATES_BY_COUNTRY } from "@/lib/countries-states";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
@@ -68,6 +69,11 @@ export function PersonalSettings() {
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [dynamicStates, setDynamicStates] = useState<string[]>([]);
+    const [loadingStates, setLoadingStates] = useState(false);
+    const [dynamicCities, setDynamicCities] = useState<string[]>([]);
+    const [loadingCities, setLoadingCities] = useState(false);
 
     const [formData, setFormData] = useState({
         bio: "",
@@ -117,13 +123,109 @@ export function PersonalSettings() {
         fetchProfile();
     }, []);
 
+    // Load states dynamically when selected country changes
+    useEffect(() => {
+        if (!formData.country) {
+            setDynamicStates([]);
+            return;
+        }
+
+        // If we already have predefined states, use them first
+        if (STATES_BY_COUNTRY[formData.country]) {
+            setDynamicStates(STATES_BY_COUNTRY[formData.country]);
+            return;
+        }
+
+        let isSubscribed = true;
+        const fetchStates = async () => {
+            setLoadingStates(true);
+            try {
+                const res = await fetch("https://countriesnow.space/api/v0.1/countries/states", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ country: formData.country }),
+                });
+                if (!res.ok) throw new Error("Failed to fetch states");
+                const json = await res.json();
+                if (isSubscribed) {
+                    if (json.data && Array.isArray(json.data.states)) {
+                        const stateNames = json.data.states.map((s: any) => s.name);
+                        setDynamicStates(stateNames);
+                    } else {
+                        setDynamicStates([]);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch country states dynamically:", err);
+                if (isSubscribed) setDynamicStates([]);
+            } finally {
+                if (isSubscribed) setLoadingStates(false);
+            }
+        };
+
+        fetchStates();
+
+        return () => {
+            isSubscribed = false;
+        };
+    }, [formData.country]);
+
+    // Load cities dynamically when selected country/state changes
+    useEffect(() => {
+        if (!formData.country || !formData.state) {
+            setDynamicCities([]);
+            return;
+        }
+
+        let isSubscribed = true;
+        const fetchCities = async () => {
+            setLoadingCities(true);
+            try {
+                const res = await fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ country: formData.country, state: formData.state }),
+                });
+                if (!res.ok) throw new Error("Failed to fetch cities");
+                const json = await res.json();
+                if (isSubscribed) {
+                    if (json.data && Array.isArray(json.data)) {
+                        setDynamicCities(json.data);
+                    } else {
+                        setDynamicCities([]);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch country cities dynamically:", err);
+                if (isSubscribed) setDynamicCities([]);
+            } finally {
+                if (isSubscribed) setLoadingCities(false);
+            }
+        };
+
+        fetchCities();
+
+        return () => {
+            isSubscribed = false;
+        };
+    }, [formData.country, formData.state]);
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleSelectChange = (field: string, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        setFormData(prev => {
+            const updated = { ...prev, [field]: value };
+            if (field === "country") {
+                updated.state = ""; // Reset state when country changes
+                updated.city = "";  // Reset city when country changes
+            } else if (field === "state") {
+                updated.city = "";  // Reset city when state changes
+            }
+            return updated;
+        });
     };
 
     const handleAvatarClick = () => {
@@ -337,35 +439,62 @@ export function PersonalSettings() {
                                     <SelectTrigger className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] text-xs">
                                         <SelectValue placeholder="Select Country" />
                                     </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Nigeria">Nigeria</SelectItem>
-                                        <SelectItem value="United States">United States</SelectItem>
-                                        <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                                    <SelectContent className="max-h-[300px]">
+                                        {COUNTRIES.map((country) => (
+                                            <SelectItem key={country} value={country}>{country}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">State / Region</label>
-                                <Input
-                                    name="state"
-                                    value={formData.state}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter state"
-                                    className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
-                                />
+                                {loadingStates ? (
+                                    <Input
+                                        disabled
+                                        placeholder="Loading states..."
+                                        className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl text-xs"
+                                    />
+                                ) : dynamicStates.length > 0 ? (
+                                    <Select value={formData.state} onValueChange={(v) => handleSelectChange("state", v)}>
+                                        <SelectTrigger className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] text-xs">
+                                            <SelectValue placeholder="Select State" />
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-[300px]">
+                                            {dynamicStates.map((st) => (
+                                                <SelectItem key={st} value={st}>{st}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <Input
+                                        name="state"
+                                        value={formData.state}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter state"
+                                        className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
+                                    />
+                                )}
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">City</label>
+                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                    City {loadingCities && <span className="text-[10px] text-gray-400 animate-pulse">(loading suggestions...)</span>}
+                                </label>
                                 <Input
                                     name="city"
+                                    list="cities-list"
                                     value={formData.city}
                                     onChange={handleInputChange}
-                                    placeholder="Enter city"
+                                    placeholder={loadingCities ? "Loading cities..." : "Enter or select city"}
                                     className="h-11 bg-gray-50/50 dark:bg-[#1C1C1C] border-gray-100 dark:border-[#2E2E2E] dark:text-white rounded-xl focus:border-[#C69C2E]/50 focus:bg-white dark:focus:bg-[#1A1A1A] transition-all text-xs"
                                 />
+                                <datalist id="cities-list">
+                                    {dynamicCities.map((city) => (
+                                        <option key={city} value={city} />
+                                    ))}
+                                </datalist>
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-xs font-semibold text-gray-500 dark:text-gray-400">Postal Code</label>

@@ -146,25 +146,29 @@ export function ChatWindow({
 
     const getConversationTitle = () => {
         if (!conversation) return "Select a conversation";
-        if (conversation.title) return conversation.title;
+        // For private chats, always prefer the other participant's username
         if (conversation.participants && conversation.participants.length > 0) {
             const other = conversation.participants.find(
                 (p) => p.user_id !== currentUserId
             );
-            return other?.username || "Unknown User";
+            if (other?.username) return other.username;
         }
-        return "Conversation";
+        // Fall back to title for group chats
+        if (conversation.title && conversation.title !== 'New Conversation' && conversation.title.trim() !== '') {
+            return conversation.title;
+        }
+        return conversation.type === 'group' ? 'Group Chat' : 'Chat';
     };
 
     const getAvatarUrl = () => {
-        if (!conversation) return "https://i.pravatar.cc/150?u=default";
+        if (!conversation) return "";
         if (conversation.participants && conversation.participants.length > 0) {
             const other = conversation.participants.find(
                 (p) => p.user_id !== currentUserId
             );
-            return other?.avatar_url || `https://i.pravatar.cc/150?u=${conversation.id}`;
+            return other?.avatar_url || "";
         }
-        return `https://i.pravatar.cc/150?u=${conversation.id}`;
+        return "";
     };
 
     const getOtherParticipant = () => {
@@ -208,6 +212,8 @@ export function ChatWindow({
                         <FallbackImage
                             src={getAvatarUrl()}
                             alt={getConversationTitle()}
+                            username={getConversationTitle()}
+                            isAvatar={true}
                             className="w-10 h-10 rounded-full object-cover"
                         />
                         {isConnected && (
@@ -261,7 +267,9 @@ export function ChatWindow({
                                 {!isMe && !isCallSystemMessage && (
                                     <FallbackImage
                                         src={msg.sender?.avatar_url || getAvatarUrl()}
-                                        alt="Avatar"
+                                        alt={msg.sender?.username || "User"}
+                                        username={msg.sender?.username || "User"}
+                                        isAvatar={true}
                                         className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover mt-auto shrink-0"
                                     />
                                 )}

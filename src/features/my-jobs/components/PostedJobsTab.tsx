@@ -65,8 +65,8 @@ function JobBidCard({
             </div>
 
             <div className="flex items-center gap-1.5 text-[#C69C2E] mb-2">
-                <DollarSign className="w-3.5 h-3.5" />
-                <span className="font-bold text-sm">${price}</span>
+                <span className="font-bold text-[#C69C2E] text-xs">₦</span>
+                <span className="font-bold text-sm">{price}</span>
             </div>
 
             {bid.message && (
@@ -168,8 +168,7 @@ function JobDetailPanel({
                     )}
                 </div>
                 <div className="flex items-center gap-1 text-[#C69C2E] font-bold text-sm">
-                    <DollarSign className="w-3.5 h-3.5" />
-                    ${minPrice} – ${maxPrice}
+                    ₦{minPrice} – ₦{maxPrice}
                 </div>
                 <p className="text-xs text-gray-500 mt-2 line-clamp-3">{job.description}</p>
             </div>
@@ -313,7 +312,7 @@ function PostedJobCard({
                         </div>
                     </div>
                     <div className="flex items-center justify-between mt-2">
-                        <span className="text-xs font-bold text-[#C69C2E]">${minPrice} – ${maxPrice}</span>
+                        <span className="text-xs font-bold text-[#C69C2E]">₦{minPrice} – ₦{maxPrice}</span>
                         <div className="flex items-center gap-1 text-gray-400">
                             <Users className="w-3 h-3" />
                             <span className="text-[10px]">{job.bid_count ?? 0} bids</span>

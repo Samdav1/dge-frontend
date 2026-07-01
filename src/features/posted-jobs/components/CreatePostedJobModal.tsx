@@ -178,12 +178,12 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
                             {/* Price Range */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    <DollarSign className="inline w-3.5 h-3.5 mr-1" />
-                                    Budget Range (USD) <span className="text-red-500">*</span>
+                                    <span className="inline-block mr-1 font-bold text-gray-700">₦</span>
+                                    Budget Range (NGN) <span className="text-red-500">*</span>
                                 </label>
                                 <div className="flex gap-3">
                                     <div className="flex-1 relative">
-                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-gray-400 text-sm">₦</span>
                                         <input
                                             type="number"
                                             min="1"
@@ -196,7 +196,7 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
                                     </div>
                                     <div className="flex items-center text-gray-400 font-medium">–</div>
                                     <div className="flex-1 relative">
-                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-gray-400 text-sm">₦</span>
                                         <input
                                             type="number"
                                             min="1"
@@ -209,7 +209,7 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
                                     </div>
                                 </div>
                                 <p className="text-[11px] text-amber-600 mt-1.5 font-medium">
-                                    ⚠️ Your wallet must have at least $Max balance to post a job.
+                                    ⚠️ Your wallet must have at least ₦{maxPrice || "Max"} balance to post a job.
                                 </p>
                             </div>
 

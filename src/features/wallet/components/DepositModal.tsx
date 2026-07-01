@@ -47,6 +47,37 @@ export function DepositModal({ open, onOpenChange, onSuccess }: DepositModalProp
         }
     }, [open]);
 
+    // Automatically poll and verify payment
+    useEffect(() => {
+        if (step !== "payment" || !depositData?.deposit_id) return;
+
+        let intervalId: NodeJS.Timeout;
+        let isStopped = false;
+
+        const checkStatus = async () => {
+            try {
+                const result = await verifyDeposit(depositData.deposit_id!);
+                if (isStopped) return;
+
+                if (result.success && result.data?.verified) {
+                    setVerifyMessage(result.data.message || "Payment confirmed! Your wallet has been credited.");
+                    setStep("success");
+                    onSuccess?.();
+                }
+            } catch (err) {
+                console.error("Auto verification check failed:", err);
+            }
+        };
+
+        // Start polling every 5 seconds
+        intervalId = setInterval(checkStatus, 5000);
+
+        return () => {
+            isStopped = true;
+            clearInterval(intervalId);
+        };
+    }, [step, depositData, onSuccess]);
+
     const handleInitiateDeposit = async () => {
         const amountNum = parseFloat(amount);
         if (!amountNum || amountNum < 100) {
@@ -210,12 +241,12 @@ export function DepositModal({ open, onOpenChange, onSuccess }: DepositModalProp
                             </div>
 
                             {/* Payment status notice */}
-                            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-800">
+                            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-800 animate-pulse">
                                 <p className="font-semibold mb-1">How this works</p>
                                 <ol className="space-y-1 text-xs list-decimal pl-4 text-amber-700">
                                     <li>Click the button below to open Monnify&apos;s secure payment page.</li>
                                     <li>Complete payment using bank transfer or card.</li>
-                                    <li>Return here and click &quot;I&apos;ve Paid — Verify&quot; to credit your wallet.</li>
+                                    <li>Return here. We will verify your payment automatically (usually takes a few seconds).</li>
                                 </ol>
                             </div>
 

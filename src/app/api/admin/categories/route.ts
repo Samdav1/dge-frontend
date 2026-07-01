@@ -33,7 +33,7 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { name } = body;
+        const { name, icon } = body;
 
         let backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
         if (backendUrl.includes("0.0.0.0")) {
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
                 "Content-Type": "application/json",
                 "X-API-KEY": apiKey || ""
             },
-            body: JSON.stringify({ name })
+            body: JSON.stringify({ name, icon })
         });
 
         if (!res.ok) {
@@ -72,7 +72,7 @@ export async function PUT(req: Request) {
         }
 
         const body = await req.json();
-        const { name } = body;
+        const { name, icon } = body;
 
         let backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
         if (backendUrl.includes("0.0.0.0")) {
@@ -86,7 +86,7 @@ export async function PUT(req: Request) {
                 "Content-Type": "application/json",
                 "X-API-KEY": apiKey || ""
             },
-            body: JSON.stringify({ name })
+            body: JSON.stringify({ name, icon })
         });
 
         if (!res.ok) {

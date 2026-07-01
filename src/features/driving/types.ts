@@ -65,6 +65,7 @@ export interface DriverNearbyResponse {
     driver_name: string;
     rating: number;
     driver_avatar?: string;
+    supported_vehicles?: string[];
 }
 
 export type TripStatus = 'pending' | 'en_route' | 'arrived' | 'awaiting_confirmation' | 'in_progress' | 'active' | 'completed' | 'cancelled' | 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';

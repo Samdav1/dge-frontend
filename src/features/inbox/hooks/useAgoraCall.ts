@@ -117,6 +117,18 @@ export function useAgoraCall(options: UseAgoraCallOptions = {}) {
             }
             const client = clientRef.current;
 
+            // Prevent duplicate join if already connecting or connected
+            if (client.connectionState !== "DISCONNECTED") {
+                console.warn(`[useAgoraCall] Client is already in ${client.connectionState} state. Skipping join.`);
+                if (client.connectionState === "CONNECTED" || client.connectionState === "CONNECTING") {
+                    if (client.connectionState === "CONNECTED") {
+                        updateStatus("connected");
+                    }
+                    return true;
+                }
+                return false;
+            }
+
             // ── Step 3: Wire event handlers (only once per client) ───────
             if (!eventsRegisteredRef.current) {
                 console.log("[useAgoraCall] Step 3: Registering event handlers...");
@@ -193,7 +205,11 @@ export function useAgoraCall(options: UseAgoraCallOptions = {}) {
             // ── Step 5: Mic track + publish ──────────────────────────────
             console.log("[useAgoraCall] Step 5: Creating mic track...");
             try {
-                const localTrack = await AgoraRTC.createMicrophoneAudioTrack();
+                const localTrackPromise = AgoraRTC.createMicrophoneAudioTrack();
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("Microphone initialization timeout")), 5000)
+                );
+                const localTrack = await Promise.race([localTrackPromise, timeoutPromise]);
                 localTrackRef.current = localTrack;
                 console.log("[useAgoraCall] Step 5a OK: Mic track created");
 
@@ -201,7 +217,7 @@ export function useAgoraCall(options: UseAgoraCallOptions = {}) {
                 console.log("[useAgoraCall] Step 5b OK: Mic track published");
             } catch (micErr: any) {
                 console.error("[useAgoraCall] Step 5 FAILED:", micErr);
-                // Don't fail the whole call just because mic access was denied
+                // Don't fail the whole call just because mic access was denied or timed out
                 // The user can still listen
                 console.warn("[useAgoraCall] Continuing without microphone");
             }
@@ -272,8 +288,9 @@ export function useAgoraCall(options: UseAgoraCallOptions = {}) {
             try {
                 await clientRef.current.leave();
             } catch { /* ignore */ }
-            // Don't null out the client — reuse it for the next call
-            // clientRef.current = null;
+            try {
+                clientRef.current.removeAllListeners();
+            } catch { /* ignore */ }
             eventsRegisteredRef.current = false; // Reset so events are re-registered for next call
         }
 
@@ -314,7 +331,12 @@ export function useAgoraCall(options: UseAgoraCallOptions = {}) {
             stopRenewalTimer();
             localTrackRef.current?.stop();
             localTrackRef.current?.close();
-            clientRef.current?.leave().catch(() => { });
+            if (clientRef.current) {
+                clientRef.current.leave().catch(() => { });
+                try {
+                    clientRef.current.removeAllListeners();
+                } catch { /* ignore */ }
+            }
         };
     }, [stopCallTimer, stopRenewalTimer]);
 
