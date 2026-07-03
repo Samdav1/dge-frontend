@@ -79,7 +79,7 @@ export function KYCSettings() {
 
     // When the MetaMap button is clicked, try to find and click the actual metamap-button element
     const handleStartVerification = () => {
-        const metamapBtn = metamapRef.current?.querySelector("metamap-button");
+        const metamapBtn = metamapRef.current?.querySelector("metamap-button") as HTMLElement | null;
         if (metamapBtn) {
             // The MetaMap web component usually has an internal button/shadow DOM element
             metamapBtn.click();
