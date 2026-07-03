@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Loader2, CheckCircle, AlertTriangle } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Loader2, CheckCircle, AlertTriangle, ShieldCheck, RefreshCw } from "lucide-react";
 import { getUserKyc, getProfile } from "../actions";
 
 declare module "react" {
@@ -24,6 +25,9 @@ export function KYCSettings() {
     const [error, setError] = useState<string | null>(null);
     const [kycData, setKycData] = useState<any>(null);
     const [userId, setUserId] = useState<string | null>(null);
+    const [sdkLoaded, setSdkLoaded] = useState(false);
+    const [sdkError, setSdkError] = useState(false);
+    const metamapRef = useRef<HTMLDivElement>(null);
 
     const fetchKyc = async () => {
         setIsLoading(true);
@@ -41,19 +45,46 @@ export function KYCSettings() {
         setIsLoading(false);
     };
 
-    useEffect(() => {
-        fetchKyc();
+    const loadMetaMapSdk = useCallback(() => {
+        setSdkError(false);
+        setSdkLoaded(false);
 
-        // Load MetaMap Button SDK
+        // Remove any existing MetaMap scripts first
+        document.querySelectorAll('script[src*="metamap.com"]').forEach(el => el.remove());
+
         const script = document.createElement("script");
         script.src = "https://web-button.metamap.com/button.js";
         script.async = true;
+        script.onload = () => {
+            setSdkLoaded(true);
+            setSdkError(false);
+        };
+        script.onerror = () => {
+            setSdkError(true);
+            setSdkLoaded(false);
+        };
         document.body.appendChild(script);
 
+        return script;
+    }, []);
+
+    useEffect(() => {
+        fetchKyc();
+        const script = loadMetaMapSdk();
+
         return () => {
-            document.body.removeChild(script);
+            try { document.body.removeChild(script); } catch {}
         };
     }, []);
+
+    // When the MetaMap button is clicked, try to find and click the actual metamap-button element
+    const handleStartVerification = () => {
+        const metamapBtn = metamapRef.current?.querySelector("metamap-button");
+        if (metamapBtn) {
+            // The MetaMap web component usually has an internal button/shadow DOM element
+            metamapBtn.click();
+        }
+    };
 
     if (isLoading) {
         return (
@@ -64,6 +95,9 @@ export function KYCSettings() {
     }
 
     const status = kycData?.status || "unverified";
+
+    const clientId = process.env.NEXT_PUBLIC_METAMAP_CLIENT_ID || "65893a7d2c3e1e001b6e8a4a";
+    const flowId = process.env.NEXT_PUBLIC_METAMAP_FLOW_ID || "65893a7d2c3e1e001b6e8a4b";
 
     return (
         <div className="space-y-8">
@@ -107,18 +141,49 @@ export function KYCSettings() {
             )}
 
             {(status === "unverified" || status === "rejected") ? (
-                <div className="flex flex-col items-center justify-center p-8 bg-gray-50 border border-gray-200 rounded-xl space-y-4">
-                    <p className="text-sm text-gray-500 text-center">
-                        Click the button below to verify your identity. You will need a valid government-issued ID.
-                    </p>
-                    {/* MetaMap Web Button */}
-                    <div className="w-full flex justify-center">
+                <div className="flex flex-col items-center justify-center p-8 bg-gray-50 border border-gray-200 rounded-xl space-y-6">
+                    {/* Icon */}
+                    <div className="w-16 h-16 rounded-2xl bg-[#C69C2E]/10 flex items-center justify-center">
+                        <ShieldCheck className="w-8 h-8 text-[#C69C2E]" />
+                    </div>
+
+                    <div className="text-center space-y-2">
+                        <h3 className="text-lg font-bold text-gray-900">Verify Your Identity</h3>
+                        <p className="text-sm text-gray-500 max-w-sm">
+                            Click the button below to verify your identity. You will need a valid government-issued ID.
+                        </p>
+                    </div>
+
+                    {/* MetaMap Web Button — always rendered so the SDK can initialize */}
+                    <div ref={metamapRef} className="w-full flex justify-center">
                         <metamap-button
-                            clientid={process.env.NEXT_PUBLIC_METAMAP_CLIENT_ID || "65893a7d2c3e1e001b6e8a4a"}
-                            flowid={process.env.NEXT_PUBLIC_METAMAP_FLOW_ID || "65893a7d2c3e1e001b6e8a4b"}
+                            clientid={clientId}
+                            flowid={flowId}
                             metadata={JSON.stringify({ userId })}
                         />
                     </div>
+
+                    {/* Fallback: if SDK hasn't loaded yet, show a manual trigger button */}
+                    {!sdkLoaded && !sdkError && (
+                        <div className="flex flex-col items-center gap-2">
+                            <Loader2 className="w-5 h-5 text-[#C69C2E] animate-spin" />
+                            <p className="text-xs text-gray-400">Loading verification module...</p>
+                        </div>
+                    )}
+
+                    {sdkError && (
+                        <div className="flex flex-col items-center gap-3">
+                            <p className="text-sm text-red-500">Failed to load verification module.</p>
+                            <Button
+                                onClick={loadMetaMapSdk}
+                                variant="outline"
+                                className="rounded-xl border-[#C69C2E] text-[#C69C2E] hover:bg-[#C69C2E]/5"
+                            >
+                                <RefreshCw className="w-4 h-4 mr-2" />
+                                Retry
+                            </Button>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -147,3 +212,4 @@ export function KYCSettings() {
         </div>
     );
 }
+
