@@ -96,8 +96,12 @@ export function KYCSettings() {
 
     const status = kycData?.status || "unverified";
 
-    const clientId = process.env.NEXT_PUBLIC_METAMAP_CLIENT_ID || "65893a7d2c3e1e001b6e8a4a";
-    const flowId = process.env.NEXT_PUBLIC_METAMAP_FLOW_ID || "65893a7d2c3e1e001b6e8a4b";
+    const clientId = process.env.NEXT_PUBLIC_METAMAP_CLIENT_ID && process.env.NEXT_PUBLIC_METAMAP_CLIENT_ID !== "change-me-in-gcp-trigger"
+        ? process.env.NEXT_PUBLIC_METAMAP_CLIENT_ID
+        : "6a476c6475062151a6c42022";
+    const flowId = process.env.NEXT_PUBLIC_METAMAP_FLOW_ID && process.env.NEXT_PUBLIC_METAMAP_FLOW_ID !== "change-me-in-gcp-trigger"
+        ? process.env.NEXT_PUBLIC_METAMAP_FLOW_ID
+        : "6a476c6486cc8d264d1a0a5f";
 
     return (
         <div className="space-y-8">
