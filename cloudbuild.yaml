@@ -72,8 +72,8 @@ substitutions:
   _BACKEND_API_KEY: change-me-in-gcp-trigger
   _GOOGLE_CLIENT_ID: change-me-in-gcp-trigger
   _GOOGLE_CLIENT_SECRET: change-me-in-gcp-trigger
-  _NEXT_PUBLIC_METAMAP_CLIENT_ID: 6a476c6475062151a6c42022
-  _NEXT_PUBLIC_METAMAP_FLOW_ID: 6a476c6486cc8d264d1a0a5f
+  _NEXT_PUBLIC_METAMAP_CLIENT_ID: change-me-in-gcp-trigger
+  _NEXT_PUBLIC_METAMAP_FLOW_ID: change-me-in-gcp-trigger
 tags:
   - gcp-cloud-build-deploy-cloud-run
   - gcp-cloud-build-deploy-cloud-run-managed

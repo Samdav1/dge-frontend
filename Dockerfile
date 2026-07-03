@@ -16,8 +16,8 @@ COPY . .
 # Defaults are hardcoded because .env is git-ignored and not available in Cloud Build
 ARG NEXT_PUBLIC_API_URL=https://dge-tech-web-cjhe4jg72a-ew.a.run.app
 ARG NEXT_PUBLIC_WS_URL=wss://dge-tech-web-cjhe4jg72a-ew.a.run.app
-ARG NEXT_PUBLIC_METAMAP_CLIENT_ID
-ARG NEXT_PUBLIC_METAMAP_FLOW_ID
+ARG NEXT_PUBLIC_METAMAP_CLIENT_ID=6a476c6475062151a6c42022
+ARG NEXT_PUBLIC_METAMAP_FLOW_ID=6a476c6486cc8d264d1a0a5f
 
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
@@ -30,6 +30,8 @@ ARG AUTH_URL=https://dgetechs.com
 ARG BACKEND_API_KEY
 ARG GOOGLE_CLIENT_ID
 ARG GOOGLE_CLIENT_SECRET
+ARG METAMAP_CLIENT_ID
+ARG METAMAP_FLOW_ID
 
 ENV AUTH_SECRET=${AUTH_SECRET}
 ENV AUTH_URL=${AUTH_URL}
@@ -38,6 +40,8 @@ ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
 ENV GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
 ENV AUTH_GOOGLE_ID=${GOOGLE_CLIENT_ID}
 ENV AUTH_GOOGLE_SECRET=${GOOGLE_CLIENT_SECRET}
+ENV METAMAP_CLIENT_ID=${METAMAP_CLIENT_ID}
+ENV METAMAP_FLOW_ID=${METAMAP_FLOW_ID}
 
 # Debug: verify env vars are set at build time
 RUN echo "=== Build-time env check ===" && \
@@ -47,6 +51,9 @@ RUN echo "=== Build-time env check ===" && \
     echo "AUTH_SECRET is set: $(test -n \"$AUTH_SECRET\" && echo YES || echo NO)" && \
     echo "BACKEND_API_KEY is set: $(test -n \"$BACKEND_API_KEY\" && echo YES || echo NO)" && \
     echo "GOOGLE_CLIENT_ID is set: $(test -n \"$GOOGLE_CLIENT_ID\" && echo YES || echo NO)" && \
+    echo "GOOGLE_CLIENT_SECRET is set: $(test -n \"$GOOGLE_CLIENT_SECRET\" && echo YES || echo NO)" && \
+    echo "METAMAP_CLIENT_ID is set: $(test -n \"$METAMAP_CLIENT_ID\" && echo YES || echo NO)" && \
+    echo "METAMAP_FLOW_ID is set: $(test -n \"$METAMAP_FLOW_ID\" && echo YES || echo NO)" && \
     echo "==========================="
 
 ENV NEXT_TELEMETRY_DISABLED=1
