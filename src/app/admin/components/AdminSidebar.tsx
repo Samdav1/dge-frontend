@@ -40,6 +40,7 @@ export default function AdminSidebar() {
         { name: "Users", href: "/admin/users", icon: Users },
         { name: "Drivers", href: "/admin/drivers", icon: Car },
         { name: "KYC Verification", href: "/admin/kyc", icon: FileCheck },
+        { name: "Driver Licenses", href: "/admin/drivers/licenses", icon: FileCheck },
     ];
 
     const othersLinks: SidebarLink[] = [

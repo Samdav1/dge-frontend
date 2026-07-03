@@ -270,6 +270,35 @@ export async function uploadDriverCarPicture(formData: FormData) {
     }
 }
 
+export async function uploadDriverLicensePicture(formData: FormData) {
+    const headers = await getAuthHeaders();
+    if (!headers) {
+        return { success: false, error: "Unauthorized" };
+    }
+    const multipartHeaders = { ...headers };
+    delete (multipartHeaders as any)["Content-Type"];
+
+    try {
+        const targetUrl = `${apiUrl.replace('0.0.0.0', '127.0.0.1')}/drivers/license-picture`;
+        const response = await fetch(targetUrl, {
+            method: 'PATCH',
+            headers: multipartHeaders,
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.detail || "Failed to upload license picture" };
+        }
+
+        const result = await response.json();
+        return { success: true, data: result };
+    } catch (error) {
+        console.error("Upload license picture error:", error);
+        return { success: false, error: "Network error" };
+    }
+}
+
 export async function getMyTripsAsRider() {
     const headers = await getAuthHeaders();
     if (!headers) {

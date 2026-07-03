@@ -15,7 +15,7 @@ import { DriverPublicProfileModal } from "./DriverPublicProfileModal";
 import { IncomingRides, RideIntent } from "./IncomingRides";
 import { ActiveTripView } from "./ActiveTripView";
 import { getUserKyc } from "@/features/profile/actions";
-import { pingDriverLocation, requestRide, acceptRide, getDriversNearby, cancelTrip, completeTrip, arriveAtPickup, startTrip, confirmStartTrip, counterRide, acceptCounterOffer } from "../actions";
+import { pingDriverLocation, requestRide, acceptRide, getDriversNearby, cancelTrip, completeTrip, arriveAtPickup, startTrip, confirmStartTrip, counterRide, acceptCounterOffer, getDriverProfile } from "../actions";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { useChatContext } from "@/providers/ChatProvider";
@@ -46,6 +46,7 @@ const playNotificationSound = () => {
 export function DrivingLayout() {
     const [activeTab, setActiveTab] = React.useState<'book' | 'booked' | 'profile' | 'rides' | 'active_drivers'>('book');
     const [isDriverVerified, setIsDriverVerified] = React.useState(false);
+    const [isKycVerified, setIsKycVerified] = React.useState(false);
     const [isLoadingKyc, setIsLoadingKyc] = React.useState(true);
     const [showDriversList, setShowDriversList] = React.useState(false);
     const [showConfirmation, setShowConfirmation] = React.useState(false);
@@ -405,7 +406,13 @@ export function DrivingLayout() {
             setIsLoadingKyc(true);
             const res = await getUserKyc();
             if (res.success && res.data) {
-                if (res.data.id_document_type === 'drivers_license' && res.data.status === 'verified') {
+                if (res.data.status === 'verified') {
+                    setIsKycVerified(true);
+                }
+            }
+            const dres = await getDriverProfile();
+            if (dres.success && dres.data) {
+                if (dres.data.license_status === 'verified') {
                     setIsDriverVerified(true);
                 }
             }
@@ -504,9 +511,15 @@ export function DrivingLayout() {
                 { key: 'booked' as const, label: 'Incoming Rides', icon: Navigation, desc: 'Rides booked from you' },
                 { key: 'profile' as const, label: 'Driver Profile', icon: UserCircle, desc: 'Vehicle details' }
             ]
-            : [
-                { key: 'active_drivers' as const, label: 'Active Drivers', icon: Activity, desc: 'See live drivers' }
-            ]),
+            : (isKycVerified
+                ? [
+                    { key: 'profile' as const, label: 'Become a Driver', icon: UserCircle, desc: 'Register as driver' },
+                    { key: 'active_drivers' as const, label: 'Active Drivers', icon: Activity, desc: 'See live drivers' }
+                ]
+                : [
+                    { key: 'active_drivers' as const, label: 'Active Drivers', icon: Activity, desc: 'See live drivers' }
+                ]
+            )),
     ];
 
     const getGreeting = () => {

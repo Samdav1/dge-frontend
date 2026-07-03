@@ -16,9 +16,13 @@ COPY . .
 # Defaults are hardcoded because .env is git-ignored and not available in Cloud Build
 ARG NEXT_PUBLIC_API_URL=https://dge-tech-web-cjhe4jg72a-ew.a.run.app
 ARG NEXT_PUBLIC_WS_URL=wss://dge-tech-web-cjhe4jg72a-ew.a.run.app
+ARG NEXT_PUBLIC_METAMAP_CLIENT_ID
+ARG NEXT_PUBLIC_METAMAP_FLOW_ID
 
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL}
+ENV NEXT_PUBLIC_METAMAP_CLIENT_ID=${NEXT_PUBLIC_METAMAP_CLIENT_ID}
+ENV NEXT_PUBLIC_METAMAP_FLOW_ID=${NEXT_PUBLIC_METAMAP_FLOW_ID}
 
 # Server-only env vars — needed by next build for server components/actions
 ARG AUTH_SECRET
