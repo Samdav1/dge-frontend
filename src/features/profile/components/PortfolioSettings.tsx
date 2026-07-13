@@ -12,10 +12,12 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Briefcase, Upload, X, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
-import Image from "next/image";
 import { getUserPortfolio, createUserPortfolio, updateUserPortfolio, uploadPortfolioMedia, deletePortfolioMedia } from "@/features/portfolio/actions";
 import { UserPortfolio, PortfolioMedia } from "@/features/portfolio/types";
 import { getBackendImageUrl } from "@/lib/imageUtils";
+import { useSession } from "next-auth/react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useRouter } from "next/navigation";
 
 interface UploadedFile {
     file?: File;
@@ -58,8 +60,10 @@ function SuccessModal({
 }
 
 export function PortfolioSettings() {
+    const { data: session } = useSession();
     const photoInputRef = useRef<HTMLInputElement>(null);
     const videoInputRef = useRef<HTMLInputElement>(null);
+    const router = useRouter();
 
     // Form state
     const [isLoading, setIsLoading] = useState(true);
@@ -83,6 +87,15 @@ export function PortfolioSettings() {
     const [pendingVideoFiles, setPendingVideoFiles] = useState<File[]>([]);
     const [showSuccess, setShowSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [previewItem, setPreviewItem] = useState<{ url: string; type: "image" | "video" } | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{
+        index: number;
+        type: "photo" | "video";
+        isExisting: boolean;
+    } | null>(null);
+    const [uploadProgress, setUploadProgress] = useState<{
+        [filename: string]: number;
+    } | null>(null);
 
     // Load existing portfolio
     useEffect(() => {
@@ -227,6 +240,17 @@ export function PortfolioSettings() {
         });
     };
 
+    const handleConfirmDelete = async () => {
+        if (!deleteConfirm) return;
+        const { index, type } = deleteConfirm;
+        if (type === "photo") {
+            await removePhoto(index);
+        } else {
+            await removeVideo(index);
+        }
+        setDeleteConfirm(null);
+    };
+
     const handleSubmit = async () => {
         setError(null);
         if (!title.trim()) {
@@ -251,66 +275,116 @@ export function PortfolioSettings() {
             };
 
             if (portfolio) {
-                // Update existing portfolio
                 savedPortfolio = await updateUserPortfolio(portfolioData);
             } else {
-                // Create new portfolio
                 savedPortfolio = await createUserPortfolio(portfolioData);
             }
 
             setPortfolio(savedPortfolio);
 
-            // Upload pending media files
+            // Upload all pending files concurrently
             const allPendingFiles = [...pendingPhotoFiles, ...pendingVideoFiles];
 
-            for (const file of allPendingFiles) {
-                try {
-                    setIsUploadingPhoto(true);
-                    setIsUploadingVideo(true);
+            if (allPendingFiles.length > 0) {
+                setIsUploadingPhoto(pendingPhotoFiles.length > 0);
+                setIsUploadingVideo(pendingVideoFiles.length > 0);
 
-                    const formData = new FormData();
-                    formData.append("file", file);
+                const token = session?.backendToken || "";
 
-                    await uploadPortfolioMedia(savedPortfolio.id, formData);
-                } catch (uploadError) {
-                    console.error("Failed to upload media:", uploadError);
+                // Initialize progress tracking state
+                const initialProgress: { [key: string]: number } = {};
+                allPendingFiles.forEach((file) => {
+                    initialProgress[file.name] = 0;
+                });
+                setUploadProgress(initialProgress);
+
+                const uploadResults = await Promise.allSettled(
+                    allPendingFiles.map((file) => {
+                        return new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            const formData = new FormData();
+                            formData.append("file", file);
+
+                            xhr.open("POST", `/api/portfolio/upload?portfolio_id=${savedPortfolio.id}`);
+                            xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+                            // Track progress
+                            xhr.upload.onprogress = (event) => {
+                                if (event.lengthComputable) {
+                                    const percent = Math.round((event.loaded / event.total) * 100);
+                                    setUploadProgress((prev) => prev ? {
+                                        ...prev,
+                                        [file.name]: percent
+                                    } : null);
+                                }
+                            };
+
+                            xhr.onload = () => {
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                    try {
+                                        const resData = JSON.parse(xhr.responseText);
+                                        resolve(resData);
+                                    } catch (e) {
+                                        resolve({});
+                                    }
+                                } else {
+                                    reject(new Error(xhr.statusText || "Upload failed"));
+                                }
+                            };
+
+                            xhr.onerror = () => {
+                                reject(new Error("Network error during upload"));
+                            };
+
+                            xhr.send(formData);
+                        });
+                    })
+                );
+
+                setUploadProgress(null);
+
+                // Report any individual failures
+                const failures = uploadResults.filter((r) => r.status === "rejected");
+                if (failures.length > 0) {
+                    console.error(`${failures.length} file(s) failed to upload:`, failures);
+                    setError(`${failures.length} file(s) failed to upload. The rest were saved successfully.`);
                 }
+
+                setPendingPhotoFiles([]);
+                setPendingVideoFiles([]);
+                setIsUploadingPhoto(false);
+                setIsUploadingVideo(false);
             }
 
-            // Clear pending files after upload
-            setPendingPhotoFiles([]);
-            setPendingVideoFiles([]);
-            setIsUploadingPhoto(false);
-            setIsUploadingVideo(false);
-
-            // Fetch updated portfolio to get newly uploaded media
+            // Always fetch fresh portfolio to reconcile state (Pending → Existing)
             const freshPortfolio = await getUserPortfolio();
             if (freshPortfolio) {
                 setPortfolio(freshPortfolio);
-                if (freshPortfolio.media && freshPortfolio.media.length > 0) {
-                    const existingPhotos: UploadedFile[] = [];
-                    const existingVideos: UploadedFile[] = [];
+                const existingPhotos: UploadedFile[] = [];
+                const existingVideos: UploadedFile[] = [];
 
-                    freshPortfolio.media.forEach((media) => {
-                        const url = getBackendImageUrl(media.s3_key);
-                        if (media.media_type.startsWith('image')) {
-                            existingPhotos.push({ preview: url, isExisting: true, media });
-                        } else if (media.media_type.startsWith('video')) {
-                            existingVideos.push({ preview: url, isExisting: true, media });
-                        }
-                    });
+                (freshPortfolio.media || []).forEach((media) => {
+                    const url = getBackendImageUrl(media.s3_key);
+                    if (media.media_type.startsWith('image')) {
+                        existingPhotos.push({ preview: url, isExisting: true, media });
+                    } else if (media.media_type.startsWith('video')) {
+                        existingVideos.push({ preview: url, isExisting: true, media });
+                    }
+                });
 
-                    setPhotos(existingPhotos);
-                    setVideos(existingVideos);
-                }
+                setPhotos(existingPhotos);
+                setVideos(existingVideos);
             }
 
             setShowSuccess(true);
+            router.refresh();
         } catch (error) {
             console.error("Failed to save portfolio:", error);
             setError("Failed to save portfolio. Please try again.");
         } finally {
             setIsSaving(false);
+            setIsUploadingPhoto(false);
+            setIsUploadingVideo(false);
         }
     };
 
@@ -384,26 +458,32 @@ export function PortfolioSettings() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         {/* Display uploaded photos */}
                         {photos.map((photo, index) => (
-                            <div key={index} className="aspect-square bg-gray-100 rounded-xl overflow-hidden relative group">
-                                <Image
+                            <div 
+                                key={index} 
+                                className="aspect-square bg-gray-100 rounded-xl overflow-hidden relative group cursor-pointer"
+                                onClick={() => setPreviewItem({ url: photo.preview, type: "image" })}
+                            >
+                                {/* Standard img avoids next/image sizing constraints during rapid uploads */}
+                                <img
                                     src={photo.preview}
                                     alt={`Uploaded photo ${index + 1}`}
-                                    fill
-                                    className="object-cover"
-                                    unoptimized={photo.isExisting}
+                                    className="object-cover w-full h-full"
                                 />
                                 <button
                                     type="button"
-                                    onClick={() => removePhoto(index)}
-                                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDeleteConfirm({ index, type: "photo", isExisting: !!photo.isExisting });
+                                    }}
+                                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
                                 >
                                     <X className="w-4 h-4 text-white" />
                                 </button>
-                                {!photo.isExisting && (
-                                    <div className="absolute bottom-2 left-2 bg-yellow-500/80 text-white text-xs px-2 py-1 rounded">
-                                        Pending
-                                    </div>
-                                )}
+                                <div className={`absolute bottom-2 left-2 text-white text-xs px-2 py-1 rounded font-medium ${
+                                    photo.isExisting ? "bg-emerald-600/80" : "bg-amber-500/80"
+                                }`}>
+                                    {photo.isExisting ? "Saved" : "Ready to Save"}
+                                </div>
                             </div>
                         ))}
                         {/* Upload button - only show if less than 3 photos */}
@@ -433,21 +513,32 @@ export function PortfolioSettings() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         {/* Display uploaded videos */}
                         {videos.map((video, index) => (
-                            <div key={index} className="aspect-square bg-gray-100 rounded-xl overflow-hidden relative group">
+                            <div 
+                                key={index} 
+                                className="aspect-square bg-gray-100 rounded-xl overflow-hidden relative group cursor-pointer"
+                                onClick={() => setPreviewItem({ url: video.preview, type: "video" })}
+                            >
                                 <video
-                                    src={video.preview}
+                                    src={`${video.preview}#t=0.1`}
+                                    preload="metadata"
+                                    playsInline
                                     className="object-cover w-full h-full"
                                     muted
                                 />
                                 <button
                                     type="button"
-                                    onClick={() => removeVideo(index)}
-                                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDeleteConfirm({ index, type: "video", isExisting: !!video.isExisting });
+                                    }}
+                                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
                                 >
                                     <X className="w-4 h-4 text-white" />
                                 </button>
-                                <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-                                    {video.isExisting ? "Video" : "Pending"}
+                                <div className={`absolute bottom-2 left-2 text-white text-xs px-2 py-1 rounded font-medium ${
+                                    video.isExisting ? "bg-emerald-600/80" : "bg-amber-500/80"
+                                }`}>
+                                    {video.isExisting ? "Saved" : "Ready to Save"}
                                 </div>
                             </div>
                         ))}
@@ -565,6 +656,92 @@ export function PortfolioSettings() {
                 title="Portfolio Updated!"
                 message="Your professional portfolio has been saved and is now visible to clients."
             />
+
+            {previewItem && (
+                <Dialog open={!!previewItem} onOpenChange={() => setPreviewItem(null)}>
+                    <DialogContent className="max-w-4xl p-0 overflow-hidden border-none bg-black/95 backdrop-blur-md rounded-2xl flex items-center justify-center relative aspect-video">
+                        <DialogTitle className="sr-only">Media Preview</DialogTitle>
+                        <button
+                            type="button"
+                            onClick={() => setPreviewItem(null)}
+                            className="absolute top-4 right-4 z-[100] p-2 rounded-full bg-black/40 hover:bg-black/60 text-white transition-colors"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                        {previewItem.type === "image" ? (
+                            <img
+                                src={previewItem.url}
+                                alt="Preview"
+                                className="max-h-[85vh] max-w-full object-contain"
+                            />
+                        ) : (
+                            <video
+                                src={previewItem.url}
+                                controls
+                                autoPlay
+                                playsInline
+                                className="max-h-[85vh] max-w-full"
+                            />
+                        )}
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {deleteConfirm && (
+                <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
+                    <DialogContent className="max-w-md p-6 bg-white rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center text-center">
+                        <DialogTitle className="text-xl font-bold text-gray-900 mb-2">Delete Media</DialogTitle>
+                        <p className="text-sm text-gray-500 mb-6">
+                            Are you sure you want to delete this {deleteConfirm.type}? 
+                            {deleteConfirm.isExisting && " This action will permanently remove the file from the server and cannot be undone."}
+                        </p>
+                        <div className="flex gap-4 w-full">
+                            <Button
+                                variant="outline"
+                                onClick={() => setDeleteConfirm(null)}
+                                className="flex-1 h-12 rounded-xl border-gray-200 text-gray-700 hover:bg-gray-50 font-semibold"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleConfirmDelete}
+                                className="flex-1 h-12 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg shadow-red-500/20"
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
+
+            {uploadProgress && (
+                <Dialog open={!!uploadProgress}>
+                    <DialogContent className="max-w-md p-6 bg-white rounded-2xl shadow-xl border border-gray-100 flex flex-col">
+                        <DialogTitle className="text-xl font-bold text-gray-900 mb-4 text-center">Uploading Media</DialogTitle>
+                        <p className="text-sm text-gray-500 mb-6 text-center">
+                            Please wait while your media files are being uploaded to the server...
+                        </p>
+                        <div className="space-y-4 w-full max-h-[40vh] overflow-y-auto pr-1">
+                            {Object.entries(uploadProgress).map(([filename, progress]) => {
+                                return (
+                                    <div key={filename} className="space-y-1">
+                                        <div className="flex justify-between text-xs font-semibold text-gray-700">
+                                            <span className="truncate max-w-[250px]">{filename}</span>
+                                            <span>{progress}%</span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                            <div 
+                                                className="bg-[#C69C2E] h-full rounded-full transition-all duration-300"
+                                                style={{ width: `${progress}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            )}
         </div>
     );
 }

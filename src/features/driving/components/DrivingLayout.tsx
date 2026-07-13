@@ -421,6 +421,17 @@ export function DrivingLayout() {
         checkKyc();
     }, []);
 
+    const handleBecomeDriverClick = () => {
+        if (!isKycVerified) {
+            toast.error("Identity verification is required to become a driver. Redirecting to KYC verification...");
+            setTimeout(() => {
+                window.location.href = "/dashboard/profile?tab=kyc";
+            }, 1500);
+        } else {
+            window.location.href = "/dashboard/profile?tab=driver";
+        }
+    };
+
     // Driver GPS simulation during active trip
     React.useEffect(() => {
         if (!isDriverVerified || !activeTrip || activeTrip.status !== 'ACTIVE') {
@@ -1029,14 +1040,39 @@ export function DrivingLayout() {
                                     vehicleType={tripData?.vehicle_type}
                                 />
                             ) : (
-                                <RideRequestForm
-                                    liveDrivers={liveDrivers}
-                                    onSubmit={(data) => {
-                                        setTripData(data);
-                                        setShowDriversList(true);
-                                    }}
-                                    onLocationSelect={handleLocationSelect}
-                                />
+                                <div className="space-y-4">
+                                    {!isDriverVerified && (
+                                        <div className="bg-gradient-to-br from-[#1E1B10] to-[#0D0D0D] border border-[#C69C2E]/20 rounded-2xl p-5 shadow-xl flex flex-col gap-4 relative overflow-hidden group">
+                                            {/* Decorative glowing gradient */}
+                                            <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-[#C69C2E]/10 blur-2xl group-hover:bg-[#C69C2E]/15 transition-all duration-500 pointer-events-none" />
+                                            <div className="flex gap-4 items-start relative z-10">
+                                                <div className="w-10 h-10 rounded-xl bg-[#C69C2E]/10 border border-[#C69C2E]/20 flex items-center justify-center shrink-0">
+                                                    <Car className="w-5 h-5 text-[#C69C2E]" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <h3 className="text-sm font-bold text-white">Earn Money with DGE</h3>
+                                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                                        Become a driver, register your vehicle, and start accepting ride requests.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Button 
+                                                onClick={handleBecomeDriverClick}
+                                                className="w-full bg-[#C69C2E] hover:bg-[#b08b29] text-white text-xs h-10 font-bold rounded-xl relative z-10 transition-all shadow-md shadow-[#C69C2E]/10"
+                                            >
+                                                Register as a Driver
+                                            </Button>
+                                        </div>
+                                    )}
+                                    <RideRequestForm
+                                        liveDrivers={liveDrivers}
+                                        onSubmit={(data) => {
+                                            setTripData(data);
+                                            setShowDriversList(true);
+                                        }}
+                                        onLocationSelect={handleLocationSelect}
+                                    />
+                                </div>
                             )}
                         </div>
 

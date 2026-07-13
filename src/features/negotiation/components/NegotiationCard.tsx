@@ -21,6 +21,7 @@ interface NegotiationCardProps {
     initiator_id: string;
     receiver_id: string;
     onStatusChange?: () => void;
+    payment_method?: string;
 }
 
 export function NegotiationCard({
@@ -35,6 +36,7 @@ export function NegotiationCard({
     initiator_id,
     receiver_id,
     onStatusChange,
+    payment_method,
 }: NegotiationCardProps) {
     const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
@@ -42,7 +44,23 @@ export function NegotiationCard({
     const [counterPrice, setCounterPrice] = useState("");
     const [counterMessage, setCounterMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [acceptError, setAcceptError] = useState<string | null>(null);
+    const [rejectError, setRejectError] = useState<string | null>(null);
     const router = useRouter();
+
+    const handleAcceptModalChange = (open: boolean) => {
+        setIsAcceptModalOpen(open);
+        if (!open) {
+            setAcceptError(null);
+        }
+    };
+
+    const handleRejectModalChange = (open: boolean) => {
+        setIsRejectModalOpen(open);
+        if (!open) {
+            setRejectError(null);
+        }
+    };
 
     const handleChat = async () => {
         setIsLoading(true);
@@ -89,10 +107,11 @@ export function NegotiationCard({
         }
     };
 
-    const handleAccept = async () => {
+    const handleAccept = async (paymentMethod?: string) => {
         setIsLoading(true);
+        setAcceptError(null);
         try {
-            const result = await acceptNegotiation(id);
+            const result = await acceptNegotiation(id, paymentMethod);
             if (result.success) {
                 setIsAcceptModalOpen(false);
                 if (onStatusChange) {
@@ -102,9 +121,11 @@ export function NegotiationCard({
                 }
             } else {
                 console.error("Failed to accept negotiation:", result.error);
+                setAcceptError(result.error || "Failed to accept negotiation");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error accepting negotiation:", error);
+            setAcceptError(error?.message || "An unexpected error occurred");
         } finally {
             setIsLoading(false);
         }
@@ -112,6 +133,7 @@ export function NegotiationCard({
 
     const handleReject = async () => {
         setIsLoading(true);
+        setRejectError(null);
         try {
             const result = await rejectNegotiation(id);
             if (result.success) {
@@ -123,9 +145,11 @@ export function NegotiationCard({
                 }
             } else {
                 console.error("Failed to reject negotiation:", result.error);
+                setRejectError(result.error || "Failed to reject negotiation");
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error rejecting negotiation:", error);
+            setRejectError(error?.message || "An unexpected error occurred");
         } finally {
             setIsLoading(false);
         }
@@ -213,9 +237,16 @@ export function NegotiationCard({
                         </div>
 
                         {/* Status badge with pulsing indicator */}
-                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${statusStyle.bg} ${statusStyle.text}`}>
-                            <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse shrink-0`} />
-                            <span className="capitalize">{status}</span>
+                        <div className="flex flex-col items-end gap-1.5">
+                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${statusStyle.bg} ${statusStyle.text}`}>
+                                <span className={`w-2 h-2 rounded-full ${statusStyle.dot} animate-pulse shrink-0`} />
+                                <span className="capitalize">{status}</span>
+                            </div>
+                            {payment_method && (
+                                <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800/80 px-2 py-0.5 rounded-md border border-gray-200/50 dark:border-gray-700/50">
+                                    Method: {payment_method === "cash" ? "Cash" : "Platform"}
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -361,14 +392,19 @@ export function NegotiationCard({
 
             <AcceptNegotiationModal
                 open={isAcceptModalOpen}
-                onOpenChange={setIsAcceptModalOpen}
+                onOpenChange={handleAcceptModalChange}
                 onAccept={handleAccept}
+                isBuyer={true}
+                isLoading={isLoading}
+                error={acceptError}
             />
 
             <RejectNegotiationModal
                 open={isRejectModalOpen}
-                onOpenChange={setIsRejectModalOpen}
+                onOpenChange={handleRejectModalChange}
                 onReject={handleReject}
+                isLoading={isLoading}
+                error={rejectError}
             />
         </>
     );

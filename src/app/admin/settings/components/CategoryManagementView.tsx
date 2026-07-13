@@ -11,6 +11,7 @@ import {
     X
 } from "lucide-react";
 import { getCategoryEmoji, resolveCategoryEmoji } from "@/features/marketplace/helpers";
+import { useQueryClient } from "@tanstack/react-query";
 
 const SUGGESTED_EMOJIS = [
     // Top services
@@ -21,6 +22,7 @@ const SUGGESTED_EMOJIS = [
 
 export default function CategoryManagementView() {
     const [categoriesList, setCategoriesList] = useState<any[]>([]);
+    const queryClient = useQueryClient();
 
     const [isCategoryEmpty, setIsCategoryEmpty] = useState(false);
     const [addCategoryModalOpen, setAddCategoryModalOpen] = useState(false);
@@ -41,7 +43,7 @@ export default function CategoryManagementView() {
 
     async function fetchCategories() {
         try {
-            const res = await fetch("/api/admin/categories");
+            const res = await fetch(`/api/admin/categories?t=${Date.now()}`);
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) {
@@ -52,6 +54,8 @@ export default function CategoryManagementView() {
                         created: item.created_at ? new Date(item.created_at).toLocaleDateString("en-GB") : "N/A"
                     })));
                 }
+                // Invalidate query key to update other parts of the UI live
+                queryClient.invalidateQueries({ queryKey: ["categories"] });
             }
         } catch (err) {
             console.error("Error fetching categories:", err);

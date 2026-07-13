@@ -111,6 +111,7 @@ export interface Escrow {
     payment_negotiation_id: string;
     amount_cents: number;
     status: EscrowStatus;
+    payment_method?: string;
     created_at: string;
     updated_at: string;
     price_negotiation?: PriceNegotiation;
@@ -135,6 +136,7 @@ export interface PriceNegotiation {
     proposed_price_cents: number;
     message?: string;
     status: NegotiationStatus;
+    payment_method?: string;
     created_at: string;
     updated_at: string;
     services?: Service;

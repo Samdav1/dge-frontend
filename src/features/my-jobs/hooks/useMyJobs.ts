@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { listServices, createService, updateService, deleteService, listWorkSubmissions, getWorkSubmission } from "../actions";
-import { listMyEscrows, getEscrow } from "../../escrow/actions";
+import { listServices, createService, updateService, deleteService, listWorkSubmissions, getWorkSubmission, submitWork } from "../actions";
+import { listMyEscrows, getEscrow, releaseEscrow, refundEscrow, disputeEscrow } from "../../escrow/actions";
 
 // ... existing hooks ...
 
@@ -125,3 +125,77 @@ export function useDeleteService() {
         },
     });
 }
+
+export function useSubmitWork() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (formData: FormData) => {
+            const result = await submitWork(formData);
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            return result.data;
+        },
+        onSuccess: (data, variables) => {
+            const escrowId = variables.get("escrow_id") as string;
+            queryClient.invalidateQueries({ queryKey: ["my-submitted-jobs"] });
+            if (escrowId) {
+                queryClient.invalidateQueries({ queryKey: ["ongoing-job", escrowId] });
+            }
+        },
+    });
+}
+
+export function useReleaseEscrow() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ escrowId, rating, review_comment, direct_message }: { escrowId: string; rating?: number; review_comment?: string; direct_message?: string }) => {
+            const result = await releaseEscrow(escrowId, { rating, review_comment, direct_message });
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            return result.data;
+        },
+        onSuccess: (data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["ongoing-job", variables.escrowId] });
+            queryClient.invalidateQueries({ queryKey: ["my-ongoing-jobs"] });
+        }
+    });
+}
+
+export function useRefundEscrow() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (escrowId: string) => {
+            const result = await refundEscrow(escrowId);
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            return result.data;
+        },
+        onSuccess: (data, escrowId) => {
+            queryClient.invalidateQueries({ queryKey: ["ongoing-job", escrowId] });
+            queryClient.invalidateQueries({ queryKey: ["my-ongoing-jobs"] });
+        }
+    });
+}
+
+export function useDisputeEscrow() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ escrowId, direct_message }: { escrowId: string; direct_message?: string }) => {
+            const result = await disputeEscrow(escrowId, { direct_message });
+            if (!result.success) {
+                throw new Error(result.error);
+            }
+            return result.data;
+        },
+        onSuccess: (data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ["ongoing-job", variables.escrowId] });
+            queryClient.invalidateQueries({ queryKey: ["my-ongoing-jobs"] });
+        }
+    });
+}
+
+

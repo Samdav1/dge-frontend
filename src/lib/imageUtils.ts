@@ -9,12 +9,11 @@ export function getBackendImageUrl(imagePath: string | undefined | null): string
         return imagePath;
     }
 
-    // Otherwise, prepend the backend URL
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "";
+    // Prepend the proxy or backend URL
+    const isClient = typeof window !== "undefined";
+    const prefix = isClient ? "/api" : (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
 
-    // Remove trailing slash from backend URL and leading slash from image path
-    const cleanBackendUrl = backendUrl.replace(/\/$/, "");
     const cleanImagePath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
 
-    return `${cleanBackendUrl}${cleanImagePath}`;
+    return `${prefix}${cleanImagePath}`;
 }

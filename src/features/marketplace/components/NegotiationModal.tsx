@@ -22,6 +22,7 @@ interface NegotiationModalProps {
 export function NegotiationModal({ isOpen, onClose, onSubmit, initialPrice, serviceId, receiverId }: NegotiationModalProps) {
     const [negotiationPrice, setNegotiationPrice] = useState("");
     const [message, setMessage] = useState("");
+    const [paymentMethod, setPaymentMethod] = useState("platform");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
     const { showModal } = useStatusModal();
@@ -44,11 +45,13 @@ export function NegotiationModal({ isOpen, onClose, onSubmit, initialPrice, serv
                 receiver_id: receiverId,
                 proposed_price_cents: priceInCents,
                 message: message || undefined,
+                payment_method: paymentMethod,
             });
 
             if (result.success) {
                 setNegotiationPrice("");
                 setMessage("");
+                setPaymentMethod("platform");
                 onSubmit();
             } else {
                 setErrorMsg(result.error || "Failed to create negotiation");
@@ -64,6 +67,7 @@ export function NegotiationModal({ isOpen, onClose, onSubmit, initialPrice, serv
     const handleClose = () => {
         setNegotiationPrice("");
         setMessage("");
+        setPaymentMethod("platform");
         setErrorMsg(null);
         onClose();
     };
@@ -104,6 +108,19 @@ export function NegotiationModal({ isOpen, onClose, onSubmit, initialPrice, serv
                             placeholder="Enter negotiation price"
                             className="bg-white border-gray-200 text-gray-900 h-12 rounded-xl"
                         />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="payment-method" className="text-gray-700 font-medium">Payment Method</Label>
+                        <select
+                            id="payment-method"
+                            value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                            className="w-full bg-white border border-gray-200 text-gray-900 h-12 rounded-xl px-3 outline-none focus:border-[#C69C2E] text-sm"
+                        >
+                            <option value="platform">Platform Wallet</option>
+                            <option value="cash">Offline (Cash) Payment</option>
+                        </select>
                     </div>
 
                     <div className="space-y-2">

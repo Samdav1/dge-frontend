@@ -30,6 +30,7 @@ export async function createNegotiation(data: {
     receiver_id: string;
     proposed_price_cents: number;
     message?: string;
+    payment_method?: string;
 }) {
     const headers = await getAuthHeaders();
     if (!headers) {
@@ -90,6 +91,7 @@ export async function updateNegotiation(negotiationId: string, data: {
     proposed_price_cents?: number;
     message?: string;
     status?: "pending" | "accepted" | "rejected" | "countered";
+    payment_method?: string;
 }) {
     const headers = await getAuthHeaders();
     if (!headers) {
@@ -120,8 +122,8 @@ export async function updateNegotiation(negotiationId: string, data: {
 }
 
 // Accept Negotiation
-export async function acceptNegotiation(negotiationId: string) {
-    return updateNegotiation(negotiationId, { status: "accepted" });
+export async function acceptNegotiation(negotiationId: string, paymentMethod?: string) {
+    return updateNegotiation(negotiationId, { status: "accepted", payment_method: paymentMethod });
 }
 
 // Reject Negotiation

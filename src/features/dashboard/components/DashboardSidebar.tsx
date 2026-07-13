@@ -12,7 +12,8 @@ import {
     Mail,
     User,
     HeadphonesIcon,
-    LogOut
+    LogOut,
+    ShieldCheck
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useChatContext } from "@/providers/ChatProvider";
@@ -22,6 +23,7 @@ const MENU_ITEMS = [
     { icon: LayoutGrid, label: "Ecosystem", href: "/dashboard/marketplace" },
     { icon: Briefcase, label: "Job Board", href: "/dashboard/job-board" },
     { icon: ClipboardList, label: "My Jobs", href: "/dashboard/my-jobs" },
+    { icon: ShieldCheck, label: "Escrow", href: "/dashboard/escrows" },
     { icon: MessageSquare, label: "Negotiation", href: "/dashboard/negotiation" },
     { icon: Wallet, label: "Wallet", href: "/dashboard/wallet" },
     { icon: Car, label: "Driving", href: "/dashboard/driving" },
@@ -29,6 +31,7 @@ const MENU_ITEMS = [
     { icon: User, label: "Profile & Setting", href: "/dashboard/profile" },
     { icon: HeadphonesIcon, label: "Support", href: "/dashboard/support" },
 ];
+
 
 
 interface DashboardSidebarProps {

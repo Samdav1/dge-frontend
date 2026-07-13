@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MyServicesTab } from "./MyServicesTab";
+import { useKycGate } from "@/hooks/useKycGate";
 import { OngoingJobsTab } from "./OngoingJobsTab";
 import { SubmittedJobsTab } from "./SubmittedJobsTab";
 import { PostedJobsTab } from "./PostedJobsTab";
@@ -13,6 +14,7 @@ type Tab = "services" | "ongoing" | "submitted" | "posted";
 export function MyJobsLayout() {
     const [activeTab, setActiveTab] = useState<Tab>("services");
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const { checkKyc, KycGateModal } = useKycGate();
 
     const tabs: { id: Tab; label: string }[] = [
         { id: "services", label: "My Services" },
@@ -27,7 +29,7 @@ export function MyJobsLayout() {
                 <h1 className="text-2xl font-bold text-gray-900">My Jobs</h1>
 
                 <Button
-                    onClick={() => setIsCreateModalOpen(true)}
+                    onClick={() => checkKyc(() => setIsCreateModalOpen(true), "create services")}
                     className="bg-[#C69C2E] hover:bg-[#b08b29] text-white rounded-xl px-6 w-full md:w-auto"
                 >
                     + Create Services
@@ -52,7 +54,7 @@ export function MyJobsLayout() {
 
             <div className="min-h-[400px]">
                 {activeTab === "services" && (
-                    <MyServicesTab onCreateService={() => setIsCreateModalOpen(true)} />
+                    <MyServicesTab onCreateService={() => checkKyc(() => setIsCreateModalOpen(true), "create services")} />
                 )}
                 {activeTab === "ongoing" && <OngoingJobsTab />}
                 {activeTab === "submitted" && <SubmittedJobsTab />}
@@ -63,6 +65,7 @@ export function MyJobsLayout() {
                 open={isCreateModalOpen}
                 onOpenChange={setIsCreateModalOpen}
             />
+            {KycGateModal}
         </div>
     );
 }

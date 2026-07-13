@@ -6,6 +6,7 @@ import { Users as UsersIcon, Search, ChevronDown, MoreHorizontal,
     RefreshCw, Loader2, AlertCircle, XCircle, CheckCircle2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 type ToastState = { type: "success" | "error"; message: string } | null;
 
@@ -51,6 +52,7 @@ export default function AdminUsersPage() {
     const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [menuPos, setMenuPos] = useState({ top: 0, left: 0 });
+    const [kycConfirmUser, setKycConfirmUser] = useState<string | null>(null);
 
     useEffect(() => {
         if (!toast) return;
@@ -116,6 +118,29 @@ export default function AdminUsersPage() {
             fetchUsers(search, statusFilter, page);
         } catch (err) {
             setToast({ type: "error", message: "Failed to update user status" });
+        }
+    };
+
+    const handleKycApprove = (userId: string) => {
+        setActiveMenu(null);
+        setKycConfirmUser(userId);
+    };
+
+    const executeKycApprove = async () => {
+        if (!kycConfirmUser) return;
+        const targetUserId = kycConfirmUser;
+        setKycConfirmUser(null);
+        try {
+            const res = await fetch(`/api/admin/kyc/${targetUserId}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "approve" })
+            });
+            if (!res.ok) throw new Error("Verification failed");
+            setToast({ type: "success", message: "User KYC verified successfully" });
+            fetchUsers(search, statusFilter, page);
+        } catch (err) {
+            setToast({ type: "error", message: "Failed to verify KYC" });
         }
     };
 
@@ -303,6 +328,11 @@ export default function AdminUsersPage() {
                                                         {item.status}
                                                     </span>
                                                 </td>
+                                                <td className="py-4 px-2">
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md font-bold text-[9px] ${KYC_STYLES[item.kycStatus] ?? KYC_STYLES.PENDING}`}>
+                                                        {item.kycStatus}
+                                                    </span>
+                                                </td>
                                                 <td className="py-4 px-2 select-none text-slate-400 hover:text-slate-600 relative">
                                                     <button
                                                         onClick={(e) => {
@@ -349,6 +379,17 @@ export default function AdminUsersPage() {
                                         >
                                             Ban User
                                         </button>
+                                        {users.find(u => u.id === activeMenu)?.kycStatus !== "VERIFIED" && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleKycApprove(activeMenu);
+                                                }}
+                                                className="px-3 py-1.5 text-xs text-left font-semibold hover:bg-slate-50 text-[#b68512] select-none"
+                                            >
+                                                Approve KYC
+                                            </button>
+                                        )}
                                         <div className="h-px bg-slate-100 my-0.5"></div>
                                         <button
                                             onClick={(e) => {
@@ -393,6 +434,34 @@ export default function AdminUsersPage() {
                     </div>
                 </div>
             </main>
+
+            <Dialog open={kycConfirmUser !== null} onOpenChange={(open) => { if (!open) setKycConfirmUser(null); }}>
+                <DialogContent className="max-w-md p-6 bg-white rounded-2xl shadow-xl border border-slate-100 flex flex-col">
+                    <DialogHeader className="mb-4">
+                        <DialogTitle className="text-lg font-bold text-slate-800">
+                            Verify User KYC
+                        </DialogTitle>
+                        <DialogDescription className="text-xs text-slate-500 font-medium">
+                            Are you sure you want to approve and verify the KYC status for <strong>{users.find(u => u.id === kycConfirmUser)?.name || "this user"}</strong>? This will grant them full onboarding permissions on the platform.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter className="flex items-center gap-2 sm:justify-end">
+                        <button 
+                            onClick={() => setKycConfirmUser(null)}
+                            className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-100 rounded-xl font-bold text-[11px] text-slate-500 hover:text-slate-700 transition-all shadow-sm"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={executeKycApprove}
+                            className="px-4 py-2 bg-[#b68512] hover:bg-[#a0740f] text-white rounded-xl font-bold text-[11px] shadow-sm transition-all"
+                        >
+                            Confirm Verification
+                        </button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

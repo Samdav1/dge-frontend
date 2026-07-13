@@ -437,3 +437,52 @@ export async function getWorkSubmission(id: string) {
         return { success: false, error: "Network error" };
     }
 }
+
+export async function submitWork(formData: FormData) {
+    const session = await auth();
+
+    if (!session || !session.backendToken) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    let token = session.backendToken;
+    if (typeof token === 'string' && token.startsWith('"') && token.endsWith('"')) {
+        token = token.slice(1, -1);
+    }
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiKey = process.env.BACKEND_API_KEY;
+
+    try {
+        const response = await fetch(`${apiUrl}/work_submissions/work_submissions/`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "X-API-KEY": apiKey || "",
+            },
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            let errorMessage = "Failed to submit work";
+            if (errorData.detail) {
+                if (typeof errorData.detail === 'string') {
+                    errorMessage = errorData.detail;
+                } else if (Array.isArray(errorData.detail)) {
+                    errorMessage = errorData.detail.map((err: any) => err.msg || JSON.stringify(err)).join(', ');
+                } else {
+                    errorMessage = JSON.stringify(errorData.detail);
+                }
+            }
+            return { success: false, error: errorMessage };
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error("Create work submission error:", error);
+        return { success: false, error: "Network error" };
+    }
+}
+

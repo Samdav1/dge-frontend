@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 import FallbackImage from "@/components/ui/FallbackImage";
 import { useStatusModal } from "@/app/admin/components/StatusModalProvider";
 import { useRouter } from "next/navigation";
+import { useKycGate } from "@/hooks/useKycGate";
 
 interface ServiceDetailsProps {
     service: {
@@ -58,6 +59,7 @@ export function ServiceDetails({ service, isPublic = false }: ServiceDetailsProp
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
     const { showModal } = useStatusModal();
     const router = useRouter();
+    const { checkKyc, KycGateModal } = useKycGate();
 
     const handleNegotiationSubmit = () => {
         setIsNegotiationModalOpen(false);
@@ -70,39 +72,41 @@ export function ServiceDetails({ service, isPublic = false }: ServiceDetailsProp
             return;
         }
 
-        setIsApplying(true);
-        try {
-            // Parse price string to number (remove currency symbol and commas)
-            const priceString = service.price.replace(/[^0-9.]/g, '');
-            const price = parseFloat(priceString);
-            const priceInCents = Math.round(price * 100);
+        await checkKyc(async () => {
+            setIsApplying(true);
+            try {
+                // Parse price string to number (remove currency symbol and commas)
+                const priceString = service.price.replace(/[^0-9.]/g, '');
+                const price = parseFloat(priceString);
+                const priceInCents = Math.round(price * 100);
 
-            const result = await createNegotiation({
-                service_id: service.id,
-                receiver_id: service.author.id || "",
-                proposed_price_cents: priceInCents,
-                message: `I would like to apply for this service: ${service.title}`,
-            });
+                const result = await createNegotiation({
+                    service_id: service.id,
+                    receiver_id: service.author.id || "",
+                    proposed_price_cents: priceInCents,
+                    message: `I would like to apply for this service: ${service.title}`,
+                });
 
-            if (result.success) {
-                setIsApplicationSuccessOpen(true);
-            } else {
+                if (result.success) {
+                    setIsApplicationSuccessOpen(true);
+                } else {
+                    showModal({
+                        type: "error",
+                        title: "Application Failed",
+                        message: result.error || "Failed to apply for service"
+                    });
+                }
+            } catch (err) {
+                console.error("Application error:", err);
                 showModal({
                     type: "error",
-                    title: "Application Failed",
-                    message: result.error || "Failed to apply for service"
+                    title: "Unexpected Error",
+                    message: "An unexpected error occurred while applying."
                 });
+            } finally {
+                setIsApplying(false);
             }
-        } catch (err) {
-            console.error("Application error:", err);
-            showModal({
-                type: "error",
-                title: "Unexpected Error",
-                message: "An unexpected error occurred while applying."
-            });
-        } finally {
-            setIsApplying(false);
-        }
+        }, "purchase services");
     };
 
     return (
@@ -243,7 +247,13 @@ export function ServiceDetails({ service, isPublic = false }: ServiceDetailsProp
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    onClick={() => isPublic ? router.push("/login") : setIsNegotiationModalOpen(true)}
+                                    onClick={() => {
+                                        if (isPublic) {
+                                            router.push("/login");
+                                        } else {
+                                            checkKyc(() => setIsNegotiationModalOpen(true), "purchase services");
+                                        }
+                                    }}
                                     className="flex-1 border-[#C69C2E] text-[#C69C2E] hover:bg-[#C69C2E]/5 h-12 rounded-xl text-base font-medium w-full"
                                 >
                                     Make Negotiation
@@ -376,6 +386,7 @@ export function ServiceDetails({ service, isPublic = false }: ServiceDetailsProp
                 title="Application sent successfully"
                 message="Your application has been sent successfully"
             />
+            {KycGateModal}
         </div>
     );
 }

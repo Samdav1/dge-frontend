@@ -15,6 +15,7 @@ import { PostedJob } from "@/features/posted-jobs/actions";
 import { PostedJobDetailsModal } from "./PostedJobDetailsModal";
 import { CreatePostedJobModal } from "./CreatePostedJobModal";
 import { getBackendImageUrl } from "@/lib/imageUtils";
+import { useKycGate } from "@/hooks/useKycGate";
 import FallbackImage from "@/components/ui/FallbackImage";
 
 const DGE_LOGO = "/DGE logo.png";
@@ -88,6 +89,7 @@ export function PostedJobsSidebar() {
     const { data: jobs, isLoading } = useOpenPostedJobs();
     const [selectedJob, setSelectedJob] = useState<PostedJob | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const { checkKyc, KycGateModal } = useKycGate();
 
     return (
         <aside className="w-full space-y-4">
@@ -101,7 +103,7 @@ export function PostedJobsSidebar() {
                         <h2 className="font-bold text-gray-900 text-sm">Posted Jobs</h2>
                     </div>
                     <button
-                        onClick={() => setIsCreateOpen(true)}
+                        onClick={() => checkKyc(() => setIsCreateOpen(true), "post jobs")}
                         className="flex items-center gap-1 text-[11px] bg-[#C69C2E] text-white px-3 py-1.5 rounded-xl font-semibold hover:bg-[#b08b29] transition-colors"
                     >
                         <Plus className="w-3 h-3" />
@@ -122,7 +124,7 @@ export function PostedJobsSidebar() {
                         <Briefcase className="w-8 h-8 text-gray-300 mx-auto mb-2" />
                         <p className="text-sm text-gray-400">No open jobs yet</p>
                         <button
-                            onClick={() => setIsCreateOpen(true)}
+                            onClick={() => checkKyc(() => setIsCreateOpen(true), "post jobs")}
                             className="mt-2 text-[#C69C2E] text-xs font-semibold hover:underline"
                         >
                             Be the first to post!
@@ -151,6 +153,7 @@ export function PostedJobsSidebar() {
                 open={isCreateOpen}
                 onClose={() => setIsCreateOpen(false)}
             />
+            {KycGateModal}
         </aside>
     );
 }

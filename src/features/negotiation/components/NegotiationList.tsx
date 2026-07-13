@@ -16,6 +16,7 @@ interface Negotiation {
     proposed_price_cents: number;
     message?: string;
     status: string;
+    payment_method?: string;
     created_at: string;
     updated_at: string;
 }
@@ -191,6 +192,7 @@ export function NegotiationList() {
                             initiator_id={item.initiator_id}
                             receiver_id={item.receiver_id}
                             onStatusChange={fetchNegotiations}
+                            payment_method={item.payment_method}
                         />
                     ))}
                 </div>

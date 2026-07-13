@@ -18,12 +18,14 @@ import { JobBoardSectionSkeleton } from "@/features/posted-jobs/components/JobBo
 import { PostedJobDetailsModal } from "@/features/posted-jobs/components/PostedJobDetailsModal";
 import { CreatePostedJobModal } from "@/features/posted-jobs/components/CreatePostedJobModal";
 import { PostedJob } from "@/features/posted-jobs/actions";
+import { useKycGate } from "@/hooks/useKycGate";
 
 export default function JobBoardPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState<string>("all");
     const [selectedJob, setSelectedJob] = useState<PostedJob | null>(null);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const { checkKyc, KycGateModal } = useKycGate();
 
     const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
@@ -44,7 +46,7 @@ export default function JobBoardPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => setIsCreateOpen(true)}
+                        onClick={() => checkKyc(() => setIsCreateOpen(true), "post jobs")}
                         className="flex items-center gap-2 bg-[#C69C2E] text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-[#C69C2E]/20 hover:bg-[#b08b29] hover:-translate-y-0.5 transition-all active:scale-95"
                     >
                         <Plus className="w-5 h-5" />
@@ -116,7 +118,7 @@ export default function JobBoardPage() {
                             : "There are currently no open jobs. Be the first to post a job and find the perfect service provider!"}
                     </p>
                     <button
-                        onClick={() => setIsCreateOpen(true)}
+                        onClick={() => checkKyc(() => setIsCreateOpen(true), "post jobs")}
                         className="text-[#C69C2E] font-bold hover:underline underline-offset-4 flex items-center gap-2"
                     >
                         <Plus className="w-4 h-4" />
@@ -148,6 +150,7 @@ export default function JobBoardPage() {
                 open={isCreateOpen}
                 onClose={() => setIsCreateOpen(false)}
             />
+            {KycGateModal}
         </div>
     );
 }

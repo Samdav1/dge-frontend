@@ -269,7 +269,7 @@ export function SubmittedJobDetails() {
                                         }}
                                         className="w-full bg-[#C69C2E] text-white py-3 rounded-xl font-bold hover:bg-[#b08b29] transition-colors"
                                     >
-                                        Approve & Release Payment
+                                        {escrow.payment_method === "cash" ? "Confirm Satisfaction" : "Approve & Release Payment"}
                                     </button>
                                     <button 
                                         onClick={() => {
@@ -298,19 +298,19 @@ export function SubmittedJobDetails() {
                         <div className="flex items-center gap-3 mb-3">
                             <Clock className="w-5 h-5 text-orange-500" />
                             <h4 className="font-bold text-orange-900">
-                                {escrow?.status === "released" ? "Payment Released" : 
+                                {escrow?.status === "released" ? (escrow.payment_method === "cash" ? "Satisfaction Confirmed" : "Payment Released") : 
                                  escrow?.status === "disputed" ? "In Dispute" : 
                                  escrow?.status === "refunded" ? "Payment Refunded" : 
                                  "Waiting for Approval"}
                             </h4>
                         </div>
                         <p className="text-xs text-orange-700 leading-relaxed">
-                            {escrow?.status === "released" ? "This submission has been approved and the payment was successfully released." :
+                            {escrow?.status === "released" ? (escrow.payment_method === "cash" ? "You have confirmed satisfaction with this job." : "This submission has been approved and the payment was successfully released.") :
                              escrow?.status === "disputed" ? "This submission has been rejected and is currently under dispute/revision." :
                              escrow?.status === "refunded" ? "This payment has been refunded to the client." :
                              isProvider 
-                                ? "Your work has been submitted. The client needs to review and release the payment from escrow." 
-                                : "The provider has submitted the work. Please review it and release the payment if satisfied."}
+                                ? (escrow?.payment_method === "cash" ? "Your work has been submitted. The client needs to confirm satisfaction." : "Your work has been submitted. The client needs to review and release the payment from escrow.") 
+                                : (escrow?.payment_method === "cash" ? "The provider has submitted the work. Please review it and confirm satisfaction." : "The provider has submitted the work. Please review it and release the payment if satisfied.")}
                         </p>
                     </div>
                 </div>

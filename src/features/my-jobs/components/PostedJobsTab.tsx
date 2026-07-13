@@ -23,6 +23,7 @@ import { useMyPostedJobs, useJobBids } from "@/features/posted-jobs/hooks/usePos
 import { PostedJob, PostedJobBid, cancelPostedJob, acceptBid, rejectBid } from "@/features/posted-jobs/actions";
 import { CreatePostedJobModal } from "@/features/posted-jobs/components/CreatePostedJobModal";
 import { useQueryClient } from "@tanstack/react-query";
+import { useKycGate } from "@/hooks/useKycGate";
 
 const DGE_LOGO = "/DGE logo.png";
 
@@ -335,6 +336,7 @@ export function PostedJobsTab() {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [cancellingId, setCancellingId] = useState<string | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+    const { checkKyc, KycGateModal } = useKycGate();
 
     const handleCancel = async () => {
         if (!confirmDeleteId) return;
@@ -355,7 +357,7 @@ export function PostedJobsTab() {
                     {jobs?.length ?? 0} posted job{jobs?.length !== 1 ? "s" : ""}
                 </p>
                 <button
-                    onClick={() => setIsCreateOpen(true)}
+                    onClick={() => checkKyc(() => setIsCreateOpen(true), "post jobs")}
                     className="flex items-center gap-1.5 bg-[#C69C2E] hover:bg-[#b08b29] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
                 >
                     <Plus className="w-4 h-4" />
@@ -372,7 +374,7 @@ export function PostedJobsTab() {
                     <Briefcase className="w-10 h-10 text-gray-200" />
                     <p className="text-sm">You haven't posted any jobs yet.</p>
                     <button
-                        onClick={() => setIsCreateOpen(true)}
+                        onClick={() => checkKyc(() => setIsCreateOpen(true), "post jobs")}
                         className="text-[#C69C2E] text-sm font-semibold hover:underline"
                     >
                         Post your first job →
@@ -429,6 +431,7 @@ export function PostedJobsTab() {
                 message="Are you sure you want to cancel this job? This action cannot be undone."
                 isLoading={!!cancellingId}
             />
+            {KycGateModal}
         </div>
     );
 }
