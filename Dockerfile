@@ -14,8 +14,8 @@ COPY . .
 
 # Public env vars — inlined into client JS bundles at build time
 # Defaults are hardcoded because .env is git-ignored and not available in Cloud Build
-ARG NEXT_PUBLIC_API_URL=https://dge-tech-web-cjhe4jg72a-ew.a.run.app
-ARG NEXT_PUBLIC_WS_URL=wss://dge-tech-web-cjhe4jg72a-ew.a.run.app
+ARG NEXT_PUBLIC_API_URL=https://dge-tech-web2-cjhe4jg72a-ew.a.run.app
+ARG NEXT_PUBLIC_WS_URL=wss://dge-tech-web2-cjhe4jg72a-ew.a.run.app
 ARG NEXT_PUBLIC_METAMAP_CLIENT_ID=6a476c6475062151a6c42022
 ARG NEXT_PUBLIC_METAMAP_FLOW_ID=6a476c6486cc8d264d1a0a5f
 
