@@ -32,6 +32,7 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
     const [imageUrl, setImageUrl] = useState("");
+    const [paymentMethod, setPaymentMethod] = useState("platform");
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -42,6 +43,7 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
     const resetForm = () => {
         setTitle(""); setDescription(""); setCategoryId("");
         setMinPrice(""); setMaxPrice(""); setImageUrl("");
+        setPaymentMethod("platform");
         setImageFile(null);
         setError(null); setSuccess(false);
     };
@@ -82,6 +84,7 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
             min_price_cents: minCents,
             max_price_cents: maxCents,
             image: finalImageUrl.trim() || undefined,
+            payment_method: paymentMethod,
         });
 
         setIsSubmitting(false);
@@ -208,9 +211,30 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
                                         />
                                     </div>
                                 </div>
-                                <p className="text-[11px] text-amber-600 mt-1.5 font-medium">
-                                    ⚠️ Your wallet must have at least ₦{maxPrice || "Max"} balance to post a job.
-                                </p>
+                                {paymentMethod === "platform" ? (
+                                    <p className="text-[11px] text-amber-600 mt-1.5 font-medium">
+                                        ⚠️ Your wallet must have at least ₦{maxPrice || "Max"} balance to post a job.
+                                    </p>
+                                ) : (
+                                    <p className="text-[11px] text-emerald-600 mt-1.5 font-medium">
+                                        🤝 Offline (Cash) payment chosen. Wallet balance is not required.
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Payment Method */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Payment Method <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={paymentMethod}
+                                    onChange={(e) => setPaymentMethod(e.target.value)}
+                                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C69C2E]/30 bg-gray-50 outline-none"
+                                >
+                                    <option value="platform">Platform Wallet</option>
+                                    <option value="cash">Offline (Cash) Payment</option>
+                                </select>
                             </div>
 
                             {/* Image Upload */}

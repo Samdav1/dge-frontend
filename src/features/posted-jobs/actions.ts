@@ -15,6 +15,7 @@ export interface PostedJob {
     max_price_cents: number;
     image?: string | null;
     status: "open" | "assigned" | "completed" | "cancelled";
+    payment_method: string;
     created_at: string;
     bid_count?: number;
     user?: { id: string; username: string };
@@ -100,6 +101,7 @@ export async function createPostedJob(payload: {
     min_price_cents: number;
     max_price_cents: number;
     image?: string;
+    payment_method?: string;
 }): Promise<{ success: boolean; data?: PostedJob; error?: string }> {
     try {
         const res = await backendFetch(`/posted_jobs/`, {

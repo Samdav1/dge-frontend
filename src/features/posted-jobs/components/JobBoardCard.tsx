@@ -70,10 +70,14 @@ export function JobBoardCard({ job, onClick }: JobBoardCardProps) {
                 <div className="absolute top-3 right-3">
                     <JobStatusBadge status={job.status} />
                 </div>
-                <div className="absolute bottom-3 left-3">
+                <div className="absolute bottom-3 left-3 flex gap-1.5">
                     <div className="bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-lg flex items-center gap-2 text-white">
                         <Tag className="w-3 h-3 text-[#C69C2E]" />
                         <span className="text-[10px] font-semibold">{job.category?.name || "General"}</span>
+                    </div>
+                    <div className="bg-black/50 backdrop-blur-md px-3 py-1.5 rounded-lg flex items-center gap-2 text-white">
+                        <DollarSign className="w-3 h-3 text-[#C69C2E]" />
+                        <span className="text-[10px] font-semibold">{job.payment_method === "cash" ? "Cash" : "Escrow"}</span>
                     </div>
                 </div>
             </div>

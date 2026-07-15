@@ -167,6 +167,9 @@ function JobDetailPanel({
                             {job.category.name}
                         </span>
                     )}
+                    <span className="text-[10px] text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full capitalize">
+                        Method: {job.payment_method === "cash" ? "Offline Cash" : "Platform Escrow"}
+                    </span>
                 </div>
                 <div className="flex items-center gap-1 text-[#C69C2E] font-bold text-sm">
                     ₦{minPrice} – ₦{maxPrice}

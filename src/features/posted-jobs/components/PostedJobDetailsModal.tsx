@@ -108,6 +108,10 @@ export function PostedJobDetailsModal({ job, open, onClose }: Props) {
                                 <span>₦{minPrice} – ₦{maxPrice}</span>
                             </div>
                             <div className="flex items-center gap-1.5 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-xl">
+                                <DollarSign className="w-3.5 h-3.5" />
+                                <span>{job.payment_method === "cash" ? "Offline Cash" : "Platform Escrow"}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-xl">
                                 <Calendar className="w-3.5 h-3.5" />
                                 <span>{postedDate}</span>
                             </div>
