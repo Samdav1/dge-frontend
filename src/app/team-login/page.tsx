@@ -64,7 +64,7 @@ export default function TeamLoginPage() {
                     {/* Top gradient highlight */}
                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 via-[#b68512] to-amber-600" />
                     
-                    <form onSubmit={handleLogin} className="space-y-5">
+                    <form onSubmit={handleLogin} method="POST" className="space-y-5">
                         {error && (
                             <div className="bg-red-50 text-red-600 p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 border border-red-100 animate-slide-in">
                                 <AlertCircle size={16} />

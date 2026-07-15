@@ -63,7 +63,7 @@ export function RegisterForm() {
                 </p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} method="POST" className="space-y-6">
                 <div className="space-y-2">
                     <label className="text-sm font-medium" htmlFor="username">
                         Username

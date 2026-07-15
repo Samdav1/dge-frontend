@@ -81,7 +81,7 @@ export function AdminLoginForm() {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} method="POST" className="space-y-5">
                 {/* Email Address */}
                 <div className="space-y-1.5">
                     <label className="text-xs font-medium text-slate-700 block" htmlFor="email">
