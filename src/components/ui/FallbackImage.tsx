@@ -17,8 +17,14 @@ const normalizeUrl = (url?: string) => {
   if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:") || url.startsWith("blob:")) {
     return url;
   }
+  let cleanUrl = url;
+  if (cleanUrl.startsWith("/api/static/")) {
+    cleanUrl = cleanUrl.replace("/api/static/", "/static/");
+  } else if (cleanUrl.startsWith("api/static/")) {
+    cleanUrl = cleanUrl.replace("api/static/", "static/");
+  }
   const cleanBaseUrl = BASE_URL.replace("0.0.0.0", "127.0.0.1");
-  const path = url.startsWith("/") ? url : `/${url}`;
+  const path = cleanUrl.startsWith("/") ? cleanUrl : `/${cleanUrl}`;
   return `${cleanBaseUrl}${path}`;
 };
 
