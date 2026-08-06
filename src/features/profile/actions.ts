@@ -260,3 +260,101 @@ export async function submitUserKyc(formData: FormData) {
         return { success: false, error: "Network error" };
     }
 }
+
+// Get Active KYC Config
+export async function getKycConfig() {
+    try {
+        const response = await fetch(`${apiUrl}/kyc/config`, {
+            method: "GET",
+            cache: "no-store",
+        });
+
+        if (!response.ok) {
+            return { success: false, active_provider: "sumsub" };
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error("Get KYC Config error:", error);
+        return { success: false, active_provider: "sumsub" };
+    }
+}
+
+// Get Sumsub Access Token for current user
+export async function getSumsubToken() {
+    const headers = await getAuthHeaders();
+    if (!headers) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    try {
+        const response = await fetch(`${apiUrl}/kyc/sumsub-token`, {
+            method: "POST",
+            headers,
+            cache: "no-store",
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.detail || "Failed to generate Sumsub token" };
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error("Get Sumsub token error:", error);
+        return { success: false, error: "Network error" };
+    }
+}
+
+// Admin: Get KYC Settings
+export async function getAdminKycSettings() {
+    try {
+        const response = await fetch(`${apiUrl}/superadmin/kyc-settings`, {
+            method: "GET",
+            cache: "no-store",
+        });
+
+        if (!response.ok) {
+            return { success: false, active_provider: "sumsub" };
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error("Get Admin KYC Settings error:", error);
+        return { success: false, active_provider: "sumsub" };
+    }
+}
+
+// Admin: Update KYC Settings
+export async function updateAdminKycSettings(activeProvider: string) {
+    const headers = await getAuthHeaders();
+    if (!headers) {
+        return { success: false, error: "Unauthorized" };
+    }
+
+    try {
+        const response = await fetch(`${apiUrl}/superadmin/kyc-settings`, {
+            method: "PUT",
+            headers: {
+                ...headers,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ active_provider: activeProvider }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.detail || "Failed to update KYC provider" };
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error("Update Admin KYC Settings error:", error);
+        return { success: false, error: "Network error" };
+    }
+}
+

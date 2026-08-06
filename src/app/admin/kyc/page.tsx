@@ -13,6 +13,8 @@ import VerifiedTab from "./components/VerifiedTab";
 import RejectedTab from "./components/RejectedTab";
 import ReviewDetailView from "./components/ReviewDetailView";
 
+import { getAdminKycSettings, updateAdminKycSettings } from "@/features/profile/actions";
+
 type TabType = "Pending" | "Verified" | "Rejected";
 
 export default function AdminKycPage() {
@@ -20,6 +22,8 @@ export default function AdminKycPage() {
     const [selectedReview, setSelectedReview] = useState<any | null>(null);
     const [summary, setSummary] = useState({ pending: 0, verified: 0, rejected: 0 });
     const [loading, setLoading] = useState(true);
+    const [activeProvider, setActiveProvider] = useState<string>("sumsub");
+    const [savingProvider, setSavingProvider] = useState(false);
 
     const fetchSummary = async () => {
         try {
@@ -33,7 +37,31 @@ export default function AdminKycPage() {
         } finally {
             setLoading(false);
         }
+
+        try {
+            const setRes = await getAdminKycSettings();
+            if (setRes.success && setRes.data?.active_provider) {
+                setActiveProvider(setRes.data.active_provider);
+            }
+        } catch (err) {
+            console.error("Failed to fetch KYC settings:", err);
+        }
     };
+
+    const handleUpdateProvider = async (provider: string) => {
+        setSavingProvider(true);
+        try {
+            const res = await updateAdminKycSettings(provider);
+            if (res.success && res.data?.active_provider) {
+                setActiveProvider(res.data.active_provider);
+            }
+        } catch (err) {
+            console.error("Failed to update provider:", err);
+        } finally {
+            setSavingProvider(false);
+        }
+    };
+
 
     const handleExportCSV = async () => {
         try {
@@ -145,6 +173,46 @@ export default function AdminKycPage() {
                                     <span className="text-2xl font-bold tracking-tight text-slate-800">{rejectionRate}%</span>
                                     <span className="text-[11px] text-red-600 font-bold leading-tight mt-2 flex items-center gap-1">{summary.rejected} Total Rejected</span>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* KYC Provider Setting Card */}
+                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                    <h3 className="text-sm font-bold text-slate-800">Platform KYC Provider</h3>
+                                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-amber-100 text-amber-800">
+                                        Active: {activeProvider}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-slate-400">
+                                    Select which identity verification engine user verification requests will be routed to.
+                                </p>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    disabled={savingProvider}
+                                    onClick={() => handleUpdateProvider("sumsub")}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                                        activeProvider === "sumsub"
+                                            ? "bg-[#b68512] text-white shadow-sm"
+                                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                    }`}
+                                >
+                                    Sumsub (Recommended)
+                                </button>
+                                <button
+                                    disabled={savingProvider}
+                                    onClick={() => handleUpdateProvider("metamap")}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                                        activeProvider === "metamap"
+                                            ? "bg-[#b68512] text-white shadow-sm"
+                                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                    }`}
+                                >
+                                    MetaMap
+                                </button>
                             </div>
                         </div>
 

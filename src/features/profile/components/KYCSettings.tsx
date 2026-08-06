@@ -1,55 +1,66 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, AlertTriangle, ShieldCheck, RefreshCw } from "lucide-react";
-import { getUserKyc, getProfile } from "../actions";
-
-declare module "react" {
-    namespace JSX {
-        interface IntrinsicElements {
-            "metamap-button": any;
-        }
-    }
-}
+import { getUserKyc, getProfile, getKycConfig, getSumsubToken } from "../actions";
 
 declare global {
+    interface Window {
+        snsWebSdk?: any;
+    }
     namespace JSX {
         interface IntrinsicElements {
             "metamap-button": any;
         }
     }
 }
-
 
 export function KYCSettings() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [kycData, setKycData] = useState<any>(null);
     const [userId, setUserId] = useState<string | null>(null);
+    const [activeProvider, setActiveProvider] = useState<string>("sumsub");
+
     const [sdkLoaded, setSdkLoaded] = useState(false);
     const [sdkError, setSdkError] = useState(false);
+    const [sumsubToken, setSumsubToken] = useState<string | null>(null);
+
     const metamapRef = useRef<HTMLDivElement>(null);
+    const sumsubContainerRef = useRef<HTMLDivElement>(null);
+    const sumsubInstanceRef = useRef<any>(null);
 
     const fetchKyc = async () => {
         setIsLoading(true);
         setError(null);
         
-        const profileRes = await getProfile();
-        if (profileRes.success && profileRes.data) {
-            setUserId(profileRes.data.user_id);
+        try {
+            const configRes = await getKycConfig();
+            if (configRes.success && configRes.data?.active_provider) {
+                setActiveProvider(configRes.data.active_provider);
+            }
+
+            const profileRes = await getProfile();
+            if (profileRes.success && profileRes.data) {
+                setUserId(profileRes.data.user_id);
+            }
+            
+            const res = await getUserKyc();
+            if (res.success && res.data) {
+                setKycData(res.data);
+            }
+        } catch (err: any) {
+            console.error("Error fetching KYC status:", err);
+            setError("Failed to load KYC configuration.");
+        } finally {
+            setIsLoading(false);
         }
-        
-        const res = await getUserKyc();
-        if (res.success && res.data) {
-            setKycData(res.data);
-        }
-        setIsLoading(false);
     };
 
+    // Load MetaMap SDK
     const loadMetaMapSdk = useCallback(() => {
         setSdkError(false);
         setSdkLoaded(false);
 
-        // Remove any existing MetaMap scripts first
         document.querySelectorAll('script[src*="metamap.com"]').forEach(el => el.remove());
 
         const script = document.createElement("script");
@@ -64,27 +75,99 @@ export function KYCSettings() {
             setSdkLoaded(false);
         };
         document.body.appendChild(script);
-
         return script;
+    }, []);
+
+    // Load Sumsub SDK & Initialize Container
+    const initSumsubSdk = useCallback(async () => {
+        setSdkError(false);
+        setSdkLoaded(false);
+
+        const tokenRes = await getSumsubToken();
+        if (!tokenRes.success || !tokenRes.data?.token) {
+            setSdkError(true);
+            setError(tokenRes.error || "Failed to generate Sumsub access token.");
+            return;
+        }
+
+        const accessToken = tokenRes.data.token;
+        setSumsubToken(accessToken);
+
+        const launchSdk = () => {
+            if (!window.snsWebSdk) {
+                setSdkError(true);
+                return;
+            }
+
+            try {
+                if (sumsubContainerRef.current) {
+                    sumsubContainerRef.current.innerHTML = "";
+                }
+
+                const snsWebSdkInstance = window.snsWebSdk
+                    .init(
+                        accessToken,
+                        async () => {
+                            const newTokenRes = await getSumsubToken();
+                            return newTokenRes.data?.token || accessToken;
+                        }
+                    )
+                    .withConf({ lang: "en" })
+                    .withOptions({ addViewportTag: false, adaptIframeHeight: true })
+                    .onStatusChange((newStatus: string) => {
+                        console.log("Sumsub status changed:", newStatus);
+                        fetchKyc();
+                    })
+                    .build();
+
+                snsWebSdkInstance.launch("#sumsub-websdk-container");
+                sumsubInstanceRef.current = snsWebSdkInstance;
+                setSdkLoaded(true);
+                setSdkError(false);
+            } catch (err) {
+                console.error("Sumsub launch error:", err);
+                setSdkError(true);
+            }
+        };
+
+        if (window.snsWebSdk) {
+            launchSdk();
+            return;
+        }
+
+        document.querySelectorAll('script[src*="sumsub.com"]').forEach(el => el.remove());
+
+        const script = document.createElement("script");
+        script.src = "https://static.sumsub.com/onis/websdk/v1/sns-websdk-builder.js";
+        script.async = true;
+        script.onload = () => {
+            launchSdk();
+        };
+        script.onerror = () => {
+            setSdkError(true);
+            setSdkLoaded(false);
+        };
+        document.body.appendChild(script);
     }, []);
 
     useEffect(() => {
         fetchKyc();
-        const script = loadMetaMapSdk();
-
-        return () => {
-            try { document.body.removeChild(script); } catch {}
-        };
     }, []);
 
-    // When the MetaMap button is clicked, try to find and click the actual metamap-button element
-    const handleStartVerification = () => {
-        const metamapBtn = metamapRef.current?.querySelector("metamap-button") as HTMLElement | null;
-        if (metamapBtn) {
-            // The MetaMap web component usually has an internal button/shadow DOM element
-            metamapBtn.click();
+    useEffect(() => {
+        if (isLoading) return;
+        const status = kycData?.status || "unverified";
+        if (status === "verified") return;
+
+        if (activeProvider === "metamap") {
+            const script = loadMetaMapSdk();
+            return () => {
+                try { document.body.removeChild(script); } catch {}
+            };
+        } else if (activeProvider === "sumsub") {
+            initSumsubSdk();
         }
-    };
+    }, [activeProvider, isLoading, kycData?.status, loadMetaMapSdk, initSumsubSdk]);
 
     if (isLoading) {
         return (
@@ -106,9 +189,9 @@ export function KYCSettings() {
     return (
         <div className="space-y-8">
             <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">KYC Verification</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">KYC Identity Verification</h2>
                 <p className="text-sm text-gray-500">
-                    Verify your identity via MetaMap to unlock all features on the platform.
+                    Verify your identity via {activeProvider === "sumsub" ? "Sumsub" : "MetaMap"} to unlock full account features and compliance privileges.
                 </p>
             </div>
 
@@ -126,14 +209,14 @@ export function KYCSettings() {
                 
                 <div>
                     <h3 className="font-semibold capitalize">Status: {status}</h3>
-                    {status === "verified" && <p className="text-sm opacity-90">Your identity has been verified.</p>}
-                    {status === "pending" && <p className="text-sm opacity-90">Your MetaMap verification is under review.</p>}
+                    {status === "verified" && <p className="text-sm opacity-90">Your identity has been verified successfully.</p>}
+                    {status === "pending" && <p className="text-sm opacity-90">Your verification documents are currently under review.</p>}
                     {status === "rejected" && (
                         <p className="text-sm opacity-90">
-                            Your verification was rejected. Reason: {kycData?.rejection_reason || "Invalid documents."}
+                            Verification rejected. Reason: {kycData?.rejection_reason || "Invalid or unreadable document."}
                         </p>
                     )}
-                    {status === "unverified" && <p className="text-sm opacity-90">Please start the MetaMap verification flow below.</p>}
+                    {status === "unverified" && <p className="text-sm opacity-90">Complete the identity verification step below.</p>}
                 </div>
             </div>
 
@@ -145,46 +228,52 @@ export function KYCSettings() {
             )}
 
             {(status === "unverified" || status === "rejected") ? (
-                <div className="flex flex-col items-center justify-center p-8 bg-gray-50 border border-gray-200 rounded-xl space-y-6">
-                    {/* Icon */}
-                    <div className="w-16 h-16 rounded-2xl bg-[#C69C2E]/10 flex items-center justify-center">
-                        <ShieldCheck className="w-8 h-8 text-[#C69C2E]" />
+                <div className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-xl space-y-6 shadow-sm">
+                    <div className="w-14 h-14 rounded-2xl bg-[#C69C2E]/10 flex items-center justify-center">
+                        <ShieldCheck className="w-7 h-7 text-[#C69C2E]" />
                     </div>
 
-                    <div className="text-center space-y-2">
-                        <h3 className="text-lg font-bold text-gray-900">Verify Your Identity</h3>
-                        <p className="text-sm text-gray-500 max-w-sm">
-                            Click the button below to verify your identity. You will need a valid government-issued ID.
+                    <div className="text-center space-y-1">
+                        <h3 className="text-lg font-bold text-gray-900">
+                            Verify via {activeProvider === "sumsub" ? "Sumsub Identity Verification" : "MetaMap Verification"}
+                        </h3>
+                        <p className="text-sm text-gray-500 max-w-md">
+                            Follow the on-screen prompts to submit your government-issued ID and selfie verification.
                         </p>
                     </div>
 
-                    {/* MetaMap Web Button — always rendered so the SDK can initialize */}
-                    <div ref={metamapRef} className="w-full flex justify-center">
-                        <metamap-button
-                            clientid={clientId}
-                            flowid={flowId}
-                            metadata={JSON.stringify({ userId })}
-                        />
-                    </div>
+                    {/* Active Provider Container */}
+                    {activeProvider === "sumsub" ? (
+                        <div className="w-full min-h-[400px]">
+                            <div id="sumsub-websdk-container" ref={sumsubContainerRef} className="w-full flex justify-center min-h-[400px]" />
+                        </div>
+                    ) : (
+                        <div ref={metamapRef} className="w-full flex justify-center py-4">
+                            <metamap-button
+                                clientid={clientId}
+                                flowid={flowId}
+                                metadata={JSON.stringify({ userId })}
+                            />
+                        </div>
+                    )}
 
-                    {/* Fallback: if SDK hasn't loaded yet, show a manual trigger button */}
                     {!sdkLoaded && !sdkError && (
-                        <div className="flex flex-col items-center gap-2">
+                        <div className="flex flex-col items-center gap-2 py-4">
                             <Loader2 className="w-5 h-5 text-[#C69C2E] animate-spin" />
-                            <p className="text-xs text-gray-400">Loading verification module...</p>
+                            <p className="text-xs text-gray-400">Loading {activeProvider === "sumsub" ? "Sumsub" : "MetaMap"} verification module...</p>
                         </div>
                     )}
 
                     {sdkError && (
-                        <div className="flex flex-col items-center gap-3">
-                            <p className="text-sm text-red-500">Failed to load verification module.</p>
+                        <div className="flex flex-col items-center gap-3 py-4">
+                            <p className="text-sm text-red-500">Failed to load {activeProvider} verification widget.</p>
                             <Button
-                                onClick={loadMetaMapSdk}
+                                onClick={activeProvider === "sumsub" ? initSumsubSdk : loadMetaMapSdk}
                                 variant="outline"
                                 className="rounded-xl border-[#C69C2E] text-[#C69C2E] hover:bg-[#C69C2E]/5"
                             >
                                 <RefreshCw className="w-4 h-4 mr-2" />
-                                Retry
+                                Retry Loading
                             </Button>
                         </div>
                     )}
@@ -193,19 +282,25 @@ export function KYCSettings() {
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
                         <div>
-                            <p className="text-sm text-gray-500 mb-1">Verification ID</p>
-                            <p className="font-semibold text-gray-900 truncate">
-                                {kycData?.metamap_verification_id || 'N/A'}
+                            <p className="text-sm text-gray-500 mb-1">KYC Provider</p>
+                            <p className="font-semibold text-gray-900 uppercase">
+                                {kycData?.kyc_provider || activeProvider}
                             </p>
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500 mb-1">Verification Flow</p>
+                            <p className="text-sm text-gray-500 mb-1">Applicant / Verification ID</p>
                             <p className="font-semibold text-gray-900 truncate">
-                                {kycData?.metamap_flow_id || 'N/A'}
+                                {kycData?.sumsub_applicant_id || kycData?.metamap_verification_id || 'N/A'}
                             </p>
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500 mb-1">Verified On</p>
+                            <p className="text-sm text-gray-500 mb-1">Inspection / Flow ID</p>
+                            <p className="font-semibold text-gray-900 truncate">
+                                {kycData?.sumsub_inspection_id || kycData?.metamap_flow_id || 'N/A'}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-gray-500 mb-1">Last Updated</p>
                             <p className="font-semibold text-gray-900">
                                 {kycData?.updated_at ? new Date(kycData.updated_at).toLocaleDateString() : 'N/A'}
                             </p>
@@ -216,4 +311,5 @@ export function KYCSettings() {
         </div>
     );
 }
+
 
