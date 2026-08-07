@@ -103,8 +103,14 @@ export function KYCSettings() {
                     )
                     .withConf({ lang: "en" })
                     .withOptions({ addViewportTag: false, adaptIframeHeight: true })
-                    .onStatusChange((newStatus: string) => {
-                        console.log("Sumsub status changed:", newStatus);
+                    .onMessage((type: string, payload: any) => {
+                        console.log("Sumsub WebSDK event:", type, payload);
+                        if (type === "idCheck.onApplicantStatusChanged" || type === "idCheck.onStepCompleted") {
+                            fetchKyc();
+                        }
+                    })
+                    .on("idCheck.onApplicantStatusChanged", (payload: any) => {
+                        console.log("Sumsub status changed:", payload);
                         fetchKyc();
                     })
                     .build();
