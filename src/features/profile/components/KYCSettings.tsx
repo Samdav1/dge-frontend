@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, AlertTriangle, ShieldCheck, RefreshCw } from "lucide-react";
+import { Loader2, CheckCircle, AlertTriangle, ShieldCheck, RefreshCw, X } from "lucide-react";
 import { getUserKyc, getProfile, getKycConfig, getSumsubToken } from "../actions";
 
 export function KYCSettings() {
@@ -9,6 +9,7 @@ export function KYCSettings() {
     const [kycData, setKycData] = useState<any>(null);
     const [userId, setUserId] = useState<string | null>(null);
     const [activeProvider, setActiveProvider] = useState<string>("sumsub");
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
     const [sdkLoaded, setSdkLoaded] = useState(false);
     const [sdkError, setSdkError] = useState(false);
@@ -150,19 +151,26 @@ export function KYCSettings() {
     }, []);
 
     useEffect(() => {
-        if (isLoading) return;
-        const status = kycData?.status || "unverified";
-        if (status === "verified") return;
+        if (!isModalOpen) return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setIsModalOpen(false);
+        };
+        window.addEventListener("keydown", handleKeyDown);
 
         if (activeProvider === "metamap") {
             const script = loadMetaMapSdk();
             return () => {
+                window.removeEventListener("keydown", handleKeyDown);
                 try { document.body.removeChild(script); } catch {}
             };
         } else if (activeProvider === "sumsub") {
             initSumsubSdk();
+            return () => {
+                window.removeEventListener("keydown", handleKeyDown);
+            };
         }
-    }, [activeProvider, isLoading, kycData?.status, loadMetaMapSdk, initSumsubSdk]);
+    }, [isModalOpen, activeProvider, loadMetaMapSdk, initSumsubSdk]);
 
     if (isLoading) {
         return (
@@ -223,53 +231,124 @@ export function KYCSettings() {
             )}
 
             {(status === "unverified" || status === "rejected") ? (
-                <div className="flex flex-col items-center justify-center p-6 bg-white border border-gray-200 rounded-xl space-y-6 shadow-sm">
-                    <div className="w-14 h-14 rounded-2xl bg-[#C69C2E]/10 flex items-center justify-center">
-                        <ShieldCheck className="w-7 h-7 text-[#C69C2E]" />
+                <div className="flex flex-col items-center justify-center p-8 bg-gradient-to-b from-gray-50/50 to-white border border-gray-200/80 rounded-2xl space-y-6 shadow-sm">
+                    <div className="w-16 h-16 rounded-2xl bg-[#C69C2E]/10 border border-[#C69C2E]/20 flex items-center justify-center shadow-inner">
+                        <ShieldCheck className="w-8 h-8 text-[#C69C2E]" />
                     </div>
 
-                    <div className="text-center space-y-1">
-                        <h3 className="text-lg font-bold text-gray-900">
-                            Verify via {activeProvider === "sumsub" ? "Sumsub Identity Verification" : "MetaMap Verification"}
+                    <div className="text-center space-y-2 max-w-lg">
+                        <h3 className="text-xl font-bold text-gray-900">
+                            Identity Verification Required
                         </h3>
-                        <p className="text-sm text-gray-500 max-w-md">
-                            Follow the on-screen prompts to submit your government-issued ID and selfie verification.
+                        <p className="text-sm text-gray-500 leading-relaxed">
+                            Verify your profile via {activeProvider === "sumsub" ? "Sumsub Secured KYC" : "MetaMap Verification"} to unlock unlimited trading, payouts, and full platform compliance.
                         </p>
                     </div>
 
-                    {/* Active Provider Container */}
-                    {activeProvider === "sumsub" ? (
-                        <div className="w-full min-h-[400px]">
-                            <div id="sumsub-websdk-container" ref={sumsubContainerRef} className="w-full flex justify-center min-h-[400px]" />
-                        </div>
-                    ) : (
-                        <div ref={metamapRef} className="w-full flex justify-center py-4">
-                            <metamap-button
-                                clientid={clientId}
-                                flowid={flowId}
-                                metadata={JSON.stringify({ userId })}
-                            />
-                        </div>
-                    )}
-
-                    {!sdkLoaded && !sdkError && (
-                        <div className="flex flex-col items-center gap-2 py-4">
-                            <Loader2 className="w-5 h-5 text-[#C69C2E] animate-spin" />
-                            <p className="text-xs text-gray-400">Loading {activeProvider === "sumsub" ? "Sumsub" : "MetaMap"} verification module...</p>
-                        </div>
-                    )}
-
-                    {sdkError && (
-                        <div className="flex flex-col items-center gap-3 py-4">
-                            <p className="text-sm text-red-500">Failed to load {activeProvider} verification widget.</p>
+                    {/* Launch Verification CTA Button */}
+                    <div className="pt-2">
+                        {activeProvider === "sumsub" ? (
                             <Button
-                                onClick={activeProvider === "sumsub" ? initSumsubSdk : loadMetaMapSdk}
-                                variant="outline"
-                                className="rounded-xl border-[#C69C2E] text-[#C69C2E] hover:bg-[#C69C2E]/5"
+                                onClick={() => {
+                                    setIsModalOpen(true);
+                                    initSumsubSdk();
+                                }}
+                                className="px-8 py-6 rounded-xl bg-gradient-to-r from-[#C69C2E] to-[#E6B83B] hover:from-[#b08b28] hover:to-[#C69C2E] text-white font-semibold text-base shadow-lg shadow-[#C69C2E]/25 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-3"
                             >
-                                <RefreshCw className="w-4 h-4 mr-2" />
-                                Retry Loading
+                                <ShieldCheck className="w-5 h-5" />
+                                Start Sumsub Verification
                             </Button>
+                        ) : (
+                            <Button
+                                onClick={() => setIsModalOpen(true)}
+                                className="px-8 py-6 rounded-xl bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-900 text-white font-semibold text-base shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-3"
+                            >
+                                <ShieldCheck className="w-5 h-5" />
+                                Start MetaMap Verification
+                            </Button>
+                        )}
+                    </div>
+
+                    {/* Full-Width Responsive Modal Overlay */}
+                    {isModalOpen && (
+                        <div
+                            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6 animate-in fade-in duration-200"
+                            onClick={(e) => {
+                                if (e.target === e.currentTarget) setIsModalOpen(false);
+                            }}
+                        >
+                            <div className="relative w-full max-w-4xl max-h-[92vh] sm:max-h-[88vh] bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 flex flex-col animate-in zoom-in-95 duration-200">
+                                
+                                {/* Modal Header */}
+                                <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/80 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-9 h-9 rounded-xl bg-[#C69C2E]/10 flex items-center justify-center">
+                                            <ShieldCheck className="w-5 h-5 text-[#C69C2E]" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-gray-900 text-base sm:text-lg flex items-center gap-2">
+                                                Identity Verification
+                                                <span className="text-xs px-2 py-0.5 rounded-full bg-[#C69C2E]/10 text-[#C69C2E] font-medium border border-[#C69C2E]/20 capitalize">
+                                                    {activeProvider}
+                                                </span>
+                                            </h3>
+                                            <p className="text-xs text-gray-500">Secured 256-bit encrypted KYC verification</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Close Button */}
+                                    <button
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="p-2 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 transition-colors"
+                                        aria-label="Close modal"
+                                    >
+                                        <X className="w-6 h-6" />
+                                    </button>
+                                </div>
+
+                                {/* Modal Body Container */}
+                                <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white min-h-[480px] sm:min-h-[560px] flex flex-col items-center justify-center">
+                                    {!sdkLoaded && !sdkError && (
+                                        <div className="flex flex-col items-center justify-center gap-3 py-16">
+                                            <Loader2 className="w-8 h-8 text-[#C69C2E] animate-spin" />
+                                            <p className="text-sm font-medium text-gray-600">Initializing {activeProvider === "sumsub" ? "Sumsub" : "MetaMap"} secure portal...</p>
+                                        </div>
+                                    )}
+
+                                    {sdkError && (
+                                        <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                                            <AlertTriangle className="w-10 h-10 text-red-500" />
+                                            <div>
+                                                <h4 className="font-bold text-gray-900 text-base">Failed to load verification module</h4>
+                                                <p className="text-sm text-gray-500 mt-1 max-w-sm">Please check your internet connection or try reloading the verification widget.</p>
+                                            </div>
+                                            <Button
+                                                onClick={activeProvider === "sumsub" ? initSumsubSdk : loadMetaMapSdk}
+                                                variant="outline"
+                                                className="rounded-xl border-[#C69C2E] text-[#C69C2E] hover:bg-[#C69C2E]/10"
+                                            >
+                                                <RefreshCw className="w-4 h-4 mr-2" />
+                                                Retry Connection
+                                            </Button>
+                                        </div>
+                                    )}
+
+                                    {/* WebSDK Mount Container */}
+                                    <div className={`w-full flex-1 flex justify-center ${(!sdkLoaded && !sdkError) ? 'hidden' : ''}`}>
+                                        {activeProvider === "sumsub" ? (
+                                            <div id="sumsub-websdk-container" ref={sumsubContainerRef} className="w-full min-h-[450px] sm:min-h-[520px]" />
+                                        ) : (
+                                            <div ref={metamapRef} className="w-full flex justify-center py-6">
+                                                <metamap-button
+                                                    clientid={clientId}
+                                                    flowid={flowId}
+                                                    metadata={JSON.stringify({ userId })}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
