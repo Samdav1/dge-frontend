@@ -104,7 +104,7 @@ export function KYCSettings() {
                             }
                         )
                         .withConf({ lang: "en", theme: "dark" })
-                        .withOptions({ addViewportTag: false, adaptIframeHeight: false })
+                        .withOptions({ addViewportTag: false, adaptIframeHeight: true })
                         .onMessage((type: string, payload: any) => {
                             console.log("Sumsub WebSDK event:", type, payload);
                             if (type === "idCheck.onApplicantStatusChanged" || type === "idCheck.onStepCompleted") {
@@ -125,7 +125,7 @@ export function KYCSettings() {
                     console.error("Sumsub launch error:", err);
                     setSdkError(true);
                 }
-            }, 100);
+            }, 300);
         };
 
         if (window.snsWebSdk) {
