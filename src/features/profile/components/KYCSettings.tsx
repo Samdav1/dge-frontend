@@ -3,17 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, AlertTriangle, ShieldCheck, RefreshCw } from "lucide-react";
 import { getUserKyc, getProfile, getKycConfig, getSumsubToken } from "../actions";
 
-declare global {
-    interface Window {
-        snsWebSdk?: any;
-    }
-    namespace JSX {
-        interface IntrinsicElements {
-            "metamap-button": any;
-        }
-    }
-}
-
 export function KYCSettings() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
