@@ -48,7 +48,9 @@ export const getCspHeader = (nonce: string) => {
     object-src 'none';
     base-uri 'self';
     form-action 'self';
-    frame-src 'self' https://*.metamap.com https://*.sumsub.com https://websdk.sumsub.com;
+    frame-src 'self' https://*.metamap.com https://*.sumsub.com https://websdk.sumsub.com https://api.sumsub.com;
+    child-src 'self' blob: https://*.sumsub.com https://api.sumsub.com;
+    worker-src 'self' blob: https://*.sumsub.com;
     frame-ancestors 'none';
     ${isDev ? '' : 'block-all-mixed-content;'}
   `;

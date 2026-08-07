@@ -233,76 +233,89 @@ export function KYCSettings() {
             )}
 
             {(status === "unverified" || status === "rejected") ? (
-                <div className="flex flex-col items-center justify-center p-8 sm:p-10 bg-gradient-to-b from-zinc-900/90 via-zinc-900 to-zinc-950 border border-[#C69C2E]/25 rounded-3xl space-y-6 shadow-2xl shadow-black/60 relative overflow-hidden">
+                <div
+                    className="flex flex-col items-center justify-center p-8 sm:p-10 rounded-3xl space-y-6 relative overflow-hidden"
+                    style={{ background: "linear-gradient(180deg, #18181b 0%, #09090b 100%)", border: "1px solid rgba(198,156,46,0.25)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6)" }}
+                >
                     {/* Glow Accents */}
-                    <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#C69C2E]/10 rounded-full blur-3xl pointer-events-none" />
-                    <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-[#C69C2E]/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute -top-24 -left-24 w-48 h-48 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(198,156,46,0.1)" }} />
+                    <div className="absolute -bottom-24 -right-24 w-48 h-48 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(198,156,46,0.1)" }} />
 
-                    <div className="w-16 h-16 rounded-2xl bg-[#C69C2E]/15 border border-[#C69C2E]/30 flex items-center justify-center shadow-lg shadow-[#C69C2E]/10">
-                        <ShieldCheck className="w-8 h-8 text-[#C69C2E]" />
+                    <div
+                        className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                        style={{ background: "rgba(198,156,46,0.15)", border: "1px solid rgba(198,156,46,0.3)", boxShadow: "0 10px 15px -3px rgba(198,156,46,0.1)" }}
+                    >
+                        <ShieldCheck className="w-8 h-8" style={{ color: "#C69C2E" }} />
                     </div>
 
                     <div className="text-center space-y-2 max-w-lg z-10">
-                        <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                        <h3 className="text-xl sm:text-2xl font-bold tracking-tight" style={{ color: "#ffffff" }}>
                             Identity Verification Required
                         </h3>
-                        <p className="text-sm text-zinc-400 leading-relaxed">
+                        <p className="text-sm leading-relaxed" style={{ color: "#a1a1aa" }}>
                             Verify your profile via {activeProvider === "sumsub" ? "Sumsub Secured KYC" : "MetaMap Verification"} to unlock unlimited trading, payouts, and full platform compliance.
                         </p>
                     </div>
 
                     {/* Launch Verification CTA Button */}
                     <div className="pt-2 z-10">
-                        {activeProvider === "sumsub" ? (
-                            <Button
-                                onClick={() => setIsModalOpen(true)}
-                                className="px-8 py-6 rounded-xl bg-gradient-to-r from-[#C69C2E] via-[#D4AF37] to-[#E6B83B] hover:from-[#b08b28] hover:to-[#C69C2E] text-zinc-950 font-bold text-base shadow-xl shadow-[#C69C2E]/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-3"
-                            >
-                                <ShieldCheck className="w-5 h-5 text-zinc-950" />
-                                Start Sumsub Verification
-                            </Button>
-                        ) : (
-                            <Button
-                                onClick={() => setIsModalOpen(true)}
-                                className="px-8 py-6 rounded-xl bg-gradient-to-r from-[#C69C2E] via-[#D4AF37] to-[#E6B83B] text-zinc-950 font-bold text-base shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-3"
-                            >
-                                <ShieldCheck className="w-5 h-5 text-zinc-950" />
-                                Start MetaMap Verification
-                            </Button>
-                        )}
+                        <Button
+                            onClick={() => setIsModalOpen(true)}
+                            className="px-8 py-6 rounded-xl font-bold text-base transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-3"
+                            style={{ background: "linear-gradient(90deg, #C69C2E, #D4AF37, #E6B83B)", color: "#09090b", boxShadow: "0 20px 25px -5px rgba(198,156,46,0.2)" }}
+                        >
+                            <ShieldCheck className="w-5 h-5" style={{ color: "#09090b" }} />
+                            Start {activeProvider === "sumsub" ? "Sumsub" : "MetaMap"} Verification
+                        </Button>
                     </div>
 
                     {/* Full-Width Dark Theme Modal Overlay */}
                     {isModalOpen && (
                         <div
-                            className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+                            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6"
+                            style={{ background: "rgba(0,0,0,0.88)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
                             onClick={(e) => {
                                 if (e.target === e.currentTarget) setIsModalOpen(false);
                             }}
                         >
-                            <div className="relative w-full max-w-4xl max-h-[92vh] sm:max-h-[88vh] bg-zinc-950 text-white rounded-3xl shadow-2xl overflow-hidden border border-[#C69C2E]/30 flex flex-col animate-in zoom-in-95 duration-200">
+                            <div
+                                className="relative w-full max-w-4xl max-h-[92vh] sm:max-h-[88vh] rounded-3xl overflow-hidden flex flex-col"
+                                style={{ background: "#09090b", color: "#ffffff", border: "1px solid rgba(198,156,46,0.3)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.8)" }}
+                            >
                                 
                                 {/* Modal Header */}
-                                <div className="px-6 py-4 border-b border-zinc-800 bg-zinc-900/90 flex items-center justify-between">
+                                <div
+                                    className="px-6 py-4 flex items-center justify-between"
+                                    style={{ background: "#18181b", borderBottom: "1px solid #27272a" }}
+                                >
                                     <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-xl bg-[#C69C2E]/15 border border-[#C69C2E]/30 flex items-center justify-center">
-                                            <ShieldCheck className="w-5 h-5 text-[#C69C2E]" />
+                                        <div
+                                            className="w-9 h-9 rounded-xl flex items-center justify-center"
+                                            style={{ background: "rgba(198,156,46,0.15)", border: "1px solid rgba(198,156,46,0.3)" }}
+                                        >
+                                            <ShieldCheck className="w-5 h-5" style={{ color: "#C69C2E" }} />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-white text-base sm:text-lg flex items-center gap-2">
+                                            <h3 className="font-bold text-base sm:text-lg flex items-center gap-2" style={{ color: "#ffffff" }}>
                                                 Identity Verification
-                                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#C69C2E]/20 text-[#C69C2E] font-semibold border border-[#C69C2E]/40 capitalize">
+                                                <span
+                                                    className="text-xs px-2.5 py-0.5 rounded-full font-semibold capitalize"
+                                                    style={{ background: "rgba(198,156,46,0.2)", color: "#C69C2E", border: "1px solid rgba(198,156,46,0.4)" }}
+                                                >
                                                     {activeProvider}
                                                 </span>
                                             </h3>
-                                            <p className="text-xs text-zinc-400">Secured 256-bit encrypted KYC verification</p>
+                                            <p className="text-xs" style={{ color: "#a1a1aa" }}>Secured 256-bit encrypted KYC verification</p>
                                         </div>
                                     </div>
 
                                     {/* Close Button */}
                                     <button
                                         onClick={() => setIsModalOpen(false)}
-                                        className="p-2 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                                        className="p-2 rounded-full transition-colors"
+                                        style={{ color: "#a1a1aa" }}
+                                        onMouseEnter={(e) => { e.currentTarget.style.color = "#ffffff"; e.currentTarget.style.background = "#27272a"; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.color = "#a1a1aa"; e.currentTarget.style.background = "transparent"; }}
                                         aria-label="Close modal"
                                     >
                                         <X className="w-6 h-6" />
@@ -310,25 +323,35 @@ export function KYCSettings() {
                                 </div>
 
                                 {/* Modal Body Container */}
-                                <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-zinc-950 min-h-[520px] relative flex flex-col items-center justify-center">
+                                <div
+                                    className="flex-1 overflow-y-auto p-4 sm:p-6 relative flex flex-col items-center justify-center"
+                                    style={{ background: "#09090b", minHeight: "520px" }}
+                                >
                                     {!sdkLoaded && !sdkError && (
-                                        <div className="absolute inset-0 z-20 bg-zinc-950/95 flex flex-col items-center justify-center gap-3 p-6">
-                                            <Loader2 className="w-9 h-9 text-[#C69C2E] animate-spin" />
-                                            <p className="text-sm font-medium text-zinc-300">Initializing Sumsub secure portal...</p>
+                                        <div
+                                            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 p-6"
+                                            style={{ background: "rgba(9,9,11,0.95)" }}
+                                        >
+                                            <Loader2 className="w-9 h-9 animate-spin" style={{ color: "#C69C2E" }} />
+                                            <p className="text-sm font-medium" style={{ color: "#d4d4d8" }}>Initializing Sumsub secure portal...</p>
                                         </div>
                                     )}
 
                                     {sdkError && (
-                                        <div className="absolute inset-0 z-20 bg-zinc-950 flex flex-col items-center justify-center gap-4 p-6 text-center">
-                                            <AlertTriangle className="w-10 h-10 text-red-400" />
+                                        <div
+                                            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 p-6 text-center"
+                                            style={{ background: "#09090b" }}
+                                        >
+                                            <AlertTriangle className="w-10 h-10" style={{ color: "#f87171" }} />
                                             <div>
-                                                <h4 className="font-bold text-white text-base">Failed to load verification module</h4>
-                                                <p className="text-sm text-zinc-400 mt-1 max-w-sm">Please check your internet connection or try reloading the verification widget.</p>
+                                                <h4 className="font-bold text-base" style={{ color: "#ffffff" }}>Failed to load verification module</h4>
+                                                <p className="text-sm mt-1 max-w-sm" style={{ color: "#a1a1aa" }}>Please check your internet connection or try reloading the verification widget.</p>
                                             </div>
                                             <Button
                                                 onClick={activeProvider === "sumsub" ? initSumsubSdk : loadMetaMapSdk}
                                                 variant="outline"
-                                                className="rounded-xl border-[#C69C2E] text-[#C69C2E] hover:bg-[#C69C2E]/10"
+                                                className="rounded-xl"
+                                                style={{ borderColor: "#C69C2E", color: "#C69C2E" }}
                                             >
                                                 <RefreshCw className="w-4 h-4 mr-2" />
                                                 Retry Connection
@@ -337,13 +360,12 @@ export function KYCSettings() {
                                     )}
 
                                     {/* WebSDK Mount Container */}
-                                    <div className="w-full flex-1 min-h-[520px] flex justify-center">
+                                    <div className="w-full flex-1 flex justify-center" style={{ minHeight: "520px" }}>
                                         {activeProvider === "sumsub" ? (
                                             <div
                                                 id="sumsub-websdk-container"
                                                 ref={sumsubContainerRef}
-                                                className="w-full h-full min-h-[520px] bg-zinc-950 rounded-2xl"
-                                                style={{ width: "100%", height: "100%", minHeight: "520px" }}
+                                                style={{ width: "100%", height: "100%", minHeight: "600px", background: "#09090b", borderRadius: "16px" }}
                                             />
                                         ) : (
                                             <div ref={metamapRef} className="w-full flex justify-center py-6">
