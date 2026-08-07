@@ -127,7 +127,7 @@ export function KYCSettings() {
         document.querySelectorAll('script[src*="sumsub.com"]').forEach(el => el.remove());
 
         const script = document.createElement("script");
-        script.src = "https://static.sumsub.com/onis/websdk/v1/sns-websdk-builder.js";
+        script.src = "https://static.sumsub.com/idensic/static/sns-websdk-builder.js";
         script.async = true;
         script.onload = () => {
             launchSdk();
