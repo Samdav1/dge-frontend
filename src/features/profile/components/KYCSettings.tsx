@@ -89,41 +89,43 @@ export function KYCSettings() {
                 return;
             }
 
-            try {
-                if (sumsubContainerRef.current) {
-                    sumsubContainerRef.current.innerHTML = "";
-                }
+            setTimeout(() => {
+                try {
+                    if (sumsubContainerRef.current) {
+                        sumsubContainerRef.current.innerHTML = "";
+                    }
 
-                const snsWebSdkInstance = window.snsWebSdk
-                    .init(
-                        accessToken,
-                        async () => {
-                            const newTokenRes = await getSumsubToken();
-                            return newTokenRes.data?.token || accessToken;
-                        }
-                    )
-                    .withConf({ lang: "en", theme: "dark" })
-                    .withOptions({ addViewportTag: false, adaptIframeHeight: true })
-                    .onMessage((type: string, payload: any) => {
-                        console.log("Sumsub WebSDK event:", type, payload);
-                        if (type === "idCheck.onApplicantStatusChanged" || type === "idCheck.onStepCompleted") {
+                    const snsWebSdkInstance = window.snsWebSdk
+                        .init(
+                            accessToken,
+                            async () => {
+                                const newTokenRes = await getSumsubToken();
+                                return newTokenRes.data?.token || accessToken;
+                            }
+                        )
+                        .withConf({ lang: "en", theme: "dark" })
+                        .withOptions({ addViewportTag: false, adaptIframeHeight: false })
+                        .onMessage((type: string, payload: any) => {
+                            console.log("Sumsub WebSDK event:", type, payload);
+                            if (type === "idCheck.onApplicantStatusChanged" || type === "idCheck.onStepCompleted") {
+                                fetchKyc();
+                            }
+                        })
+                        .on("idCheck.onApplicantStatusChanged", (payload: any) => {
+                            console.log("Sumsub status changed:", payload);
                             fetchKyc();
-                        }
-                    })
-                    .on("idCheck.onApplicantStatusChanged", (payload: any) => {
-                        console.log("Sumsub status changed:", payload);
-                        fetchKyc();
-                    })
-                    .build();
+                        })
+                        .build();
 
-                snsWebSdkInstance.launch("#sumsub-websdk-container");
-                sumsubInstanceRef.current = snsWebSdkInstance;
-                setSdkLoaded(true);
-                setSdkError(false);
-            } catch (err) {
-                console.error("Sumsub launch error:", err);
-                setSdkError(true);
-            }
+                    snsWebSdkInstance.launch("#sumsub-websdk-container");
+                    sumsubInstanceRef.current = snsWebSdkInstance;
+                    setSdkLoaded(true);
+                    setSdkError(false);
+                } catch (err) {
+                    console.error("Sumsub launch error:", err);
+                    setSdkError(true);
+                }
+            }, 100);
         };
 
         if (window.snsWebSdk) {
@@ -253,10 +255,7 @@ export function KYCSettings() {
                     <div className="pt-2 z-10">
                         {activeProvider === "sumsub" ? (
                             <Button
-                                onClick={() => {
-                                    setIsModalOpen(true);
-                                    initSumsubSdk();
-                                }}
+                                onClick={() => setIsModalOpen(true)}
                                 className="px-8 py-6 rounded-xl bg-gradient-to-r from-[#C69C2E] via-[#D4AF37] to-[#E6B83B] hover:from-[#b08b28] hover:to-[#C69C2E] text-zinc-950 font-bold text-base shadow-xl shadow-[#C69C2E]/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-3"
                             >
                                 <ShieldCheck className="w-5 h-5 text-zinc-950" />
@@ -311,16 +310,16 @@ export function KYCSettings() {
                                 </div>
 
                                 {/* Modal Body Container */}
-                                <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-zinc-950 min-h-[480px] sm:min-h-[560px] flex flex-col items-center justify-center">
+                                <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-zinc-950 min-h-[520px] relative flex flex-col items-center justify-center">
                                     {!sdkLoaded && !sdkError && (
-                                        <div className="flex flex-col items-center justify-center gap-3 py-16">
+                                        <div className="absolute inset-0 z-20 bg-zinc-950/95 flex flex-col items-center justify-center gap-3 p-6">
                                             <Loader2 className="w-9 h-9 text-[#C69C2E] animate-spin" />
-                                            <p className="text-sm font-medium text-zinc-300">Initializing {activeProvider === "sumsub" ? "Sumsub" : "MetaMap"} secure portal...</p>
+                                            <p className="text-sm font-medium text-zinc-300">Initializing Sumsub secure portal...</p>
                                         </div>
                                     )}
 
                                     {sdkError && (
-                                        <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                                        <div className="absolute inset-0 z-20 bg-zinc-950 flex flex-col items-center justify-center gap-4 p-6 text-center">
                                             <AlertTriangle className="w-10 h-10 text-red-400" />
                                             <div>
                                                 <h4 className="font-bold text-white text-base">Failed to load verification module</h4>
@@ -338,9 +337,14 @@ export function KYCSettings() {
                                     )}
 
                                     {/* WebSDK Mount Container */}
-                                    <div className={`w-full flex-1 flex justify-center ${(!sdkLoaded && !sdkError) ? 'hidden' : ''}`}>
+                                    <div className="w-full flex-1 min-h-[520px] flex justify-center">
                                         {activeProvider === "sumsub" ? (
-                                            <div id="sumsub-websdk-container" ref={sumsubContainerRef} className="w-full min-h-[450px] sm:min-h-[520px] bg-zinc-950 rounded-2xl overflow-hidden" />
+                                            <div
+                                                id="sumsub-websdk-container"
+                                                ref={sumsubContainerRef}
+                                                className="w-full h-full min-h-[520px] bg-zinc-950 rounded-2xl"
+                                                style={{ width: "100%", height: "100%", minHeight: "520px" }}
+                                            />
                                         ) : (
                                             <div ref={metamapRef} className="w-full flex justify-center py-6">
                                                 <metamap-button
