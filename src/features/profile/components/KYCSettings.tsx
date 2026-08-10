@@ -3,24 +3,34 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, AlertTriangle, ShieldCheck, RefreshCw, X } from "lucide-react";
 import { getUserKyc, getProfile, getKycConfig, getSumsubToken } from "../actions";
 
+interface KycData {
+    status?: string;
+    rejection_reason?: string;
+    kyc_provider?: string;
+    sumsub_applicant_id?: string;
+    sumsub_inspection_id?: string;
+    metamap_verification_id?: string;
+    metamap_flow_id?: string;
+    updated_at?: string;
+}
+
 export function KYCSettings() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [kycData, setKycData] = useState<any>(null);
-    const [userId, setUserId] = useState<string | null>(null);
+    const [kycData, setKycData] = useState<KycData | null>(null);
     const [activeProvider, setActiveProvider] = useState<string>("sumsub");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
     const [sdkLoaded, setSdkLoaded] = useState(false);
     const [sdkError, setSdkError] = useState(false);
-    const [sumsubToken, setSumsubToken] = useState<string | null>(null);
 
     const metamapRef = useRef<HTMLDivElement>(null);
     const sumsubContainerRef = useRef<HTMLDivElement>(null);
-    const sumsubInstanceRef = useRef<any>(null);
+    const sumsubInstanceRef = useRef<unknown>(null);
 
-    const fetchKyc = async () => {
-        setIsLoading(true);
+    // Fetch KYC status (showLoading = true for initial load, false for background sync)
+    const fetchKyc = useCallback(async (showLoading = false) => {
+        if (showLoading) setIsLoading(true);
         setError(null);
         
         try {
@@ -29,22 +39,19 @@ export function KYCSettings() {
                 setActiveProvider(configRes.data.active_provider);
             }
 
-            const profileRes = await getProfile();
-            if (profileRes.success && profileRes.data) {
-                setUserId(profileRes.data.user_id);
-            }
+            await getProfile();
             
             const res = await getUserKyc();
             if (res.success && res.data) {
                 setKycData(res.data);
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error("Error fetching KYC status:", err);
-            setError("Failed to load KYC configuration.");
+            if (showLoading) setError("Failed to load KYC configuration.");
         } finally {
-            setIsLoading(false);
+            if (showLoading) setIsLoading(false);
         }
-    };
+    }, []);
 
     // Load MetaMap SDK
     const loadMetaMapSdk = useCallback(() => {
@@ -68,7 +75,7 @@ export function KYCSettings() {
         return script;
     }, []);
 
-    // Preload SDK script for instant launch speed
+    // Preload SDK script on mount
     useEffect(() => {
         if (typeof window !== "undefined" && !window.snsWebSdk) {
             const script = document.createElement("script");
@@ -78,7 +85,7 @@ export function KYCSettings() {
         }
     }, []);
 
-    // Load Sumsub SDK & Initialize Container
+    // Initialize Sumsub SDK without destroying container on step transitions
     const initSumsubSdk = useCallback(async () => {
         setSdkError(false);
         setSdkLoaded(false);
@@ -86,12 +93,11 @@ export function KYCSettings() {
         const tokenRes = await getSumsubToken();
         if (!tokenRes.success || !tokenRes.data?.token) {
             setSdkError(true);
-            setError(tokenRes.error || "Failed to generate verification access token.");
+            setError(tokenRes.error || "Failed to generate verification token.");
             return;
         }
 
         const accessToken = tokenRes.data.token;
-        setSumsubToken(accessToken);
 
         const launchSdk = () => {
             if (!window.snsWebSdk) {
@@ -114,15 +120,16 @@ export function KYCSettings() {
                     )
                     .withConf({ lang: "en", theme: "dark" })
                     .withOptions({ addViewportTag: true, adaptIframeHeight: true })
-                    .onMessage((type: string, payload: any) => {
+                    .onMessage((type: string, payload: unknown) => {
                         console.log("WebSDK event:", type, payload);
                         if (type === "idCheck.onApplicantStatusChanged" || type === "idCheck.onStepCompleted") {
-                            fetchKyc();
+                            // Silent background refetch - does NOT trigger full component unmount
+                            fetchKyc(false);
                         }
                     })
-                    .on("idCheck.onApplicantStatusChanged", (payload: any) => {
+                    .on("idCheck.onApplicantStatusChanged", (payload: unknown) => {
                         console.log("Status changed:", payload);
-                        fetchKyc();
+                        fetchKyc(false);
                     })
                     .build();
 
@@ -154,11 +161,11 @@ export function KYCSettings() {
             setSdkLoaded(false);
         };
         document.body.appendChild(script);
-    }, []);
+    }, [fetchKyc]);
 
     useEffect(() => {
-        fetchKyc();
-    }, []);
+        fetchKyc(true);
+    }, [fetchKyc]);
 
     useEffect(() => {
         if (!isModalOpen) return;
@@ -191,13 +198,9 @@ export function KYCSettings() {
     }
 
     const status = kycData?.status || "unverified";
-
-    const clientId = process.env.NEXT_PUBLIC_METAMAP_CLIENT_ID && process.env.NEXT_PUBLIC_METAMAP_CLIENT_ID !== "change-me-in-gcp-trigger"
-        ? process.env.NEXT_PUBLIC_METAMAP_CLIENT_ID
-        : "6a476c6475062151a6c42022";
-    const flowId = process.env.NEXT_PUBLIC_METAMAP_FLOW_ID && process.env.NEXT_PUBLIC_METAMAP_FLOW_ID !== "change-me-in-gcp-trigger"
-        ? process.env.NEXT_PUBLIC_METAMAP_FLOW_ID
-        : "6a476c6486cc8d264d1a0a5f";
+    const clientId = process.env.NEXT_PUBLIC_METAMAP_CLIENT_ID || "6a476c6475062151a6c42022";
+    const flowId = process.env.NEXT_PUBLIC_METAMAP_FLOW_ID || "6a476c6486cc8d264d1a0a5f";
+    const userId = "user-kyc";
 
     return (
         <div className="space-y-8 text-zinc-100">
@@ -290,7 +293,6 @@ export function KYCSettings() {
                                 className="relative w-full sm:max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl"
                                 style={{ background: "#09090b", color: "#ffffff", border: "1px solid rgba(198,156,46,0.3)" }}
                             >
-                                
                                 {/* Modal Header */}
                                 <div
                                     className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shrink-0 border-b border-zinc-800"
@@ -307,6 +309,7 @@ export function KYCSettings() {
                                             <h3 className="font-bold text-sm sm:text-lg flex items-center gap-2 text-white">
                                                 Identity Verification
                                             </h3>
+                                            <p className="text-[11px] sm:text-xs text-zinc-400">Secured 256-bit encrypted KYC verification</p>
                                         </div>
                                     </div>
 
@@ -320,25 +323,25 @@ export function KYCSettings() {
                                     </button>
                                 </div>
 
-                                {/* Style Overrides for Sumsub WebSDK iFrame & Scrolling */}
+                                {/* Style Overrides for Sumsub WebSDK iFrame & Continuous Height */}
                                 <style>{`
                                     #sumsub-websdk-container {
                                         width: 100% !important;
-                                        min-height: 720px !important;
+                                        min-height: 650px !important;
                                         display: flex !important;
                                         flex-direction: column !important;
                                     }
                                     #sumsub-websdk-container iframe,
                                     #sumsub-websdk-container > div {
                                         width: 100% !important;
-                                        min-height: 720px !important;
+                                        min-height: 650px !important;
                                         flex: 1 1 auto !important;
                                         border: none !important;
                                         border-radius: 16px !important;
                                     }
                                 `}</style>
 
-                                {/* Modal Body Container - 100% Scrollable on Mobile & Touch devices */}
+                                {/* Modal Body Container */}
                                 <div
                                     className="flex-1 overflow-y-auto p-2 sm:p-6 relative w-full h-full overscroll-contain"
                                     style={{ background: "#09090b", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}
@@ -379,7 +382,7 @@ export function KYCSettings() {
                                                 id="sumsub-websdk-container"
                                                 ref={sumsubContainerRef}
                                                 className="w-full flex-1"
-                                                style={{ width: "100%", minHeight: "720px", background: "#09090b", borderRadius: "16px" }}
+                                                style={{ width: "100%", minHeight: "650px", background: "#09090b", borderRadius: "16px" }}
                                             />
                                         ) : (
                                             <div ref={metamapRef} className="w-full flex justify-center py-6">
@@ -419,7 +422,7 @@ export function KYCSettings() {
                         </div>
                         <div>
                             <p className="text-sm text-zinc-400 mb-1">Last Updated</p>
-                            <p className="font-semibold text-white">
+                            <p className="font-semibold text-[#C69C2E]">
                                 {kycData?.updated_at ? new Date(kycData.updated_at).toLocaleDateString() : 'N/A'}
                             </p>
                         </div>
@@ -429,5 +432,3 @@ export function KYCSettings() {
         </div>
     );
 }
-
-

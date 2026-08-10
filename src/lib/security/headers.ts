@@ -39,7 +39,7 @@ export const getCspHeader = (nonce: string) => {
 
     const csp = `
     default-src 'self';
-    script-src ${scriptSrc} https://web-button.metamap.com https://*.metamap.com https://static.sumsub.com https://websdk.sumsub.com https://*.sumsub.com;
+    script-src ${scriptSrc} https://web-button.metamap.com https://*.metamap.com https://static.sumsub.com https://websdk.sumsub.com https://*.sumsub.com https://static.cloudflareinsights.com;
     style-src 'self' 'unsafe-inline' https://*.metamap.com https://websdk.sumsub.com https://*.sumsub.com;
     img-src 'self' blob: data: https://images.unsplash.com https://i.pravatar.cc https://lh3.googleusercontent.com https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://unpkg.com http://0.0.0.0:8000 https://0.0.0.0:8000 http://localhost:8000 https://localhost:8000 http://127.0.0.1:8000 https://127.0.0.1:8000 https://dge.dgetechs.com https://dgetechs.com https://*.metamap.com https://*.sumsub.com ${apiUrl};
     font-src 'self' https://*.metamap.com https://*.sumsub.com;
