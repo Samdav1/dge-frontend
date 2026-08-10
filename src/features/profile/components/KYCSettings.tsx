@@ -309,7 +309,6 @@ export function KYCSettings() {
                                             <h3 className="font-bold text-sm sm:text-lg flex items-center gap-2 text-white">
                                                 Identity Verification
                                             </h3>
-                                            <p className="text-[11px] sm:text-xs text-zinc-400">Secured 256-bit encrypted KYC verification</p>
                                         </div>
                                     </div>
 
@@ -327,14 +326,14 @@ export function KYCSettings() {
                                 <style>{`
                                     #sumsub-websdk-container {
                                         width: 100% !important;
-                                        min-height: 650px !important;
+                                        min-height: 850px !important;
                                         display: flex !important;
                                         flex-direction: column !important;
                                     }
                                     #sumsub-websdk-container iframe,
                                     #sumsub-websdk-container > div {
                                         width: 100% !important;
-                                        min-height: 650px !important;
+                                        min-height: 850px !important;
                                         flex: 1 1 auto !important;
                                         border: none !important;
                                         border-radius: 16px !important;
@@ -382,7 +381,7 @@ export function KYCSettings() {
                                                 id="sumsub-websdk-container"
                                                 ref={sumsubContainerRef}
                                                 className="w-full flex-1"
-                                                style={{ width: "100%", height: "100%", background: "#09090b", borderRadius: "16px" }}
+                                                style={{ width: "100%", minHeight: "850px", background: "#09090b", borderRadius: "16px" }}
                                             />
                                         ) : (
                                             <div ref={metamapRef} className="w-full flex justify-center py-6">
