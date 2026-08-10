@@ -382,7 +382,7 @@ export function KYCSettings() {
                                                 id="sumsub-websdk-container"
                                                 ref={sumsubContainerRef}
                                                 className="w-full flex-1"
-                                                style={{ width: "100%", minHeight: "650px", background: "#09090b", borderRadius: "16px" }}
+                                                style={{ width: "100%", height: "100%", background: "#09090b", borderRadius: "16px" }}
                                             />
                                         ) : (
                                             <div ref={metamapRef} className="w-full flex justify-center py-6">
