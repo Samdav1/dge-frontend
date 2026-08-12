@@ -211,37 +211,44 @@ export function KYCSettings() {
     const userId = "user-kyc";
 
     return (
-        <div className="space-y-8 text-zinc-100">
+        <div className="space-y-8 text-gray-900 dark:text-zinc-100">
             <div>
-                <h2 className="text-xl font-bold text-white mb-2">KYC Identity Verification</h2>
-                <p className="text-sm text-zinc-400">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">KYC Identity Verification</h2>
+                <p className="text-sm text-gray-600 dark:text-zinc-400">
                     Verify your identity to unlock full account features and compliance privileges.
                 </p>
             </div>
 
             {/* Status Banner */}
             <div className={`p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border transition-colors ${
-                status === "verified" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300" :
-                status === "pending" ? "bg-[#C69C2E]/10 border-[#C69C2E]/30 text-[#C69C2E]" :
-                status === "rejected" ? "bg-red-500/10 border-red-500/20 text-red-300" :
-                "bg-zinc-900/90 border-zinc-800 text-zinc-300"
+                status === "verified" ? "bg-emerald-50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20" :
+                status === "pending" ? "bg-amber-50 dark:bg-[#C69C2E]/10 border-amber-200 dark:border-[#C69C2E]/30" :
+                status === "rejected" ? "bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20" :
+                "bg-gray-50 dark:bg-zinc-900/90 border-gray-200 dark:border-zinc-800"
             }`}>
                 <div className="flex items-start gap-3.5">
-                    {status === "verified" && <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />}
+                    {status === "verified" && <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />}
                     {status === "pending" && <Loader2 className="w-5 h-5 text-[#C69C2E] mt-0.5 animate-spin shrink-0" />}
-                    {status === "rejected" && <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />}
-                    {status === "unverified" && <AlertTriangle className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />}
+                    {status === "rejected" && <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />}
+                    {status === "unverified" && <AlertTriangle className="w-5 h-5 text-gray-500 dark:text-zinc-400 mt-0.5 shrink-0" />}
                     
                     <div>
-                        <h3 className="font-bold capitalize text-base text-white">Status: {status}</h3>
-                        {status === "verified" && <p className="text-sm opacity-90 text-emerald-300">Your identity has been verified successfully.</p>}
-                        {status === "pending" && <p className="text-sm opacity-90 text-amber-200">Your verification documents are currently under review.</p>}
+                        <h3 className={`font-bold capitalize text-base ${
+                            status === "verified" ? "text-emerald-950 dark:text-white" :
+                            status === "pending" ? "text-amber-950 dark:text-white" :
+                            status === "rejected" ? "text-red-950 dark:text-white" :
+                            "text-gray-900 dark:text-white"
+                        }`}>
+                            Status: {status}
+                        </h3>
+                        {status === "verified" && <p className="text-sm font-medium text-emerald-800 dark:text-emerald-300">Your identity has been verified successfully.</p>}
+                        {status === "pending" && <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Your verification documents are currently under review.</p>}
                         {status === "rejected" && (
-                            <p className="text-sm opacity-90 text-red-300">
+                            <p className="text-sm font-medium text-red-800 dark:text-red-300">
                                 Verification rejected. Reason: {kycData?.rejection_reason || "Invalid or unreadable document."}
                             </p>
                         )}
-                        {status === "unverified" && <p className="text-sm opacity-90 text-zinc-400">Complete the identity verification step below.</p>}
+                        {status === "unverified" && <p className="text-sm font-medium text-gray-600 dark:text-zinc-400">Complete the identity verification step below.</p>}
                     </div>
                 </div>
 
