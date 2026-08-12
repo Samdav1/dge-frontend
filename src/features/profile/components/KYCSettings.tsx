@@ -220,28 +220,28 @@ export function KYCSettings() {
             </div>
 
             {/* Status Banner */}
-            <div className={`p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 border ${
-                status === "verified" ? "bg-emerald-950/60 border-emerald-500/30 text-emerald-300" :
-                status === "pending" ? "bg-amber-950/60 border-amber-500/30 text-amber-300" :
-                status === "rejected" ? "bg-red-950/60 border-red-500/30 text-red-300" :
+            <div className={`p-4 sm:p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border transition-colors ${
+                status === "verified" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300" :
+                status === "pending" ? "bg-[#C69C2E]/10 border-[#C69C2E]/30 text-[#C69C2E]" :
+                status === "rejected" ? "bg-red-500/10 border-red-500/20 text-red-300" :
                 "bg-zinc-900/90 border-zinc-800 text-zinc-300"
             }`}>
                 <div className="flex items-start gap-3.5">
                     {status === "verified" && <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />}
-                    {status === "pending" && <Loader2 className="w-5 h-5 text-amber-400 mt-0.5 animate-spin shrink-0" />}
+                    {status === "pending" && <Loader2 className="w-5 h-5 text-[#C69C2E] mt-0.5 animate-spin shrink-0" />}
                     {status === "rejected" && <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />}
                     {status === "unverified" && <AlertTriangle className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />}
                     
                     <div>
-                        <h3 className="font-semibold capitalize text-base">Status: {status}</h3>
-                        {status === "verified" && <p className="text-sm opacity-90">Your identity has been verified successfully.</p>}
-                        {status === "pending" && <p className="text-sm opacity-90">Your verification documents are currently under review.</p>}
+                        <h3 className="font-bold capitalize text-base text-white">Status: {status}</h3>
+                        {status === "verified" && <p className="text-sm opacity-90 text-emerald-300">Your identity has been verified successfully.</p>}
+                        {status === "pending" && <p className="text-sm opacity-90 text-amber-200">Your verification documents are currently under review.</p>}
                         {status === "rejected" && (
-                            <p className="text-sm opacity-90">
+                            <p className="text-sm opacity-90 text-red-300">
                                 Verification rejected. Reason: {kycData?.rejection_reason || "Invalid or unreadable document."}
                             </p>
                         )}
-                        {status === "unverified" && <p className="text-sm opacity-90">Complete the identity verification step below.</p>}
+                        {status === "unverified" && <p className="text-sm opacity-90 text-zinc-400">Complete the identity verification step below.</p>}
                     </div>
                 </div>
 
@@ -250,7 +250,7 @@ export function KYCSettings() {
                     disabled={isRefreshing}
                     variant="outline"
                     size="sm"
-                    className="shrink-0 border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 text-xs flex items-center gap-1.5 rounded-xl cursor-pointer"
+                    className="shrink-0 border border-gray-200 dark:border-[#2A2A2A] bg-gray-50 dark:bg-[#1C1C1C] hover:bg-gray-100 dark:hover:bg-[#252525] text-gray-700 dark:text-gray-200 font-semibold text-xs px-4 py-2 flex items-center gap-1.5 rounded-xl cursor-pointer transition-all shadow-sm"
                 >
                     <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-[#C69C2E]" : ""}`} />
                     <span>Check Status</span>
@@ -258,37 +258,33 @@ export function KYCSettings() {
             </div>
 
             {error && (
-                <div className="p-4 rounded-xl bg-red-950/80 border border-red-800/50 text-red-300 text-sm flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4" />
-                    {error}
+                <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-center gap-2.5">
+                    <AlertTriangle className="w-4 h-4 shrink-0 text-red-400" />
+                    <span className="font-medium">{error}</span>
                 </div>
             )}
 
             {status !== "verified" && (
                 <div
-                    className="flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl space-y-5 sm:space-y-6 relative overflow-hidden text-center w-full"
-                    style={{ background: "linear-gradient(180deg, #18181b 0%, #09090b 100%)", border: "1px solid rgba(198,156,46,0.25)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6)" }}
+                    className="flex flex-col items-center justify-center p-6 sm:p-10 rounded-3xl space-y-6 relative overflow-hidden text-center w-full bg-white dark:bg-[#141414] border border-gray-100 dark:border-[#2A2A2A] shadow-sm hover:shadow-md transition-shadow"
                 >
-                    {/* Glow Accents */}
-                    <div className="absolute -top-24 -left-24 w-48 h-48 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(198,156,46,0.1)" }} />
-                    <div className="absolute -bottom-24 -right-24 w-48 h-48 rounded-full blur-3xl pointer-events-none" style={{ background: "rgba(198,156,46,0.1)" }} />
+                    {/* Subtle Brand Glow */}
+                    <div className="absolute -top-24 -left-24 w-48 h-48 rounded-full blur-3xl pointer-events-none bg-[#C69C2E]/10" />
+                    <div className="absolute -bottom-24 -right-24 w-48 h-48 rounded-full blur-3xl pointer-events-none bg-[#C69C2E]/10" />
 
-                    <div
-                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center shrink-0 z-10"
-                        style={{ background: "rgba(198,156,46,0.15)", border: "1px solid rgba(198,156,46,0.3)", boxShadow: "0 10px 15px -3px rgba(198,156,46,0.1)" }}
-                    >
-                        <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8" style={{ color: "#C69C2E" }} />
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#C69C2E]/10 border border-[#C69C2E]/20 flex items-center justify-center shrink-0 z-10 mx-auto text-[#C69C2E] shadow-inner">
+                        <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8" />
                     </div>
 
                     <div className="text-center space-y-2 max-w-md z-10 px-2">
-                        <h3 className="text-lg sm:text-2xl font-bold tracking-tight text-white">
+                        <h3 className="text-lg sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                             {status === "pending"
                                 ? "Verification In Progress"
                                 : status === "rejected"
                                 ? "Verification Needs Re-submission"
                                 : "Identity Verification Required"}
                         </h3>
-                        <p className="text-xs sm:text-sm leading-relaxed text-zinc-400">
+                        <p className="text-xs sm:text-sm leading-relaxed text-gray-500 dark:text-zinc-400">
                             {status === "pending"
                                 ? "Your verification is in progress. If you stopped halfway or need to complete document submission, click below to continue."
                                 : status === "rejected"
@@ -301,10 +297,9 @@ export function KYCSettings() {
                     <div className="pt-2 z-10 w-full max-w-xs px-2 sm:px-4">
                         <Button
                             onClick={() => setIsModalOpen(true)}
-                            className="w-full py-3.5 sm:py-4 px-4 rounded-xl font-bold text-xs sm:text-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg cursor-pointer"
-                            style={{ background: "linear-gradient(90deg, #C69C2E, #D4AF37, #E6B83B)", color: "#09090b", boxShadow: "0 15px 25px -5px rgba(198,156,46,0.25)" }}
+                            className="w-full py-3.5 sm:py-4 px-6 rounded-xl font-bold text-xs sm:text-sm bg-[#C69C2E] hover:bg-[#b08b29] text-white shadow-lg shadow-[#C69C2E]/20 hover:shadow-[#C69C2E]/30 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                         >
-                            <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: "#09090b" }} />
+                            <ShieldCheck className="w-4 h-4 shrink-0 text-white" />
                             <span className="truncate">
                                 {status === "pending"
                                     ? "Continue Verification"
@@ -315,33 +310,25 @@ export function KYCSettings() {
                         </Button>
                     </div>
 
-                    {/* Full-Width Dark Theme Modal Overlay */}
+                    {/* Modal Overlay */}
                     {isModalOpen && (
                         <div
-                            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
-                            style={{ background: "rgba(0,0,0,0.92)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
+                            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md transition-all"
                             onClick={(e) => {
                                 if (e.target === e.currentTarget) setIsModalOpen(false);
                             }}
                         >
                             <div
-                                className="relative w-full sm:max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl"
-                                style={{ background: "#09090b", color: "#ffffff", border: "1px solid rgba(198,156,46,0.3)" }}
+                                className="relative w-full sm:max-w-4xl h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-t-2xl sm:rounded-3xl flex flex-col overflow-hidden shadow-2xl bg-white dark:bg-[#121212] border border-gray-200 dark:border-[#2A2A2A]"
                             >
                                 {/* Modal Header */}
-                                <div
-                                    className="px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between shrink-0 border-b border-zinc-800"
-                                    style={{ background: "#18181b" }}
-                                >
+                                <div className="px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0 bg-gray-50 dark:bg-[#1A1A1A] border-b border-gray-200 dark:border-[#2A2A2A]">
                                     <div className="flex items-center gap-3">
-                                        <div
-                                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0"
-                                            style={{ background: "rgba(198,156,46,0.15)", border: "1px solid rgba(198,156,46,0.3)" }}
-                                        >
-                                            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: "#C69C2E" }} />
+                                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#C69C2E]/10 border border-[#C69C2E]/20 flex items-center justify-center shrink-0 text-[#C69C2E]">
+                                            <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-sm sm:text-lg flex items-center gap-2 text-white">
+                                            <h3 className="font-bold text-sm sm:text-base text-gray-900 dark:text-white">
                                                 Identity Verification
                                             </h3>
                                         </div>
@@ -350,10 +337,10 @@ export function KYCSettings() {
                                     {/* Close Button */}
                                     <button
                                         onClick={() => setIsModalOpen(false)}
-                                        className="p-2 rounded-full transition-colors text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                        className="p-2 rounded-xl transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-[#2A2A2A]"
                                         aria-label="Close modal"
                                     >
-                                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                                        <X className="w-5 h-5" />
                                     </button>
                                 </div>
 
@@ -377,31 +364,27 @@ export function KYCSettings() {
 
                                 {/* Modal Body Container */}
                                 <div
-                                    className="flex-1 overflow-y-auto p-2 sm:p-6 relative w-full h-full overscroll-contain"
-                                    style={{ background: "#09090b", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}
+                                    className="flex-1 overflow-y-auto p-2 sm:p-6 relative w-full h-full overscroll-contain bg-white dark:bg-[#121212]"
+                                    style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}
                                 >
                                     {!sdkLoaded && !sdkError && (
-                                        <div
-                                            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 p-6 bg-[#09090b]/95"
-                                        >
+                                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 p-6 bg-white/95 dark:bg-[#121212]/95">
                                             <Loader2 className="w-9 h-9 animate-spin text-[#C69C2E]" />
-                                            <p className="text-sm font-medium text-zinc-300">Initializing secure verification portal...</p>
+                                            <p className="text-sm font-medium text-gray-700 dark:text-zinc-300">Initializing secure verification portal...</p>
                                         </div>
                                     )}
 
                                     {sdkError && (
-                                        <div
-                                            className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 p-6 text-center bg-[#09090b]"
-                                        >
-                                            <AlertTriangle className="w-10 h-10 text-red-400" />
+                                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 p-6 text-center bg-white dark:bg-[#121212]">
+                                            <AlertTriangle className="w-10 h-10 text-red-500" />
                                             <div>
-                                                <h4 className="font-bold text-base text-white">Failed to load verification module</h4>
-                                                <p className="text-sm mt-1 max-w-sm text-zinc-400">Please check your internet connection or try reloading the verification widget.</p>
+                                                <h4 className="font-bold text-base text-gray-900 dark:text-white">Failed to load verification module</h4>
+                                                <p className="text-sm mt-1 max-w-sm text-gray-500 dark:text-zinc-400">Please check your internet connection or try reloading the verification widget.</p>
                                             </div>
                                             <Button
                                                 onClick={activeProvider === "sumsub" ? initSumsubSdk : loadMetaMapSdk}
                                                 variant="outline"
-                                                className="rounded-xl border-[#C69C2E] text-[#C69C2E]"
+                                                className="rounded-xl border-[#C69C2E] text-[#C69C2E] hover:bg-[#C69C2E]/10 font-semibold text-xs"
                                             >
                                                 <RefreshCw className="w-4 h-4 mr-2" />
                                                 Retry Connection
@@ -415,8 +398,8 @@ export function KYCSettings() {
                                             <div
                                                 id="sumsub-websdk-container"
                                                 ref={sumsubContainerRef}
-                                                className="w-full flex-1"
-                                                style={{ width: "100%", minHeight: "850px", background: "#09090b", borderRadius: "16px" }}
+                                                className="w-full flex-1 rounded-2xl bg-white dark:bg-[#141414]"
+                                                style={{ width: "100%", minHeight: "850px" }}
                                             />
                                         ) : (
                                             <div ref={metamapRef} className="w-full flex justify-center py-6">
@@ -436,29 +419,39 @@ export function KYCSettings() {
             )}
 
             {status === "verified" && (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 bg-zinc-900/90 border border-zinc-800 p-4 sm:p-6 rounded-2xl">
+                <div className="bg-white dark:bg-[#141414] border border-gray-100 dark:border-[#2A2A2A] p-6 rounded-3xl space-y-6 shadow-sm">
+                    <div className="flex items-center gap-3 border-b border-gray-100 dark:border-[#2A2A2A] pb-4">
+                        <div className="w-9 h-9 rounded-xl bg-[#C69C2E]/10 flex items-center justify-center text-[#C69C2E]">
+                            <CheckCircle className="w-4 h-4 text-emerald-500" />
+                        </div>
                         <div>
-                            <p className="text-sm text-zinc-400 mb-1">KYC Provider</p>
-                            <p className="font-semibold text-white uppercase">
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white">Verification Details</h3>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500">Confirmed compliance information</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                        <div>
+                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">KYC Provider</p>
+                            <p className="font-bold text-gray-900 dark:text-white uppercase text-sm">
                                 {kycData?.kyc_provider || activeProvider}
                             </p>
                         </div>
                         <div>
-                            <p className="text-sm text-zinc-400 mb-1">Applicant / Verification ID</p>
-                            <p className="font-semibold text-[#C69C2E] truncate">
+                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Applicant / Verification ID</p>
+                            <p className="font-bold text-[#C69C2E] truncate text-sm font-mono">
                                 {kycData?.sumsub_applicant_id || kycData?.metamap_verification_id || 'N/A'}
                             </p>
                         </div>
                         <div>
-                            <p className="text-sm text-zinc-400 mb-1">Inspection / Flow ID</p>
-                            <p className="font-semibold text-white truncate">
+                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Inspection / Flow ID</p>
+                            <p className="font-bold text-gray-900 dark:text-white truncate text-sm font-mono">
                                 {kycData?.sumsub_inspection_id || kycData?.metamap_flow_id || 'N/A'}
                             </p>
                         </div>
                         <div>
-                            <p className="text-sm text-zinc-400 mb-1">Last Updated</p>
-                            <p className="font-semibold text-[#C69C2E]">
+                            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">Last Updated</p>
+                            <p className="font-bold text-[#C69C2E] text-sm">
                                 {kycData?.updated_at ? new Date(kycData.updated_at).toLocaleDateString() : 'N/A'}
                             </p>
                         </div>
