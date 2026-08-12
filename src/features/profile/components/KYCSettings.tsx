@@ -28,6 +28,14 @@ export function KYCSettings() {
     const sumsubContainerRef = useRef<HTMLDivElement>(null);
     const sumsubInstanceRef = useRef<unknown>(null);
 
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleRefreshStatus = async () => {
+        setIsRefreshing(true);
+        await fetchKyc(false);
+        setIsRefreshing(false);
+    };
+
     // Fetch KYC status (showLoading = true for initial load, false for background sync)
     const fetchKyc = useCallback(async (showLoading = false) => {
         if (showLoading) setIsLoading(true);
@@ -212,28 +220,41 @@ export function KYCSettings() {
             </div>
 
             {/* Status Banner */}
-            <div className={`p-4 rounded-2xl flex items-start gap-3.5 border ${
+            <div className={`p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 border ${
                 status === "verified" ? "bg-emerald-950/60 border-emerald-500/30 text-emerald-300" :
                 status === "pending" ? "bg-amber-950/60 border-amber-500/30 text-amber-300" :
                 status === "rejected" ? "bg-red-950/60 border-red-500/30 text-red-300" :
                 "bg-zinc-900/90 border-zinc-800 text-zinc-300"
             }`}>
-                {status === "verified" && <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5" />}
-                {status === "pending" && <Loader2 className="w-5 h-5 text-amber-400 mt-0.5 animate-spin" />}
-                {status === "rejected" && <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5" />}
-                {status === "unverified" && <AlertTriangle className="w-5 h-5 text-zinc-400 mt-0.5" />}
-                
-                <div>
-                    <h3 className="font-semibold capitalize text-base">Status: {status}</h3>
-                    {status === "verified" && <p className="text-sm opacity-90">Your identity has been verified successfully.</p>}
-                    {status === "pending" && <p className="text-sm opacity-90">Your verification documents are currently under review.</p>}
-                    {status === "rejected" && (
-                        <p className="text-sm opacity-90">
-                            Verification rejected. Reason: {kycData?.rejection_reason || "Invalid or unreadable document."}
-                        </p>
-                    )}
-                    {status === "unverified" && <p className="text-sm opacity-90">Complete the identity verification step below.</p>}
+                <div className="flex items-start gap-3.5">
+                    {status === "verified" && <CheckCircle className="w-5 h-5 text-emerald-400 mt-0.5 shrink-0" />}
+                    {status === "pending" && <Loader2 className="w-5 h-5 text-amber-400 mt-0.5 animate-spin shrink-0" />}
+                    {status === "rejected" && <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />}
+                    {status === "unverified" && <AlertTriangle className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />}
+                    
+                    <div>
+                        <h3 className="font-semibold capitalize text-base">Status: {status}</h3>
+                        {status === "verified" && <p className="text-sm opacity-90">Your identity has been verified successfully.</p>}
+                        {status === "pending" && <p className="text-sm opacity-90">Your verification documents are currently under review.</p>}
+                        {status === "rejected" && (
+                            <p className="text-sm opacity-90">
+                                Verification rejected. Reason: {kycData?.rejection_reason || "Invalid or unreadable document."}
+                            </p>
+                        )}
+                        {status === "unverified" && <p className="text-sm opacity-90">Complete the identity verification step below.</p>}
+                    </div>
                 </div>
+
+                <Button
+                    onClick={handleRefreshStatus}
+                    disabled={isRefreshing}
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 border-zinc-700 bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 text-xs flex items-center gap-1.5 rounded-xl cursor-pointer"
+                >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-[#C69C2E]" : ""}`} />
+                    <span>Check Status</span>
+                </Button>
             </div>
 
             {error && (
