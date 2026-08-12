@@ -264,7 +264,7 @@ export function KYCSettings() {
                 </div>
             )}
 
-            {(status === "unverified" || status === "rejected") ? (
+            {status !== "verified" && (
                 <div
                     className="flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl space-y-5 sm:space-y-6 relative overflow-hidden text-center w-full"
                     style={{ background: "linear-gradient(180deg, #18181b 0%, #09090b 100%)", border: "1px solid rgba(198,156,46,0.25)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6)" }}
@@ -282,10 +282,18 @@ export function KYCSettings() {
 
                     <div className="text-center space-y-2 max-w-md z-10 px-2">
                         <h3 className="text-lg sm:text-2xl font-bold tracking-tight text-white">
-                            Identity Verification Required
+                            {status === "pending"
+                                ? "Verification In Progress"
+                                : status === "rejected"
+                                ? "Verification Needs Re-submission"
+                                : "Identity Verification Required"}
                         </h3>
                         <p className="text-xs sm:text-sm leading-relaxed text-zinc-400">
-                            Verify your profile to unlock unlimited trading, payouts, and full platform compliance.
+                            {status === "pending"
+                                ? "Your verification is in progress. If you stopped halfway or need to complete document submission, click below to continue."
+                                : status === "rejected"
+                                ? "Your previous submission was rejected. Click below to re-submit your verification documents."
+                                : "Verify your profile to unlock unlimited trading, payouts, and full platform compliance."}
                         </p>
                     </div>
 
@@ -297,7 +305,13 @@ export function KYCSettings() {
                             style={{ background: "linear-gradient(90deg, #C69C2E, #D4AF37, #E6B83B)", color: "#09090b", boxShadow: "0 15px 25px -5px rgba(198,156,46,0.25)" }}
                         >
                             <ShieldCheck className="w-4 h-4 shrink-0" style={{ color: "#09090b" }} />
-                            <span className="truncate">Start Verification</span>
+                            <span className="truncate">
+                                {status === "pending"
+                                    ? "Continue Verification"
+                                    : status === "rejected"
+                                    ? "Re-verify Identity"
+                                    : "Start Verification"}
+                            </span>
                         </Button>
                     </div>
 
@@ -419,7 +433,9 @@ export function KYCSettings() {
                         </div>
                     )}
                 </div>
-            ) : (
+            )}
+
+            {status === "verified" && (
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 bg-zinc-900/90 border border-zinc-800 p-4 sm:p-6 rounded-2xl">
                         <div>
