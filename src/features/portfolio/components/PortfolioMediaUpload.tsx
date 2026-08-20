@@ -105,7 +105,7 @@ export function PortfolioMediaUpload({ portfolioId, initialMedia = [], onUploadC
                     return (
                         <div 
                             key={media.id} 
-                            className="relative aspect-video bg-muted rounded-lg overflow-hidden border cursor-pointer group"
+                            className="relative aspect-video bg-muted/60 rounded-lg overflow-hidden border cursor-pointer group p-1 flex items-center justify-center"
                             onClick={() => setPreviewItem({
                                 url: mediaSrc,
                                 type: media.media_type?.startsWith('image') ? 'image' : 'video'
@@ -116,14 +116,14 @@ export function PortfolioMediaUpload({ portfolioId, initialMedia = [], onUploadC
                                     src={mediaSrc}
                                     alt="Portfolio Media"
                                     fill
-                                    className="object-cover group-hover:scale-105 transition-transform duration-200"
+                                    className="object-contain p-1 group-hover:scale-105 transition-transform duration-200"
                                 />
                             ) : (
                                 <video
                                     src={`${mediaSrc}#t=0.1`}
                                     preload="metadata"
                                     playsInline
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
                                 />
                             )}
                         </div>
@@ -158,7 +158,7 @@ export function PortfolioMediaUpload({ portfolioId, initialMedia = [], onUploadC
 
             {previewItem && (
                 <Dialog open={!!previewItem} onOpenChange={() => setPreviewItem(null)}>
-                    <DialogContent className="max-w-4xl p-0 overflow-hidden border-none bg-black/95 backdrop-blur-md rounded-2xl flex items-center justify-center relative aspect-video">
+                    <DialogContent className="max-w-5xl w-auto max-h-[90vh] p-2 sm:p-4 overflow-hidden border-none bg-black/95 backdrop-blur-md rounded-2xl flex items-center justify-center relative shadow-2xl">
                         <DialogTitle className="sr-only">Media Preview</DialogTitle>
                         <button
                             type="button"
@@ -171,7 +171,7 @@ export function PortfolioMediaUpload({ portfolioId, initialMedia = [], onUploadC
                             <img
                                 src={previewItem.url}
                                 alt="Preview"
-                                className="max-h-[85vh] max-w-full object-contain"
+                                className="max-h-[85vh] max-w-[90vw] w-auto h-auto object-contain rounded-lg"
                             />
                         ) : (
                             <video
@@ -179,7 +179,7 @@ export function PortfolioMediaUpload({ portfolioId, initialMedia = [], onUploadC
                                 controls
                                 autoPlay
                                 playsInline
-                                className="max-h-[85vh] max-w-full"
+                                className="max-h-[85vh] max-w-[90vw] w-auto h-auto object-contain rounded-lg"
                             />
                         )}
                     </DialogContent>

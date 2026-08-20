@@ -115,7 +115,7 @@ export function PortfolioSetupForm() {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-2">
-                    <label htmlFor="title" className="text-sm font-medium">Portfolio Title</label>
+                    <label htmlFor="title" className="text-sm font-medium">Profession</label>
                     <Input id="title" placeholder="e.g. Senior Full Stack Developer" {...register("title")} />
                     {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
                 </div>

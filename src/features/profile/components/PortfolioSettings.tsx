@@ -254,7 +254,7 @@ export function PortfolioSettings() {
     const handleSubmit = async () => {
         setError(null);
         if (!title.trim()) {
-            setError("Title is required");
+            setError("Profession is required");
             return;
         }
 
@@ -433,9 +433,9 @@ export function PortfolioSettings() {
             {/* Form Fields */}
             <div className="space-y-6">
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-900">Title <span className="text-red-500">*</span></label>
+                    <label className="text-sm font-medium text-gray-900">Profession <span className="text-red-500">*</span></label>
                     <Input
-                        placeholder="Enter Title"
+                        placeholder="Enter Profession"
                         className="h-12 bg-white border-gray-200 rounded-xl"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
@@ -467,7 +467,7 @@ export function PortfolioSettings() {
                                 <img
                                     src={photo.preview}
                                     alt={`Uploaded photo ${index + 1}`}
-                                    className="object-cover w-full h-full"
+                                    className="object-contain w-full h-full"
                                 />
                                 <button
                                     type="button"
@@ -522,7 +522,7 @@ export function PortfolioSettings() {
                                     src={`${video.preview}#t=0.1`}
                                     preload="metadata"
                                     playsInline
-                                    className="object-cover w-full h-full"
+                                    className="object-contain w-full h-full"
                                     muted
                                 />
                                 <button
@@ -659,7 +659,7 @@ export function PortfolioSettings() {
 
             {previewItem && (
                 <Dialog open={!!previewItem} onOpenChange={() => setPreviewItem(null)}>
-                    <DialogContent className="max-w-4xl p-0 overflow-hidden border-none bg-black/95 backdrop-blur-md rounded-2xl flex items-center justify-center relative aspect-video">
+                    <DialogContent className="max-w-5xl w-auto max-h-[90vh] p-2 sm:p-4 overflow-hidden border-none bg-black/95 backdrop-blur-md rounded-2xl flex items-center justify-center relative shadow-2xl">
                         <DialogTitle className="sr-only">Media Preview</DialogTitle>
                         <button
                             type="button"
@@ -672,7 +672,7 @@ export function PortfolioSettings() {
                             <img
                                 src={previewItem.url}
                                 alt="Preview"
-                                className="max-h-[85vh] max-w-full object-contain"
+                                className="max-h-[85vh] max-w-[90vw] w-auto h-auto object-contain rounded-lg"
                             />
                         ) : (
                             <video
@@ -680,7 +680,7 @@ export function PortfolioSettings() {
                                 controls
                                 autoPlay
                                 playsInline
-                                className="max-h-[85vh] max-w-full"
+                                className="max-h-[85vh] max-w-[90vw] w-auto h-auto object-contain rounded-lg"
                             />
                         )}
                     </DialogContent>

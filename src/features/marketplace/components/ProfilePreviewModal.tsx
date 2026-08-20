@@ -168,11 +168,11 @@ export function ProfilePreviewModal({ isOpen, onClose, user }: ProfilePreviewMod
                                         const isVideo = item.media_type?.startsWith("video");
                                         const url = getBackendImageUrl(item.s3_key);
                                         return (
-                                            <div key={idx} className="aspect-square rounded-xl overflow-hidden bg-gray-100 relative group cursor-pointer border border-gray-100">
+                                            <div key={idx} className="aspect-square rounded-xl overflow-hidden bg-gray-950/90 relative group cursor-pointer border border-gray-100 p-1 flex items-center justify-center">
                                                 {isVideo ? (
-                                                    <video src={url} className="w-full h-full object-cover" preload="metadata" />
+                                                    <video src={url} className="w-full h-full object-contain" preload="metadata" />
                                                 ) : (
-                                                    <FallbackImage src={url} alt={`Portfolio Media ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                                    <FallbackImage src={url} alt={`Portfolio Media ${idx + 1}`} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" />
                                                 )}
                                                 {isVideo && (
                                                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
