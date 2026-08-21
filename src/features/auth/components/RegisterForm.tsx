@@ -16,6 +16,7 @@ import { toast } from "sonner";
 
 export function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const searchParams = useSearchParams();
     const callbackUrl = searchParams.get("callbackUrl") || "/dashboard/marketplace";
@@ -116,6 +117,31 @@ export function RegisterForm() {
                     </div>
                     {errors.password && (
                         <p className="text-xs text-red-500">{errors.password.message}</p>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <label className="text-sm font-medium" htmlFor="confirmPassword">
+                        Confirm Password
+                    </label>
+                    <div className="relative">
+                        <Input
+                            id="confirmPassword"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Re-enter password"
+                            {...register("confirmPassword")}
+                            className={`h-12 rounded-xl pr-10 ${errors.confirmPassword ? "border-red-500" : ""}`}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                            {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                    </div>
+                    {errors.confirmPassword && (
+                        <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>
                     )}
                 </div>
 

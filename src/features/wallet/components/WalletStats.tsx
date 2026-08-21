@@ -126,7 +126,7 @@ export function WalletStats() {
     };
 
     const referralCode = (session?.user as any)?.referral_code || "DGE-MEMBER";
-    const userName = session?.user?.name || "DGE Space Member";
+    const userName = (session?.user as any)?.username || session?.user?.name || "DGE Space Member";
 
     const copyToClipboard = () => {
         if (referralCode) {

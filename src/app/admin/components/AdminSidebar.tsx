@@ -73,23 +73,23 @@ export default function AdminSidebar() {
 
             {/* Sidebar Left Section - perfectly hidden on smaller screens */}
             <aside
-                className={`w-64 border-r border-slate-100 bg-white h-full flex flex-col justify-between shrink-0 select-none fixed lg:static inset-y-0 left-0 z-40 transform lg:translate-x-0 transition-transform duration-300 ${
+                className={`w-64 border-r border-slate-100 bg-white h-screen flex flex-col justify-between shrink-0 select-none fixed lg:static inset-y-0 left-0 z-40 transform lg:translate-x-0 transition-transform duration-300 overflow-hidden ${
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 }`}
             >
-                <div className="p-6">
+                <div className="p-4 flex-1 flex flex-col min-h-0 overflow-y-auto">
                     {/* Brand Logo */}
-                    <Link href="/admin/overview" className="flex items-center gap-2 mb-10 hover:scale-[1.02] transition-all">
-                        <img src="/DGE logo.png" alt="DGE Logo" className="h-10 w-auto" />
+                    <Link href="/admin/overview" className="flex items-center gap-2 mb-4 hover:scale-[1.02] transition-all shrink-0">
+                        <img src="/DGE logo.png" alt="DGE Logo" className="h-8 md:h-9 w-auto" />
                     </Link>
 
                     {/* Navigation Items */}
-                    <nav className="space-y-7">
+                    <nav className="space-y-4 flex-1">
                         <div>
-                            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase select-none block mb-3">
+                            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase select-none block mb-1.5">
                                 Menu
                             </span>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 {menuLinks.map((link) => {
                                     const Icon = link.icon;
                                     const active = isLinkActive(link.href);
@@ -98,13 +98,13 @@ export default function AdminSidebar() {
                                             key={link.name}
                                             href={link.href}
                                             onClick={() => setIsOpen(false)}
-                                            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-[13px] transition-all select-none ${
+                                            className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl font-medium text-xs transition-all select-none ${
                                                 active
                                                     ? "bg-amber-50/50 text-[#b68512] border-l-2 border-[#b68512]"
                                                     : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/70"
                                             }`}
                                         >
-                                            <Icon size={17} />
+                                            <Icon size={16} />
                                             <span>{link.name}</span>
                                         </Link>
                                     );
@@ -113,10 +113,10 @@ export default function AdminSidebar() {
                         </div>
 
                         <div>
-                            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase select-none block mb-3">
+                            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase select-none block mb-1.5">
                                 User Management
                             </span>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 {userManagementLinks.map((link) => {
                                     const Icon = link.icon;
                                     const active = isLinkActive(link.href);
@@ -125,13 +125,13 @@ export default function AdminSidebar() {
                                             key={link.name}
                                             href={link.href}
                                             onClick={() => setIsOpen(false)}
-                                            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-[13px] transition-all select-none ${
+                                            className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl font-medium text-xs transition-all select-none ${
                                                 active
                                                     ? "bg-amber-50/50 text-[#b68512] border-l-2 border-[#b68512]"
                                                     : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/70"
                                             }`}
                                         >
-                                            <Icon size={17} />
+                                            <Icon size={16} />
                                             <span>{link.name}</span>
                                         </Link>
                                     );
@@ -140,10 +140,10 @@ export default function AdminSidebar() {
                         </div>
 
                         <div>
-                            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase select-none block mb-3">
+                            <span className="text-[10px] font-bold tracking-wider text-slate-400 uppercase select-none block mb-1.5">
                                 Others
                             </span>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 {othersLinks.map((link) => {
                                     const Icon = link.icon;
                                     const active = isLinkActive(link.href);
@@ -152,13 +152,13 @@ export default function AdminSidebar() {
                                             key={link.name}
                                             href={link.href}
                                             onClick={() => setIsOpen(false)}
-                                            className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-[13px] transition-all select-none ${
+                                            className={`flex items-center gap-2.5 px-3 py-1.5 rounded-xl font-medium text-xs transition-all select-none ${
                                                 active
                                                     ? "bg-amber-50/50 text-[#b68512] border-l-2 border-[#b68512]"
                                                     : "text-slate-500 hover:text-slate-800 hover:bg-slate-50/70"
                                             }`}
                                         >
-                                            <Icon size={17} />
+                                            <Icon size={16} />
                                             <span>{link.name}</span>
                                         </Link>
                                     );
@@ -169,12 +169,12 @@ export default function AdminSidebar() {
                 </div>
 
                 {/* Logout Button at bottom */}
-                <div className="p-6 border-t border-slate-50">
+                <div className="p-3 border-t border-slate-50 shrink-0">
                     <button
                         onClick={() => signOut({ callbackUrl: "/login" })}
-                        className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl font-medium text-[13px] text-red-500 hover:bg-red-50 transition-all select-none"
+                        className="flex items-center gap-2.5 w-full px-3 py-1.5 rounded-xl font-medium text-xs text-red-500 hover:bg-red-50 transition-all select-none"
                     >
-                        <LogOut size={17} />
+                        <LogOut size={16} />
                         <span>Logout</span>
                     </button>
                 </div>

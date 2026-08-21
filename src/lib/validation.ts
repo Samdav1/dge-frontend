@@ -9,10 +9,14 @@ export const registerSchema = z.object({
     username: z.string().min(3, { message: 'Username must be at least 3 characters' }),
     email: z.string().email({ message: 'Invalid email address' }),
     password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
+    confirmPassword: z.string().min(8, { message: 'Please confirm your password' }),
     referralCode: z.string().optional(),
     terms: z.boolean().refine((val) => val === true, {
         message: 'You must agree to the Terms of Services',
     }),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
 });
 
 export const forgotPasswordSchema = z.object({
