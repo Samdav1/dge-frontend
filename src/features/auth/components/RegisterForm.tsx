@@ -9,10 +9,11 @@ import { registerSchema, type RegisterInput } from "@/lib/validation";
 import { registerUser } from "../actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, CheckCircle2, XCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
+import { PasswordStrengthChecker } from "./PasswordStrengthChecker";
 
 export function RegisterForm() {
     const [showPassword, setShowPassword] = useState(false);
@@ -32,6 +33,11 @@ export function RegisterForm() {
             terms: false,
         },
     });
+
+    const passwordValue = watch("password") || "";
+    const confirmPasswordValue = watch("confirmPassword") || "";
+    const hasTypedConfirm = confirmPasswordValue.length > 0;
+    const isPasswordMatch = hasTypedConfirm && passwordValue === confirmPasswordValue && passwordValue.length > 0;
 
     const onSubmit = async (data: RegisterInput) => {
         try {
@@ -118,19 +124,44 @@ export function RegisterForm() {
                     {errors.password && (
                         <p className="text-xs text-red-500">{errors.password.message}</p>
                     )}
+                    {/* Live Password Strength Meter & Checklist */}
+                    <PasswordStrengthChecker password={passwordValue} />
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium" htmlFor="confirmPassword">
-                        Confirm Password
-                    </label>
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium" htmlFor="confirmPassword">
+                            Confirm Password
+                        </label>
+                        {hasTypedConfirm && (
+                            <span className={`text-xs flex items-center gap-1 font-semibold ${isPasswordMatch ? "text-emerald-500" : "text-red-500"}`}>
+                                {isPasswordMatch ? (
+                                    <>
+                                        <CheckCircle2 className="w-3.5 h-3.5" /> Passwords match
+                                    </>
+                                ) : (
+                                    <>
+                                        <XCircle className="w-3.5 h-3.5" /> Passwords do not match
+                                    </>
+                                )}
+                            </span>
+                        )}
+                    </div>
                     <div className="relative">
                         <Input
                             id="confirmPassword"
                             type={showConfirmPassword ? "text" : "password"}
                             placeholder="Re-enter password"
                             {...register("confirmPassword")}
-                            className={`h-12 rounded-xl pr-10 ${errors.confirmPassword ? "border-red-500" : ""}`}
+                            className={`h-12 rounded-xl pr-10 transition-all ${
+                                hasTypedConfirm
+                                    ? isPasswordMatch
+                                        ? "border-emerald-500 focus-visible:ring-emerald-500 bg-emerald-500/5"
+                                        : "border-red-500 focus-visible:ring-red-500 bg-red-500/5"
+                                    : errors.confirmPassword
+                                    ? "border-red-500"
+                                    : ""
+                            }`}
                         />
                         <button
                             type="button"
@@ -140,7 +171,7 @@ export function RegisterForm() {
                             {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                         </button>
                     </div>
-                    {errors.confirmPassword && (
+                    {errors.confirmPassword && !hasTypedConfirm && (
                         <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>
                     )}
                 </div>
