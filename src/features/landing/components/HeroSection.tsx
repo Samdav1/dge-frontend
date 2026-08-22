@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
 import FallbackImage from "@/components/ui/FallbackImage";
+import { LandingSearchBar } from "./LandingSearchBar";
 
 export function HeroSection() {
     return (
@@ -33,24 +31,11 @@ export function HeroSection() {
                             From skilled freelancers and local professionals to reliable rides, connect, negotiate, and transact with peace of mind. Every payment is Escrow-protected until you're 100% satisfied.
                         </p>
 
-                        <div className="max-w-2xl mx-auto relative px-2 md:px-0">
-                            <div className="relative flex items-center group">
-                                <Input
-                                    type="text"
-                                    placeholder="Search for any service"
-                                    className="w-full h-14 md:h-16 pl-6 md:pl-8 pr-16 md:pr-20 rounded-xl bg-white text-black border-0 shadow-2xl text-base md:text-lg placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[#C69C2E]/50 transition-all"
-                                />
-                                <Button
-                                    size="icon"
-                                    className="absolute right-2 top-2 bottom-2 h-10 w-10 md:h-12 md:w-12 rounded-lg bg-[#C69C2E] hover:bg-[#B58B1D] text-white shadow-md transition-transform active:scale-95"
-                                >
-                                    <Search className="h-5 w-5 md:h-6 md:w-6" />
-                                </Button>
-                            </div>
-                        </div>
+                        <LandingSearchBar />
                     </div>
                 </div>
             </div>
         </section>
     );
 }
+
