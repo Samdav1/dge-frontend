@@ -163,3 +163,34 @@ export async function createUserKyc(formData: FormData) {
         return { success: false, error: "Network error or backend unreachable" };
     }
 }
+
+export async function changePassword(data: { password: string; token: string }) {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dge-tech-web-cjhe4jg72a-ew.a.run.app";
+    const apiKey = process.env.BACKEND_API_KEY;
+
+    try {
+        const response = await fetch(`${apiUrl}/auth/change_password`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-API-KEY": apiKey || "",
+            },
+            body: JSON.stringify({
+                password: data.password,
+                token: data.token,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            console.error("Password reset failed:", response.status, response.statusText, errorData);
+            return { success: false, error: errorData.detail || "Failed to reset password. The link may have expired or is invalid." };
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error("Password reset error:", error);
+        return { success: false, error: "Network error or backend unreachable" };
+    }
+}
+

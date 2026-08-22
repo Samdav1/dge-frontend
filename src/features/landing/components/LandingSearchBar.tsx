@@ -35,12 +35,9 @@ interface ServiceItem {
 }
 
 const POPULAR_TAGS = [
-    "Emergency Plumbing",
-    "Web Development",
-    "House Cleaning",
-    "Home Wiring",
-    "Graphic Design",
-    "Tutor"
+    "Plumbing",
+    "Web Dev",
+    "Cleaning"
 ];
 
 export function LandingSearchBar() {
@@ -66,7 +63,7 @@ export function LandingSearchBar() {
 
         const timer = setTimeout(async () => {
             try {
-                const response = await listPublicServices({ search: trimmed, limit: 12 });
+                const response = await listPublicServices({ search: trimmed, limit: 20 });
                 if (response.success && Array.isArray(response.data)) {
                     setResults(response.data);
                 } else {
@@ -126,9 +123,9 @@ export function LandingSearchBar() {
     };
 
     return (
-        <div ref={searchRef} className="max-w-2xl mx-auto relative px-2 md:px-0">
+        <div ref={searchRef} className="w-full max-w-2xl mx-auto relative px-1 sm:px-2 md:px-0">
             {/* Search Input Box */}
-            <div className="relative flex items-center group shadow-2xl rounded-2xl bg-white text-black border border-gray-100 focus-within:ring-2 focus-within:ring-[#C69C2E]/60 transition-all">
+            <div className="relative flex items-center group shadow-2xl rounded-xl sm:rounded-2xl bg-white text-black border border-gray-100 focus-within:ring-2 focus-within:ring-[#C69C2E]/60 transition-all w-full overflow-hidden">
                 <Input
                     type="text"
                     value={query}
@@ -141,12 +138,12 @@ export function LandingSearchBar() {
                             handleExecuteSearch();
                         }
                     }}
-                    placeholder="Search for any service (e.g. Plumbing, Web App, Cleaning...)"
-                    className="w-full h-14 md:h-16 pl-6 md:pl-8 pr-28 md:pr-32 rounded-2xl bg-transparent border-0 text-black shadow-none text-base md:text-lg placeholder:text-gray-400 focus-visible:ring-0"
+                    placeholder="Search for any service..."
+                    className="w-full h-12 sm:h-14 md:h-16 pl-3 sm:pl-6 md:pl-8 pr-20 sm:pr-28 md:pr-32 rounded-xl sm:rounded-2xl bg-transparent border-0 text-black shadow-none text-xs sm:text-base md:text-lg placeholder:text-gray-400 focus-visible:ring-0 truncate"
                 />
 
                 {/* Right Input Action Controls */}
-                <div className="absolute right-2 flex items-center gap-1.5">
+                <div className="absolute right-1.5 sm:right-2 flex items-center gap-1">
                     {query && (
                         <button
                             type="button"
@@ -155,31 +152,31 @@ export function LandingSearchBar() {
                                 setResults([]);
                                 setIsOpen(false);
                             }}
-                            className="p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+                            className="p-1 sm:p-2 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
                             aria-label="Clear search"
                         >
-                            <X className="w-5 h-5" />
+                            <X className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                     )}
 
                     <Button
                         size="icon"
                         onClick={() => handleExecuteSearch()}
-                        className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-[#C69C2E] hover:bg-[#B58B1D] text-white shadow-md transition-transform active:scale-95 shrink-0"
+                        className="h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded-lg sm:rounded-xl bg-[#C69C2E] hover:bg-[#B58B1D] text-white shadow-md transition-transform active:scale-95 shrink-0 flex items-center justify-center"
                     >
                         {isLoading ? (
-                            <Loader2 className="h-5 w-5 md:h-6 md:w-6 animate-spin" />
+                            <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 animate-spin" />
                         ) : (
-                            <Search className="h-5 w-5 md:h-6 md:w-6" />
+                            <Search className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
                         )}
                     </Button>
                 </div>
             </div>
 
-            {/* Popular Search Tags */}
-            <div className="mt-3 flex items-center gap-2 flex-wrap justify-center text-xs text-gray-200">
-                <span className="flex items-center gap-1 font-medium text-[#C69C2E] shrink-0">
-                    <Sparkles className="w-3.5 h-3.5" /> Popular:
+            {/* Minimal Popular Search Tags */}
+            <div className="mt-2 flex items-center justify-center gap-1.5 flex-wrap text-[10px] text-gray-200">
+                <span className="flex items-center gap-1 font-medium text-[#C69C2E] shrink-0 text-[9px] sm:text-[10px]">
+                    <Sparkles className="w-3 h-3 text-[#C69C2E]" /> Popular:
                 </span>
                 {POPULAR_TAGS.map((tag) => (
                     <button
@@ -188,7 +185,7 @@ export function LandingSearchBar() {
                             setQuery(tag);
                             handleExecuteSearch(tag);
                         }}
-                        className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-[#C69C2E]/20 hover:text-[#C69C2E] border border-white/15 backdrop-blur-md transition-all text-[11px] md:text-xs font-medium cursor-pointer"
+                        className="px-1.5 py-0.5 rounded-full bg-white/10 hover:bg-[#C69C2E]/20 hover:text-[#C69C2E] border border-white/15 backdrop-blur-md transition-all text-[9px] sm:text-[10px] font-medium cursor-pointer shrink-0"
                     >
                         {tag}
                     </button>
@@ -219,7 +216,11 @@ export function LandingSearchBar() {
                     </div>
 
                     {/* Results List */}
-                    <div className="max-h-[360px] md:max-h-[440px] overflow-y-auto divide-y divide-gray-100 dark:divide-[#222] p-1 md:p-2">
+                    <div className={`divide-y divide-gray-100 dark:divide-[#222] p-1 md:p-2 ${
+                        results.length > 10 
+                            ? "max-h-[340px] md:max-h-[420px] overflow-y-auto" 
+                            : "max-h-none overflow-y-visible"
+                    }`}>
                         {isLoading ? (
                             <div className="p-6 text-center text-gray-400 space-y-3">
                                 <Loader2 className="w-7 h-7 animate-spin mx-auto text-[#C69C2E]" />
@@ -244,7 +245,7 @@ export function LandingSearchBar() {
                                     size="sm"
                                     className="rounded-xl border-[#C69C2E] text-[#C69C2E] hover:bg-[#C69C2E] hover:text-white transition-colors"
                                 >
-                                    Explore Marketplace
+                                    Explore Ecosystem
                                 </Button>
                             </div>
                         ) : (
@@ -261,12 +262,12 @@ export function LandingSearchBar() {
                                     <div
                                         key={service.id}
                                         onClick={() => handleSelectService(service.id)}
-                                        className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-[#1E1E1E] transition-all border border-transparent hover:border-gray-200 dark:hover:border-[#333] group cursor-pointer gap-3"
+                                        className="flex items-center justify-between p-2 sm:p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-[#1E1E1E] transition-all border border-transparent hover:border-gray-200 dark:hover:border-[#333] group cursor-pointer gap-2 sm:gap-3"
                                     >
                                         {/* Left Side: Thumbnail & Service Details */}
-                                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                                             {/* Service Image */}
-                                            <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden shrink-0 border border-gray-100 dark:border-[#2A2A2A] bg-gray-100 dark:bg-[#202020]">
+                                            <div className="relative w-11 h-11 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl overflow-hidden shrink-0 border border-gray-100 dark:border-[#2A2A2A] bg-gray-100 dark:bg-[#202020]">
                                                 <FallbackImage
                                                     src={getBackendImageUrl(service.image)}
                                                     alt={service.name}
@@ -276,26 +277,26 @@ export function LandingSearchBar() {
 
                                             {/* Details */}
                                             <div className="min-w-0 flex-1">
-                                                <h4 className="font-bold text-gray-900 dark:text-white text-sm md:text-base truncate group-hover:text-[#C69C2E] transition-colors">
+                                                <h4 className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm md:text-base truncate group-hover:text-[#C69C2E] transition-colors">
                                                     {service.name}
                                                 </h4>
 
                                                 {/* Category & Type badges */}
-                                                <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                                <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap mt-0.5">
                                                     {catName && (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-[#252525] text-[10px] md:text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                                        <span className="inline-flex items-center gap-0.5 sm:gap-1 px-1.5 py-0.5 rounded bg-gray-100 dark:bg-[#252525] text-[9px] sm:text-[10px] md:text-xs font-semibold text-gray-700 dark:text-gray-300">
                                                             <span>{categoryEmoji}</span>
-                                                            <span>{catName}</span>
+                                                            <span className="truncate max-w-[80px] sm:max-w-none">{catName}</span>
                                                         </span>
                                                     )}
 
-                                                    <span className="px-2 py-0.5 rounded-md bg-[#C69C2E]/10 text-[#C69C2E] text-[10px] md:text-xs font-bold uppercase tracking-wider">
+                                                    <span className="px-1.5 py-0.5 rounded bg-[#C69C2E]/10 text-[#C69C2E] text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider">
                                                         {service.type}
                                                     </span>
                                                 </div>
 
                                                 {/* Description or Provider */}
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">
+                                                <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5 sm:mt-1">
                                                     By <span className="font-medium text-gray-700 dark:text-gray-300">{providerName}</span>
                                                     {service.description ? ` • ${service.description}` : ""}
                                                 </p>
@@ -303,20 +304,20 @@ export function LandingSearchBar() {
                                         </div>
 
                                         {/* Right Side: Price & Navigation Arrow */}
-                                        <div className="flex items-center gap-2 shrink-0 text-right">
+                                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 text-right">
                                             <div>
-                                                <div className="font-bold text-gray-900 dark:text-white text-sm md:text-base">
+                                                <div className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm md:text-base">
                                                     {formatPrice(service.price, service.discount, service.discount_percent || 0)}
                                                 </div>
                                                 {service.discount && service.discount_percent ? (
-                                                    <span className="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-950/40 px-1.5 py-0.5 rounded">
+                                                    <span className="text-[9px] sm:text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-950/40 px-1 py-0.5 rounded">
                                                         -{service.discount_percent}% OFF
                                                     </span>
                                                 ) : null}
                                             </div>
 
-                                            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-[#2A2A2A] flex items-center justify-center group-hover:bg-[#C69C2E] group-hover:text-white transition-all text-gray-400">
-                                                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                                            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-100 dark:bg-[#2A2A2A] flex items-center justify-center group-hover:bg-[#C69C2E] group-hover:text-white transition-all text-gray-400 shrink-0">
+                                                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform group-hover:translate-x-0.5" />
                                             </div>
                                         </div>
                                     </div>
@@ -325,14 +326,14 @@ export function LandingSearchBar() {
                         )}
                     </div>
 
-                    {/* Dropdown Footer */}
+                    {/* Dropdown Footer Button */}
                     {results.length > 0 && (
                         <div className="p-2.5 bg-gray-50 dark:bg-[#1A1A1A] border-t border-gray-100 dark:border-[#262626] text-center">
                             <button
                                 onClick={() => handleExecuteSearch()}
-                                className="w-full py-2 rounded-xl bg-[#C69C2E] hover:bg-[#B58B1D] text-white font-semibold text-xs md:text-sm transition-colors flex items-center justify-center gap-2"
+                                className="w-full py-2.5 rounded-xl bg-[#C69C2E] hover:bg-[#B58B1D] text-white font-semibold text-xs md:text-sm transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.99]"
                             >
-                                See all matching services for &quot;{query}&quot;
+                                Explore all in the Ecosystem
                                 <ArrowRight className="w-4 h-4" />
                             </button>
                         </div>

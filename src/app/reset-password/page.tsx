@@ -3,7 +3,8 @@
 import { ResetPasswordForm } from "@/features/auth/components/ResetPasswordForm";
 import { ResetPasswordSuccessContent } from "@/features/auth/components/ResetPasswordSuccessContent";
 import { ResetPasswordFailureContent } from "@/features/auth/components/ResetPasswordFailureContent";
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 
 const SLIDES = [
     {
@@ -89,7 +90,14 @@ export default function ResetPasswordPage() {
             {/* Right Side - Content */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-background">
                 {viewState === "form" && (
-                    <ResetPasswordForm onSuccess={handleSuccess} onFailure={handleFailure} />
+                    <Suspense fallback={
+                        <div className="flex flex-col items-center justify-center space-y-3 p-8">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                            <p className="text-sm text-muted-foreground">Loading password reset...</p>
+                        </div>
+                    }>
+                        <ResetPasswordForm onSuccess={handleSuccess} onFailure={handleFailure} />
+                    </Suspense>
                 )}
                 {viewState === "success" && (
                     <ResetPasswordSuccessContent />
