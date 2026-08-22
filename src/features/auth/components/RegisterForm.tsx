@@ -20,7 +20,10 @@ export function RegisterForm() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get("callbackUrl") || "/dashboard/marketplace";
+    const queryCallback = searchParams.get("callbackUrl");
+    const storedCallback = typeof window !== "undefined" ? sessionStorage.getItem("redirect_after_login") : null;
+    const targetRedirectUrl = queryCallback || storedCallback || "/dashboard/marketplace";
+
     const {
         register,
         handleSubmit,
@@ -48,7 +51,7 @@ export function RegisterForm() {
             }
 
             // Redirect to login on success, preserving callbackUrl
-            window.location.href = `/login?registered=true&callbackUrl=${encodeURIComponent(callbackUrl)}`;
+            window.location.href = `/login?registered=true&callbackUrl=${encodeURIComponent(targetRedirectUrl)}`;
         } catch (error) {
             console.error("Registration error:", error);
             // TODO: Handle error state (e.g., show toast)
@@ -237,7 +240,7 @@ export function RegisterForm() {
                     onClick={() => {
                         document.cookie = "auth_intent=signup; path=/; max-age=3600";
                         setIsGoogleLoading(true);
-                        signIn("google", { callbackUrl });
+                        signIn("google", { callbackUrl: targetRedirectUrl });
                     }}
                     disabled={isGoogleLoading}
                 >
@@ -268,7 +271,7 @@ export function RegisterForm() {
 
                 <p className="text-center text-sm text-muted-foreground">
                     Already have an account?{" "}
-                    <Link href="/login" className="text-primary hover:underline font-medium">
+                    <Link href={`/login?callbackUrl=${encodeURIComponent(targetRedirectUrl)}`} className="text-primary hover:underline font-medium">
                         Login
                     </Link>
                 </p>

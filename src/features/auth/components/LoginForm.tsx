@@ -16,7 +16,10 @@ export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const searchParams = useSearchParams();
-    const callbackUrl = searchParams.get("callbackUrl") || "/dashboard/marketplace";
+    const queryCallback = searchParams.get("callbackUrl");
+    const storedCallback = typeof window !== "undefined" ? sessionStorage.getItem("redirect_after_login") : null;
+    const targetRedirectUrl = queryCallback || storedCallback || "/dashboard/marketplace";
+
     const {
         register,
         handleSubmit,
@@ -37,8 +40,11 @@ export function LoginForm() {
                 throw new Error("Invalid credentials");
             }
 
-            // Redirect to callback URL on success
-            window.location.href = callbackUrl;
+            // Clear stored redirect target and redirect
+            if (typeof window !== "undefined") {
+                sessionStorage.removeItem("redirect_after_login");
+            }
+            window.location.href = targetRedirectUrl;
         } catch (error) {
             console.error("Login error:", error);
             // TODO: Handle error state (e.g., show toast)
@@ -142,7 +148,7 @@ export function LoginForm() {
                     onClick={() => {
                         document.cookie = "auth_intent=login; path=/; max-age=3600";
                         setIsGoogleLoading(true);
-                        signIn("google", { callbackUrl });
+                        signIn("google", { callbackUrl: targetRedirectUrl });
                     }}
                     disabled={isGoogleLoading}
                 >
@@ -173,7 +179,7 @@ export function LoginForm() {
 
                 <p className="text-center text-sm text-muted-foreground">
                     Don&apos;t have an account yet?{" "}
-                    <Link href="/register" className="text-primary hover:underline font-medium">
+                    <Link href={`/register?callbackUrl=${encodeURIComponent(targetRedirectUrl)}`} className="text-primary hover:underline font-medium">
                         Create Account
                     </Link>
                 </p>

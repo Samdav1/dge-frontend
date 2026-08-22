@@ -102,14 +102,21 @@ export function LandingSearchBar() {
 
     const handleExecuteSearch = (searchQuery?: string) => {
         const target = (searchQuery !== undefined ? searchQuery : query).trim();
-        if (!target) return;
+        const targetUrl = target ? `/dashboard/marketplace?search=${encodeURIComponent(target)}` : "/dashboard/marketplace";
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("redirect_after_login", targetUrl);
+        }
         setIsOpen(false);
-        router.push(`/dashboard/marketplace?search=${encodeURIComponent(target)}`);
+        router.push(targetUrl);
     };
 
     const handleSelectService = (serviceId: string) => {
+        const targetUrl = `/dashboard/marketplace/${serviceId}`;
+        if (typeof window !== "undefined") {
+            sessionStorage.setItem("redirect_after_login", targetUrl);
+        }
         setIsOpen(false);
-        router.push(`/dashboard/marketplace/${serviceId}`);
+        router.push(targetUrl);
     };
 
     const formatPrice = (amount: number, discount?: boolean, discountPercent: number = 0) => {

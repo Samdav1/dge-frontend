@@ -27,7 +27,9 @@ export default auth((request) => {
         }
     } else if (isDashboardRoute) {
         if (!isLoggedIn) {
-            return NextResponse.redirect(new URL('/login', request.url));
+            const loginUrl = new URL('/login', request.url);
+            loginUrl.searchParams.set('callbackUrl', pathname + request.nextUrl.search);
+            return NextResponse.redirect(loginUrl);
         }
         if (pathname === '/dashboard' || pathname === '/dashboard/') {
             return NextResponse.redirect(new URL('/dashboard/marketplace', request.url));
