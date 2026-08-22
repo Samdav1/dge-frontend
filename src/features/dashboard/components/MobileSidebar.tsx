@@ -26,14 +26,12 @@ export function MobileSidebar() {
             </Dialog.Trigger>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/50 z-40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-                <Dialog.Content className="fixed left-0 top-0 bottom-0 w-64 bg-white z-50 shadow-xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left duration-200 ease-in-out outline-none">
+                <Dialog.Content className="fixed left-0 top-0 bottom-0 w-64 bg-white dark:bg-[#0D0D0D] z-50 shadow-xl flex flex-col h-full data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left duration-200 ease-in-out outline-none overflow-hidden">
                     <VisuallyHidden>
                         <Dialog.Title>Navigation Menu</Dialog.Title>
                         <Dialog.Description>Mobile navigation sidebar</Dialog.Description>
                     </VisuallyHidden>
-                    <div className="h-full overflow-y-auto">
-                        <DashboardSidebar mobile />
-                    </div>
+                    <DashboardSidebar mobile />
                 </Dialog.Content>
             </Dialog.Portal>
         </Dialog.Root>
