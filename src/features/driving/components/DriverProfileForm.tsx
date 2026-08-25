@@ -51,7 +51,7 @@ export function DriverProfileForm({ isAccepting, onToggleAccepting }: DriverProf
                 vehicle_type: res.data.vehicle_type || "car",
                 license_number: res.data.license_number || "",
             });
-            setLicenseStatus(res.data.license_status || "unverified");
+            setLicenseStatus((res.data.license_status || "unverified").toLowerCase());
             setLicenseRejectionReason(res.data.license_rejection_reason || null);
 
             if (res.data.car_picture_url) {

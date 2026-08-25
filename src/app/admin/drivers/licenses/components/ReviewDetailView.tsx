@@ -95,7 +95,7 @@ export default function ReviewDetailView({ driverId, onBack }: ReviewDetailViewP
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {data?.license_status === "pending" ? (
+                    {data?.license_status?.toLowerCase() === "pending" ? (
                         <>
                             <button 
                                 onClick={() => handleAction("approve")}
@@ -112,7 +112,7 @@ export default function ReviewDetailView({ driverId, onBack }: ReviewDetailViewP
                         </>
                     ) : (
                         <span className={`px-4 py-2 rounded-xl font-bold text-[11px] border capitalize ${
-                            data?.license_status === "verified" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-red-50 text-red-600 border-red-100"
+                            data?.license_status?.toLowerCase() === "verified" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-red-50 text-red-600 border-red-100"
                         }`}>
                             STATUS: {data?.license_status}
                         </span>
