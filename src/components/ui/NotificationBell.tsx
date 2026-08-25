@@ -23,7 +23,32 @@ export function NotificationBell() {
 
     useEffect(() => {
         fetchNotifications();
+        // Polling every 10 seconds for real-time notification delivery
+        const interval = setInterval(() => {
+            fetchNotifications();
+        }, 10000);
+
+        const handleFocusOrVisibility = () => {
+            if (document.visibilityState === "visible") {
+                fetchNotifications();
+            }
+        };
+
+        window.addEventListener("focus", handleFocusOrVisibility);
+        document.addEventListener("visibilitychange", handleFocusOrVisibility);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener("focus", handleFocusOrVisibility);
+            document.removeEventListener("visibilitychange", handleFocusOrVisibility);
+        };
     }, []);
+
+    useEffect(() => {
+        if (isOpen) {
+            fetchNotifications();
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (latestNotification) {
