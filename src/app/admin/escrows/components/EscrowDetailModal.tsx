@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Loader2, User, Tag, Calendar, ShieldCheck, Wallet, ArrowRight, Info, AlertCircle } from "lucide-react";
+import { X, Loader2, User, Tag, ShieldCheck, Wallet, ArrowRight, Info, AlertCircle, Unlock, XCircle } from "lucide-react";
+import { useStatusModal } from "../../components/StatusModalProvider";
 
 interface EscrowDetail {
     id: string;
@@ -41,32 +42,113 @@ export default function EscrowDetailModal({ escrowId, onClose }: Props) {
     const [data, setData] = useState<EscrowDetail | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [actionLoading, setActionLoading] = useState(false);
+
+    const { showModal, hideModal } = useStatusModal();
+
+    const fetchDetail = async () => {
+        if (!escrowId || escrowId === "undefined" || escrowId === "null") {
+            console.warn("[EscrowDetailModal] Invalid escrowId:", escrowId);
+            setError("Invalid Escrow ID. Please refresh and try again.");
+            setLoading(false);
+            return;
+        }
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/admin/escrows/${escrowId}`);
+            if (!res.ok) throw new Error("Failed to load escrow details");
+            const d = await res.json();
+            setData(d);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchDetail = async () => {
-            if (!escrowId || escrowId === "undefined" || escrowId === "null") {
-                console.warn("[EscrowDetailModal] Invalid escrowId:", escrowId);
-                setError("Invalid Escrow ID. Please refresh and try again.");
-                setLoading(false);
-                return;
-            }
-            console.log("[EscrowDetailModal] Fetching detail for:", escrowId);
-            setLoading(true);
-            try {
-                const res = await fetch(`/api/admin/escrows/${escrowId}`);
-                if (!res.ok) throw new Error("Failed to load escrow details");
-                const d = await res.json();
-                setData(d);
-            } catch (err: any) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchDetail();
     }, [escrowId]);
 
+    const handleRelease = () => {
+        showModal({
+            type: "confirm",
+            title: "Release Escrow Funds",
+            message: `Are you sure you want to release ${data?.amount} to ${data?.payee?.username}? This will immediately credit their wallet balance.`,
+            onConfirm: async () => {
+                hideModal();
+                setActionLoading(true);
+                try {
+                    const res = await fetch(`/api/admin/escrows/${escrowId}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: "released" }),
+                    });
+                    if (res.ok) {
+                        showModal({
+                            type: "success",
+                            title: "Funds Released",
+                            message: "Escrow funds have been successfully released."
+                        });
+                        fetchDetail();
+                    } else {
+                        const err = await res.json();
+                        showModal({
+                            type: "error",
+                            title: "Release Failed",
+                            message: err.detail || "Failed to update escrow status"
+                        });
+                    }
+                } catch (err: any) {
+                    console.error(err);
+                } finally {
+                    setActionLoading(false);
+                }
+            }
+        });
+    };
+
+    const handleRefund = () => {
+        showModal({
+            type: "confirm",
+            title: "Refund Escrow Funds",
+            message: `Are you sure you want to refund ${data?.amount} back to ${data?.payer?.username}? This will restore their wallet balance.`,
+            onConfirm: async () => {
+                hideModal();
+                setActionLoading(true);
+                try {
+                    const res = await fetch(`/api/admin/escrows/${escrowId}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ status: "refunded" }),
+                    });
+                    if (res.ok) {
+                        showModal({
+                            type: "success",
+                            title: "Funds Refunded",
+                            message: "Escrow funds have been successfully refunded to the payer."
+                        });
+                        fetchDetail();
+                    } else {
+                        const err = await res.json();
+                        showModal({
+                            type: "error",
+                            title: "Refund Failed",
+                            message: err.detail || "Failed to update escrow status"
+                        });
+                    }
+                } catch (err: any) {
+                    console.error(err);
+                } finally {
+                    setActionLoading(false);
+                }
+            }
+        });
+    };
+
     if (!escrowId) return null;
+
+    const isHeldOrDisputed = data?.status === "HELD" || data?.status === "DISPUTED";
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200 select-none">
@@ -84,7 +166,7 @@ export default function EscrowDetailModal({ escrowId, onClose }: Props) {
                     </div>
                     <button 
                         onClick={onClose}
-                        className="p-2 hover:bg-slate-50 rounded-full text-slate-400 transition-colors"
+                        className="p-2 hover:bg-slate-50 rounded-full text-slate-400 transition-colors cursor-pointer"
                     >
                         <X size={20} />
                     </button>
@@ -113,7 +195,8 @@ export default function EscrowDetailModal({ escrowId, onClose }: Props) {
                                         <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest ${
                                             data.status === "HELD" ? "bg-amber-500/20 text-amber-400" :
                                             data.status === "RELEASED" ? "bg-emerald-500/20 text-emerald-400" :
-                                            "bg-red-500/20 text-red-400"
+                                            data.status === "DISPUTED" ? "bg-red-500/20 text-red-400" :
+                                            "bg-blue-500/20 text-blue-400"
                                         }`}>
                                             {data.status}
                                         </span>
@@ -220,13 +303,29 @@ export default function EscrowDetailModal({ escrowId, onClose }: Props) {
 
                 {/* Footer */}
                 <div className="px-6 py-5 border-t border-slate-100 bg-slate-50 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-2 text-slate-400">
-                        <ShieldCheck size={14} />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Escrow Security Verified</span>
+                    <div className="flex items-center gap-2">
+                        {isHeldOrDisputed && (
+                            <button
+                                onClick={handleRelease}
+                                disabled={actionLoading}
+                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                            >
+                                <Unlock size={14} /> Release Funds
+                            </button>
+                        )}
+                        {isHeldOrDisputed && (
+                            <button
+                                onClick={handleRefund}
+                                disabled={actionLoading}
+                                className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+                            >
+                                <XCircle size={14} /> Refund Payer
+                            </button>
+                        )}
                     </div>
                     <button 
                         onClick={onClose}
-                        className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-slate-200"
+                        className="px-6 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-slate-200 cursor-pointer"
                     >
                         Close Detail
                     </button>
