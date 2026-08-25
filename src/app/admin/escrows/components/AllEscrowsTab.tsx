@@ -15,12 +15,19 @@ interface EscrowItem {
     created_at: string;
 }
 
-interface RefundedEscrowsTabProps {
+interface AllEscrowsTabProps {
     onEscrowClick: (escrow: EscrowItem) => void;
     search?: string;
 }
 
-export default function RefundedEscrowsTab({ onEscrowClick, search }: RefundedEscrowsTabProps) {
+const STATUS_STYLES: Record<string, string> = {
+    HELD: "bg-amber-50 text-amber-600 border border-amber-100",
+    RELEASED: "bg-emerald-50 text-emerald-600 border border-emerald-100",
+    REFUNDED: "bg-blue-50 text-blue-600 border border-blue-100",
+    DISPUTED: "bg-red-50 text-red-600 border border-red-100",
+};
+
+export default function AllEscrowsTab({ onEscrowClick, search }: AllEscrowsTabProps) {
     const [items, setItems] = useState<EscrowItem[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -33,16 +40,13 @@ export default function RefundedEscrowsTab({ onEscrowClick, search }: RefundedEs
         setLoading(true);
         try {
             const url = new URL("/api/admin/escrows", window.location.origin);
-            url.searchParams.append("status", "refunded");
+            url.searchParams.append("status", "all");
             if (search) url.searchParams.append("search", search);
             const res = await fetch(url.toString());
             const data = await res.json();
-            if (data.items) {
-                console.log("Refunded escrows:", data.items);
-                setItems(data.items);
-            }
+            if (data.items) setItems(data.items);
         } catch (err) {
-            console.error("Failed to fetch refunded escrows:", err);
+            console.error("Failed to fetch escrows:", err);
         } finally {
             setLoading(false);
         }
@@ -80,11 +84,11 @@ export default function RefundedEscrowsTab({ onEscrowClick, search }: RefundedEs
                         body: JSON.stringify({ status: newStatus }),
                     });
                     if (res.ok) {
-                        setItems(items.filter(it => it.id !== id));
+                        fetchEscrows();
                         showModal({
                             type: "success",
                             title: "Status Updated",
-                            message: `Escrow status has been successfully updated to ${newStatus}.`
+                            message: `Escrow has been successfully ${newStatus === "released" ? "released to payee" : "refunded to payer"}.`
                         });
                     } else {
                         const err = await res.json();
@@ -119,7 +123,7 @@ export default function RefundedEscrowsTab({ onEscrowClick, search }: RefundedEs
                         <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Payer</th>
                         <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Payee</th>
                         <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Amount</th>
-                        <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Date Refunded</th>
+                        <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Date</th>
                         <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Status</th>
                         <th className="py-3 px-2 w-8"></th>
                     </tr>
@@ -136,11 +140,11 @@ export default function RefundedEscrowsTab({ onEscrowClick, search }: RefundedEs
                             <td className="py-4 px-2 text-xs text-slate-500 font-bold">{item.amount}</td>
                             <td className="py-4 px-2 text-xs text-slate-400 font-medium">{item.created_at}</td>
                             <td className="py-4 px-2">
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-md font-bold text-[9px] bg-red-50 text-red-600 border border-red-100 uppercase">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md font-bold text-[9px] uppercase ${STATUS_STYLES[item.status] || "bg-slate-50 text-slate-400 border border-slate-100"}`}>
                                     {item.status}
                                 </span>
                             </td>
-                             <td className="py-4 px-2 text-slate-400 relative">
+                            <td className="py-4 px-2 text-slate-400 relative">
                                 <button 
                                     onClick={(e) => toggleMenu(item.id, e)}
                                     className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
@@ -150,15 +154,15 @@ export default function RefundedEscrowsTab({ onEscrowClick, search }: RefundedEs
                             </td>
                         </tr>
                     )) : !loading && (
-                        <tr><td colSpan={8} className="py-12 text-center text-slate-400 text-xs italic font-medium">No refunded escrows found.</td></tr>
+                        <tr><td colSpan={8} className="py-12 text-center text-slate-400 text-xs italic font-medium">No escrows found.</td></tr>
                     )}
                 </tbody>
             </table>
 
-            {/* Fixed Positioned Popups to avoid clipping */}
+            {/* Fixed Positioned Popups */}
             {activeMenu !== null && (
                 <div 
-                    className="fixed bg-white border border-slate-100 shadow-xl rounded-xl p-1 z-[100] flex flex-col select-none animate-in fade-in zoom-in-95 duration-100 w-40"
+                    className="fixed bg-white border border-slate-100 shadow-xl rounded-xl p-1 z-[100] flex flex-col select-none animate-in fade-in zoom-in-95 duration-100 w-44"
                     style={{ 
                         top: `${menuPos.top - window.scrollY}px`, 
                         left: `${menuPos.left - window.scrollX}px` 
@@ -181,20 +185,20 @@ export default function RefundedEscrowsTab({ onEscrowClick, search }: RefundedEs
                         <button 
                             onClick={(e) => {
                                 e.stopPropagation();
-                                handleStatusUpdate(activeMenu, "held");
-                            }}
-                            className="w-full px-3 py-2 text-left text-[10px] font-bold text-amber-600 hover:bg-amber-50 rounded-lg flex items-center gap-2"
-                        >
-                            <RefreshCw size={14} /> Revert to Held
-                        </button>
-                        <button 
-                            onClick={(e) => {
-                                e.stopPropagation();
                                 handleStatusUpdate(activeMenu, "released");
                             }}
                             className="w-full px-3 py-2 text-left text-[10px] font-bold text-emerald-600 hover:bg-emerald-50 rounded-lg flex items-center gap-2"
                         >
                             <RefreshCw size={14} /> Release Funds
+                        </button>
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusUpdate(activeMenu, "refunded");
+                            }}
+                            className="w-full px-3 py-2 text-left text-[10px] font-bold text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2"
+                        >
+                            <RefreshCw size={14} /> Refund Payer
                         </button>
                     </div>
                 </div>

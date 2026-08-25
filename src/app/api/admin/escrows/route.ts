@@ -14,6 +14,7 @@ export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url);
         const status = searchParams.get("status");
+        const search = searchParams.get("search");
         const page = searchParams.get("page") || "1";
         const limit = searchParams.get("limit") || "50";
 
@@ -22,6 +23,7 @@ export async function GET(req: NextRequest) {
 
         const url = new URL(`${backendUrl}/super_admin/super_admins/admin-escrows`);
         if (status) url.searchParams.append("status", status);
+        if (search) url.searchParams.append("search", search);
         url.searchParams.append("page", page);
         url.searchParams.append("limit", limit);
 

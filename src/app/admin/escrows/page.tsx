@@ -8,22 +8,37 @@ import {
     ChevronDown
 } from "lucide-react";
 
+import AllEscrowsTab from "./components/AllEscrowsTab";
 import ActiveEscrowsTab from "./components/ActiveEscrowsTab";
 import CompletedEscrowsTab from "./components/CompletedEscrowsTab";
 import RefundedEscrowsTab from "./components/RefundedEscrowsTab";
+import DisputedEscrowsTab from "./components/DisputedEscrowsTab";
 import EscrowDetailView from "./components/EscrowDetailView";
 
-type TabType = "Active" | "Completed" | "Refunded";
+type TabType = "All" | "Active" | "Completed" | "Refunded" | "Disputed";
 
 export default function AdminEscrowsPage() {
-    const [selectedTab, setSelectedTab] = useState<TabType>("Active");
+    const [selectedTab, setSelectedTab] = useState<TabType>("All");
     const [selectedEscrow, setSelectedEscrow] = useState<any | null>(null);
-    const [summary, setSummary] = useState({ held: 0, released: 0, refunded: 0 });
+    const [searchQuery, setSearchQuery] = useState("");
+    const [summary, setSummary] = useState({ held: 0, released: 0, refunded: 0, disputed: 0 });
 
     const handleExportCSV = async () => {
         try {
-            const statusMap: any = { "Active": "held", "Completed": "released", "Refunded": "refunded" };
-            const res = await fetch(`/api/admin/escrows?status=${statusMap[selectedTab]}&limit=1000`);
+            const statusMap: Record<string, string> = {
+                "All": "all",
+                "Active": "held",
+                "Completed": "released",
+                "Refunded": "refunded",
+                "Disputed": "disputed"
+            };
+            const status = statusMap[selectedTab] || "all";
+            const url = new URL("/api/admin/escrows", window.location.origin);
+            url.searchParams.append("status", status);
+            url.searchParams.append("limit", "1000");
+            if (searchQuery) url.searchParams.append("search", searchQuery);
+
+            const res = await fetch(url.toString());
             const data = await res.json();
             if (!data.items || data.items.length === 0) return;
 
@@ -39,8 +54,8 @@ export default function AdminEscrowsPage() {
 
             const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
+            const hrefUrl = URL.createObjectURL(blob);
+            link.setAttribute("href", hrefUrl);
             link.setAttribute("download", `escrows_${selectedTab.toLowerCase()}_export_${new Date().toISOString().split("T")[0]}.csv`);
             link.style.visibility = "hidden";
             document.body.appendChild(link);
@@ -51,20 +66,23 @@ export default function AdminEscrowsPage() {
         }
     };
 
-    useEffect(() => {
-        const fetchSummary = async () => {
-            try {
-                const res = await fetch("/api/admin/escrows?limit=1");
-                const data = await res.json();
-                if (data.summary) {
-                    setSummary(data.summary);
-                }
-            } catch (err) {
-                console.error("Failed to fetch escrows summary:", err);
+    const fetchSummary = async () => {
+        try {
+            const res = await fetch("/api/admin/escrows?limit=1");
+            const data = await res.json();
+            if (data.summary) {
+                setSummary(data.summary);
             }
-        };
+        } catch (err) {
+            console.error("Failed to fetch escrows summary:", err);
+        }
+    };
+
+    useEffect(() => {
         fetchSummary();
     }, []);
+
+    const totalEscrowsCount = summary.held + summary.released + summary.refunded + summary.disputed;
 
     return (
         <div className="flex h-screen bg-[#fafafa] overflow-hidden select-none">
@@ -97,26 +115,28 @@ export default function AdminEscrowsPage() {
 
                 {!selectedEscrow ? (
                     <div className="p-8 space-y-6 flex-1 overflow-y-auto select-none max-w-[1400px] mx-auto w-full animate-fade-in">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="relative w-full max-w-sm select-none">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Search Transaction, ID..."
-                                className="w-full h-10 pl-10 pr-4 bg-white rounded-xl border border-slate-100 focus:border-amber-500/50 focus:ring-4 focus:ring-amber-50 text-xs text-slate-700 placeholder:text-slate-300 transition-all outline-none"
-                            />
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="relative w-full max-w-sm select-none">
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search Transaction, Username, Service..."
+                                    className="w-full h-10 pl-10 pr-4 bg-white rounded-xl border border-slate-100 focus:border-amber-500/50 focus:ring-4 focus:ring-amber-50 text-xs text-slate-700 placeholder:text-slate-300 transition-all outline-none"
+                                />
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <button 
+                                    onClick={handleExportCSV}
+                                    className="px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl font-bold text-[11px] text-slate-600 hover:bg-slate-50 select-none shadow-sm transition-all flex items-center gap-1"
+                                >
+                                    <ChevronDown size={13} className="text-slate-400 rotate-180" /> Export CSV
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <button 
-                                onClick={handleExportCSV}
-                                className="px-3.5 py-1.5 bg-white border border-slate-200 rounded-xl font-bold text-[11px] text-slate-600 hover:bg-slate-50 select-none shadow-sm transition-all flex items-center gap-1"
-                            >
-                                <ChevronDown size={13} className="text-slate-400 rotate-180" /> Export CSV
-                            </button>
-                        </div>
-                    </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 select-none">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 select-none">
                             <div className="bg-white p-6 rounded-2xl border border-slate-100 flex flex-col justify-between h-[135px] hover:scale-[1.01] transition-all cursor-pointer shadow-[0_4px_24px_rgba(0,0,0,0.01)]" onClick={() => setSelectedTab("Active")}>
                                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Funds Held</span>
                                 <div className="flex flex-col leading-none">
@@ -137,7 +157,15 @@ export default function AdminEscrowsPage() {
                                 <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Refunded</span>
                                 <div className="flex flex-col leading-none">
                                     <span className="text-2xl font-bold tracking-tight text-slate-800">{summary.refunded.toLocaleString()}</span>
-                                    <span className="text-[11px] text-red-600 font-bold leading-tight mt-2 flex items-center gap-1">Returned Funds</span>
+                                    <span className="text-[11px] text-blue-600 font-bold leading-tight mt-2 flex items-center gap-1">Returned Funds</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-2xl border border-slate-100 flex flex-col justify-between h-[135px] hover:scale-[1.01] transition-all cursor-pointer shadow-[0_4px_24px_rgba(0,0,0,0.01)]" onClick={() => setSelectedTab("Disputed")}>
+                                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider leading-tight">Disputed</span>
+                                <div className="flex flex-col leading-none">
+                                    <span className="text-2xl font-bold tracking-tight text-slate-800">{summary.disputed.toLocaleString()}</span>
+                                    <span className="text-[11px] text-red-600 font-bold leading-tight mt-2 flex items-center gap-1">Requires Attention</span>
                                 </div>
                             </div>
                         </div>
@@ -148,22 +176,53 @@ export default function AdminEscrowsPage() {
                         </div>
 
                         <div className="flex items-center gap-2 border-b border-slate-100 select-none w-full overflow-x-auto whitespace-nowrap flex-nowrap pb-0.5">
-                            {(["Active", "Completed", "Refunded"] as const).map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => setSelectedTab(tab)}
-                                    className={`px-3.5 pb-2 text-xs font-bold transition-all relative leading-none border-b-2 shrink-0 ${
-                                        selectedTab === tab ? "border-[#b68512] text-slate-800" : "border-transparent text-slate-400 hover:text-slate-600"
-                                    }`}
-                                >
-                                    {tab} ({summary[tab === "Active" ? "held" : tab === "Completed" ? "released" : "refunded"]})
-                                </button>
-                            ))}
+                            <button
+                                onClick={() => setSelectedTab("All")}
+                                className={`px-3.5 pb-2 text-xs font-bold transition-all relative leading-none border-b-2 shrink-0 ${
+                                    selectedTab === "All" ? "border-[#b68512] text-slate-800" : "border-transparent text-slate-400 hover:text-slate-600"
+                                }`}
+                            >
+                                All ({totalEscrowsCount})
+                            </button>
+                            <button
+                                onClick={() => setSelectedTab("Active")}
+                                className={`px-3.5 pb-2 text-xs font-bold transition-all relative leading-none border-b-2 shrink-0 ${
+                                    selectedTab === "Active" ? "border-[#b68512] text-slate-800" : "border-transparent text-slate-400 hover:text-slate-600"
+                                }`}
+                            >
+                                Active ({summary.held})
+                            </button>
+                            <button
+                                onClick={() => setSelectedTab("Completed")}
+                                className={`px-3.5 pb-2 text-xs font-bold transition-all relative leading-none border-b-2 shrink-0 ${
+                                    selectedTab === "Completed" ? "border-[#b68512] text-slate-800" : "border-transparent text-slate-400 hover:text-slate-600"
+                                }`}
+                            >
+                                Completed ({summary.released})
+                            </button>
+                            <button
+                                onClick={() => setSelectedTab("Refunded")}
+                                className={`px-3.5 pb-2 text-xs font-bold transition-all relative leading-none border-b-2 shrink-0 ${
+                                    selectedTab === "Refunded" ? "border-[#b68512] text-slate-800" : "border-transparent text-slate-400 hover:text-slate-600"
+                                }`}
+                            >
+                                Refunded ({summary.refunded})
+                            </button>
+                            <button
+                                onClick={() => setSelectedTab("Disputed")}
+                                className={`px-3.5 pb-2 text-xs font-bold transition-all relative leading-none border-b-2 shrink-0 ${
+                                    selectedTab === "Disputed" ? "border-[#b68512] text-slate-800" : "border-transparent text-slate-400 hover:text-slate-600"
+                                }`}
+                            >
+                                Disputed ({summary.disputed})
+                            </button>
                         </div>
 
-                        {selectedTab === "Active" && <ActiveEscrowsTab onEscrowClick={setSelectedEscrow} />}
-                        {selectedTab === "Completed" && <CompletedEscrowsTab onEscrowClick={setSelectedEscrow} />}
-                        {selectedTab === "Refunded" && <RefundedEscrowsTab onEscrowClick={setSelectedEscrow} />}
+                        {selectedTab === "All" && <AllEscrowsTab onEscrowClick={setSelectedEscrow} search={searchQuery} />}
+                        {selectedTab === "Active" && <ActiveEscrowsTab onEscrowClick={setSelectedEscrow} search={searchQuery} />}
+                        {selectedTab === "Completed" && <CompletedEscrowsTab onEscrowClick={setSelectedEscrow} search={searchQuery} />}
+                        {selectedTab === "Refunded" && <RefundedEscrowsTab onEscrowClick={setSelectedEscrow} search={searchQuery} />}
+                        {selectedTab === "Disputed" && <DisputedEscrowsTab onEscrowClick={setSelectedEscrow} search={searchQuery} />}
                     </div>
                 ) : (
                     <div className="p-8 space-y-6 flex-1 overflow-y-auto select-none max-w-[1400px] mx-auto w-full animate-fade-in relative">

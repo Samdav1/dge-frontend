@@ -17,9 +17,10 @@ interface EscrowItem {
 
 interface ActiveEscrowsTabProps {
     onEscrowClick: (escrow: EscrowItem) => void;
+    search?: string;
 }
 
-export default function ActiveEscrowsTab({ onEscrowClick }: ActiveEscrowsTabProps) {
+export default function ActiveEscrowsTab({ onEscrowClick, search }: ActiveEscrowsTabProps) {
     const [items, setItems] = useState<EscrowItem[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -31,7 +32,10 @@ export default function ActiveEscrowsTab({ onEscrowClick }: ActiveEscrowsTabProp
     const fetchEscrows = async () => {
         setLoading(true);
         try {
-            const res = await fetch("/api/admin/escrows?status=held");
+            const url = new URL("/api/admin/escrows", window.location.origin);
+            url.searchParams.append("status", "held");
+            if (search) url.searchParams.append("search", search);
+            const res = await fetch(url.toString());
             const data = await res.json();
             console.log("Escrows fetched:", data.items);
             if (data.items) setItems(data.items);
@@ -44,7 +48,7 @@ export default function ActiveEscrowsTab({ onEscrowClick }: ActiveEscrowsTabProp
 
     useEffect(() => {
         fetchEscrows();
-    }, []);
+    }, [search]);
 
     const toggleMenu = (id: string, event: React.MouseEvent) => {
         event.stopPropagation();
