@@ -164,7 +164,7 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
                                         : 'bg-white border border-gray-100 hover:border-[#C69C2E]/20 hover:shadow-sm'
                                 }`}
                             >
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-start gap-3">
                                     {/* Driver Avatar */}
                                     <div 
                                         onClick={(e) => {
@@ -172,7 +172,7 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
                                             onViewDriverProfile(driver.driver_id);
                                         }}
                                         title="View Profile"
-                                        className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all cursor-pointer overflow-hidden hover:bg-gray-100 ${
+                                        className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-all cursor-pointer overflow-hidden hover:bg-gray-100 mt-0.5 ${
                                             isSelected ? 'bg-[#C69C2E]/15 ring-2 ring-[#C69C2E]/20' : 'bg-gray-50'
                                         }`}
                                     >
@@ -187,48 +187,53 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
                                         )}
                                     </div>
 
-                                    {/* Info */}
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-0.5">
-                                            <h3 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onViewDriverProfile(driver.driver_id);
-                                                }}
-                                                title="View Profile"
-                                                className="text-sm font-bold text-gray-900 truncate hover:text-[#C69C2E] hover:underline cursor-pointer"
-                                            >
-                                                {driver.driver_name}
-                                            </h3>
-                                            <div className="flex items-center gap-0.5 flex-shrink-0">
-                                                <Star className="w-3 h-3 text-[#C69C2E] fill-[#C69C2E]" />
-                                                <span className="text-[10px] font-semibold text-gray-600">{rating}</span>
+                                    {/* Info & Price Grid */}
+                                    <div className="flex-1 min-w-0 space-y-1">
+                                        {/* Top Row: Driver Name & Rating + Price */}
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                <h3 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onViewDriverProfile(driver.driver_id);
+                                                    }}
+                                                    title="View Profile"
+                                                    className="text-sm font-bold text-gray-900 truncate hover:text-[#C69C2E] hover:underline cursor-pointer"
+                                                >
+                                                    {driver.driver_name}
+                                                </h3>
+                                                <div className="flex items-center gap-0.5 flex-shrink-0 bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100/60">
+                                                    <Star className="w-3 h-3 text-[#C69C2E] fill-[#C69C2E]" />
+                                                    <span className="text-[10px] font-bold text-amber-900">{rating}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Price */}
+                                            <div className="text-right flex-shrink-0">
+                                                <p className="text-sm font-bold text-gray-900 leading-tight">₦{estimatedPrice.toLocaleString()}</p>
+                                                <p className="text-[9px] text-gray-400">est. fare</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 text-[10px] text-gray-400">
-                                            <span>{driver.car_name}</span>
-                                            <span className="text-gray-200">•</span>
-                                            <span className="flex items-center gap-1">
-                                                <MapPin className="w-2.5 h-2.5" />
+
+                                        {/* Bottom Row: Stats & Specs (Wrapped for mobile) */}
+                                        <div className="flex items-center gap-1.5 text-[10px] text-gray-500 flex-wrap pt-0.5">
+                                            <span className="font-semibold text-gray-700">{driver.car_name}</span>
+                                            <span className="text-gray-300">•</span>
+                                            <span className="flex items-center gap-0.5">
+                                                <MapPin className="w-2.5 h-2.5 text-gray-400" />
                                                 {driver.distance_km.toFixed(1)} km
                                             </span>
-                                            <span className="text-gray-200">•</span>
-                                            <span className="flex items-center gap-1">
-                                                <Clock className="w-2.5 h-2.5" />
+                                            <span className="text-gray-300">•</span>
+                                            <span className="flex items-center gap-0.5">
+                                                <Clock className="w-2.5 h-2.5 text-gray-400" />
                                                 {arrivalMin} min
                                             </span>
-                                            <span className="text-gray-200">•</span>
-                                            <span className="flex items-center gap-1">
-                                                <Shield className="w-2.5 h-2.5 text-green-400" />
+                                            <span className="text-gray-300">•</span>
+                                            <span className="flex items-center gap-0.5 text-emerald-600 font-semibold bg-emerald-50 px-1 py-0.2 rounded">
+                                                <Shield className="w-2.5 h-2.5 text-emerald-500" />
                                                 Verified
                                             </span>
                                         </div>
-                                    </div>
-
-                                    {/* Price + Arrow */}
-                                    <div className="text-right flex-shrink-0">
-                                        <p className="text-sm font-bold text-gray-900">₦{estimatedPrice.toLocaleString()}</p>
-                                        <p className="text-[9px] text-gray-400">est. fare</p>
                                     </div>
                                 </div>
                             </div>

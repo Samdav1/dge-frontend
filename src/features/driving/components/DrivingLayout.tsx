@@ -996,7 +996,7 @@ export function DrivingLayout() {
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-full">
                         {/* Left Panel — Form / Drivers / Confirmation */}
-                        <div className="lg:col-span-1 h-auto lg:h-[calc(100vh-380px)] min-h-0 animate-in slide-in-from-left duration-300">
+                        <div className="lg:col-span-1 h-auto lg:h-[calc(100vh-380px)] min-h-0 overflow-y-auto pr-1 pb-4 animate-in slide-in-from-left duration-300">
                             {showConfirmation && selectedDriver ? (
                                 <RideConfirmation
                                     driver={selectedDriver}
@@ -1040,9 +1040,9 @@ export function DrivingLayout() {
                                     vehicleType={tripData?.vehicle_type}
                                 />
                             ) : (
-                                <div className="space-y-4">
+                                <div className="space-y-4 flex flex-col">
                                     {!isDriverVerified && (
-                                        <div className="bg-gradient-to-br from-[#1E1B10] to-[#0D0D0D] border border-[#C69C2E]/20 rounded-2xl p-5 shadow-xl flex flex-col gap-4 relative overflow-hidden group">
+                                        <div className="bg-gradient-to-br from-[#1E1B10] to-[#0D0D0D] border border-[#C69C2E]/20 rounded-2xl p-5 shadow-xl flex flex-col gap-4 relative overflow-hidden group shrink-0">
                                             {/* Decorative glowing gradient */}
                                             <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-[#C69C2E]/10 blur-2xl group-hover:bg-[#C69C2E]/15 transition-all duration-500 pointer-events-none" />
                                             <div className="flex gap-4 items-start relative z-10">
