@@ -35,7 +35,7 @@ export default function AllTicketsTab({ onViewTicket }: AllTicketsTabProps) {
         if (result.success && result.data) {
             const mappedTickets: TicketItem[] = result.data.map((t: any) => ({
                 id: t.id.slice(0, 8).toUpperCase(), // Display partial ID or transaction ID if available
-                user: t.user_name || "Unknown User",
+                user: t.user_name || t.user_email || "User",
                 subject: t.subject,
                 priority: priorityToUI(t.priority),
                 dateTime: new Date(t.created_at).toLocaleString(),
