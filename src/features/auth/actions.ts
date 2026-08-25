@@ -194,3 +194,71 @@ export async function changePassword(data: { password: string; token: string }) 
     }
 }
 
+export async function getCurrentUserInfo() {
+    const session = await auth();
+    if (!session || !session.backendToken) {
+        return { success: false, error: "Unauthorized" };
+    }
+    let token = session.backendToken;
+    if (typeof token === 'string' && token.startsWith('"') && token.endsWith('"')) {
+        token = token.slice(1, -1);
+    }
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dge-tech-web-cjhe4jg72a-ew.a.run.app";
+    const apiKey = process.env.BACKEND_API_KEY;
+
+    try {
+        const response = await fetch(`${apiUrl}/users/me`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "X-API-KEY": apiKey || "",
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.detail || "Failed to fetch user info" };
+        }
+
+        const data = await response.json();
+        return { success: true, data };
+    } catch (error) {
+        console.error("Get user info error:", error);
+        return { success: false, error: "Network error" };
+    }
+}
+
+export async function resendEmailVerification() {
+    const session = await auth();
+    if (!session || !session.backendToken) {
+        return { success: false, error: "Unauthorized" };
+    }
+    let token = session.backendToken;
+    if (typeof token === 'string' && token.startsWith('"') && token.endsWith('"')) {
+        token = token.slice(1, -1);
+    }
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dge-tech-web-cjhe4jg72a-ew.a.run.app";
+    const apiKey = process.env.BACKEND_API_KEY;
+
+    try {
+        const response = await fetch(`${apiUrl}/users/send_email_token`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "X-API-KEY": apiKey || "",
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.detail || "Failed to send verification email" };
+        }
+
+        const data = await response.json();
+        return { success: true, message: data.message || "Verification email sent!" };
+    } catch (error) {
+        console.error("Resend verification error:", error);
+        return { success: false, error: "Network error" };
+    }
+}
+

@@ -1,6 +1,7 @@
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
 import { DashboardSidebar } from "@/features/dashboard/components/DashboardSidebar";
 import { MobileBottomNav } from "@/features/dashboard/components/MobileBottomNav";
+import { EmailVerificationBanner } from "@/components/ui/EmailVerificationBanner";
 
 export default function DashboardLayout({
     children,
@@ -11,6 +12,7 @@ export default function DashboardLayout({
         <div className="min-h-screen bg-gray-50 dark:bg-[#0D0D0D]">
             <DashboardSidebar />
             <div className="lg:pl-64">
+                <EmailVerificationBanner />
                 <DashboardHeader />
                 <main className="p-4 md:p-8 pb-24 lg:pb-8">
                     {children}
