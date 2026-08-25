@@ -46,6 +46,7 @@ export default function AdminSidebar() {
     const othersLinks: SidebarLink[] = [
         { name: "All Negotiations", href: "/admin/negotiations", icon: MessageSquare },
         { name: "Escrows", href: "/admin/escrows", icon: Wallet },
+        { name: "Platform Earnings", href: "/admin/revenue", icon: TrendingUp },
         { name: "Transactions", href: "/admin/transactions", icon: TrendingUp },
         { name: "Payments", href: "/admin/payments", icon: Wallet },
         { name: "Support", href: "/admin/support", icon: Headset },

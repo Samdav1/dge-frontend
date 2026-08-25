@@ -11,6 +11,8 @@ interface EscrowItem {
     payer_name: string;
     payee_name: string;
     amount: string;
+    fee_amount?: string;
+    released_amount?: string;
     status: string;
     created_at: string;
 }
@@ -118,7 +120,9 @@ export default function CompletedEscrowsTab({ onEscrowClick, search }: Completed
                         <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Service Name</th>
                         <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Payer</th>
                         <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Payee</th>
-                        <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Amount</th>
+                        <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Gross Amount</th>
+                        <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Fee Deducted</th>
+                        <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Net Released</th>
                         <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Date Released</th>
                         <th className="py-3 px-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">Status</th>
                         <th className="py-3 px-2 w-8"></th>
@@ -134,6 +138,8 @@ export default function CompletedEscrowsTab({ onEscrowClick, search }: Completed
                             <td className="py-4 px-2 text-xs text-slate-400 font-medium">{item.payer_name}</td>
                             <td className="py-4 px-2 text-xs text-slate-400 font-medium">{item.payee_name}</td>
                             <td className="py-4 px-2 text-xs text-slate-500 font-bold">{item.amount}</td>
+                            <td className="py-4 px-2 text-xs text-amber-600 font-bold">{item.fee_amount || "₦0.00"}</td>
+                            <td className="py-4 px-2 text-xs text-emerald-600 font-bold">{item.released_amount || item.amount}</td>
                             <td className="py-4 px-2 text-xs text-slate-400 font-medium">{item.created_at}</td>
                             <td className="py-4 px-2">
                                 <span className="inline-flex items-center px-2 py-0.5 rounded-md font-bold text-[9px] bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase">

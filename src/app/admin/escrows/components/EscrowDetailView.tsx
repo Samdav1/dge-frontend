@@ -28,6 +28,8 @@ interface EscrowDetailViewProps {
 interface EscrowDetailData {
     id: string;
     amount: string;
+    fee_amount?: string;
+    released_amount?: string;
     status: string;
     created_at: string;
     updated_at: string;
@@ -91,7 +93,7 @@ export default function EscrowDetailView({ item, onBack }: EscrowDetailViewProps
         showModal({
             type: "confirm",
             title: "Authorize Release of Funds",
-            message: `Are you sure you want to release ${detail?.amount || item?.amount} to ${detail?.payee?.username || item?.payee_name}? This action will credit the payee's wallet immediately.`,
+            message: `Are you sure you want to release ${detail?.released_amount || detail?.amount || item?.amount} (after deducting ${detail?.fee_amount || item?.fee_amount || 'platform fee'}) to ${detail?.payee?.username || item?.payee_name}? This action will credit the payee's wallet immediately.`,
             confirmText: "Release Funds",
             onConfirm: async () => {
                 hideModal();
@@ -266,8 +268,8 @@ export default function EscrowDetailView({ item, onBack }: EscrowDetailViewProps
                 </div>
             )}
 
-            {/* Financial Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 select-none">
+            {/* Financial Stats Grid - 4 Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 select-none">
                 <div className="bg-white p-6 rounded-2xl border border-slate-100 flex items-center justify-between h-[115px] select-none hover:scale-[1.01] transition-all shadow-[0_4px_24px_rgba(0,0,0,0.01)] relative">
                     <div className="flex flex-col select-none leading-none">
                         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider select-none leading-tight mb-2">
@@ -285,10 +287,24 @@ export default function EscrowDetailView({ item, onBack }: EscrowDetailViewProps
                 <div className="bg-white p-6 rounded-2xl border border-slate-100 flex items-center justify-between h-[115px] select-none hover:scale-[1.01] transition-all shadow-[0_4px_24px_rgba(0,0,0,0.01)] relative">
                     <div className="flex flex-col select-none leading-none">
                         <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider select-none leading-tight mb-2">
-                            Amount Released
+                            Platform Fee Deducted
+                        </span>
+                        <span className="text-2xl font-bold tracking-tight text-amber-600 select-none">
+                            {detail?.fee_amount || item?.fee_amount || "₦0.00"}
+                        </span>
+                    </div>
+                    <div className="w-10 h-10 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 font-bold text-sm select-none absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
+                        %
+                    </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-slate-100 flex items-center justify-between h-[115px] select-none hover:scale-[1.01] transition-all shadow-[0_4px_24px_rgba(0,0,0,0.01)] relative">
+                    <div className="flex flex-col select-none leading-none">
+                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider select-none leading-tight mb-2">
+                            Net Released Payout
                         </span>
                         <span className="text-2xl font-bold tracking-tight text-emerald-500 select-none">
-                            {isReleased ? (detail?.amount || item?.amount) : "₦0.00"}
+                            {isReleased ? (detail?.released_amount || item?.released_amount || detail?.amount || item?.amount) : "₦0.00"}
                         </span>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500 font-extrabold text-xl select-none absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -445,7 +461,7 @@ export default function EscrowDetailView({ item, onBack }: EscrowDetailViewProps
                         </div>
 
                         {/* Balance Breakdown card boxes */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 select-none pt-1">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 select-none pt-1">
                             <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-100 select-none flex flex-col justify-between h-[90px]">
                                 <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider select-none leading-none">
                                     Total Escrow Budget
@@ -454,12 +470,20 @@ export default function EscrowDetailView({ item, onBack }: EscrowDetailViewProps
                                     {detail?.amount || item?.amount}
                                 </span>
                             </div>
+                            <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100/60 select-none flex flex-col justify-between h-[90px]">
+                                <span className="text-[10px] text-amber-600/70 font-bold uppercase tracking-wider select-none leading-none">
+                                    Platform Commission Fee
+                                </span>
+                                <span className="font-bold text-base text-amber-600 select-none leading-none">
+                                    {detail?.fee_amount || item?.fee_amount || "₦0.00"}
+                                </span>
+                            </div>
                             <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/60 select-none flex flex-col justify-between h-[90px]">
                                 <span className="text-[10px] text-emerald-600/70 font-bold uppercase tracking-wider select-none leading-none">
-                                    Released to Payee
+                                    Released to Payee (Net)
                                 </span>
                                 <span className="font-bold text-base text-emerald-600 select-none leading-none">
-                                    {isReleased ? (detail?.amount || item?.amount) : "₦0.00"}
+                                    {isReleased ? (detail?.released_amount || item?.released_amount || detail?.amount || item?.amount) : "₦0.00"}
                                 </span>
                             </div>
                             <div className="bg-amber-50/50 p-4 rounded-xl border border-amber-100/60 select-none flex flex-col justify-between h-[90px]">
