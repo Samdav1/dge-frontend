@@ -262,3 +262,32 @@ export async function resendEmailVerification() {
     }
 }
 
+export async function verifyEmailToken(token: string) {
+    if (!token) {
+        return { success: false, error: "Invalid or missing token" };
+    }
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://dge-tech-web-cjhe4jg72a-ew.a.run.app";
+    const apiKey = process.env.BACKEND_API_KEY;
+
+    try {
+        const response = await fetch(`${apiUrl}/users/verify_email_token?token=${encodeURIComponent(token)}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-API-KEY": apiKey || "",
+            },
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            return { success: false, error: errorData.detail || "Email verification failed" };
+        }
+
+        const data = await response.json();
+        return { success: true, message: data.message || "Email verified successfully" };
+    } catch (error) {
+        console.error("Verify email token error:", error);
+        return { success: false, error: "Network error or backend unreachable" };
+    }
+}
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { VerifyEmailContent } from "@/features/auth/components/VerifyEmailContent";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 
 const SLIDES = [
     {
@@ -71,7 +71,13 @@ export default function VerifyEmailPage() {
 
             {/* Right Side - Content */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-background">
-                <VerifyEmailContent />
+                <Suspense fallback={
+                    <div className="text-center">
+                        <p className="text-sm text-muted-foreground">Loading verification interface...</p>
+                    </div>
+                }>
+                    <VerifyEmailContent />
+                </Suspense>
             </div>
         </div>
     );
