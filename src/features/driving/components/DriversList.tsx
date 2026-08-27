@@ -17,106 +17,6 @@ interface DriversListProps {
     vehicleType?: string;
 }
 
-// Fallback demo drivers if API returns empty list (ensures UI testing is rich)
-const DEMO_DRIVERS: DriverNearbyResponse[] = [
-    {
-        driver_id: "demo-driver-1",
-        latitude: 6.5280,
-        longitude: 3.3810,
-        distance_km: 1.2,
-        car_name: "Toyota Camry 2021",
-        driver_name: "Alex Okon",
-        rating: 4.9,
-        driver_avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150",
-        supported_vehicles: ["car"],
-        is_online: true,
-        is_available: true,
-        is_booked: false,
-        status: "active",
-        booking_status: "available"
-    },
-    {
-        driver_id: "demo-driver-2",
-        latitude: 6.5350,
-        longitude: 3.3900,
-        distance_km: 2.8,
-        car_name: "Honda Accord 2020",
-        driver_name: "Emeka Obi",
-        rating: 4.8,
-        driver_avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150",
-        supported_vehicles: ["car", "van"],
-        is_online: true,
-        is_available: false,
-        is_booked: true,
-        status: "active",
-        booking_status: "booked"
-    },
-    {
-        driver_id: "demo-driver-3",
-        latitude: 6.5120,
-        longitude: 3.3650,
-        distance_km: 4.5,
-        car_name: "Toyota Sienna Van",
-        driver_name: "Bisi Akande",
-        rating: 4.7,
-        driver_avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150",
-        supported_vehicles: ["van"],
-        is_online: true,
-        is_available: true,
-        is_booked: false,
-        status: "active",
-        booking_status: "available"
-    },
-    {
-        driver_id: "demo-driver-4",
-        latitude: 6.5400,
-        longitude: 3.4100,
-        distance_km: 7.2,
-        car_name: "Keke Apex 3-Wheeler",
-        driver_name: "Musa Ibrahim",
-        rating: 4.9,
-        driver_avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150",
-        supported_vehicles: ["tricycle"],
-        is_online: true,
-        is_available: true,
-        is_booked: false,
-        status: "active",
-        booking_status: "available"
-    },
-    {
-        driver_id: "demo-driver-5",
-        latitude: 6.5600,
-        longitude: 3.4200,
-        distance_km: 11.4,
-        car_name: "Innoson Cargo Hauler",
-        driver_name: "Suleiman Bello",
-        rating: 4.6,
-        driver_avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=150",
-        supported_vehicles: ["truck"],
-        is_online: true,
-        is_available: false,
-        is_booked: true,
-        status: "active",
-        booking_status: "booked"
-    },
-    {
-        driver_id: "demo-driver-6",
-        latitude: 6.5000,
-        longitude: 3.3500,
-        distance_km: 14.8,
-        car_name: "Yamaha Express Bike",
-        driver_name: "David Chen",
-        rating: 4.5,
-        driver_avatar: undefined,
-        supported_vehicles: ["bike"],
-        is_online: false,
-        is_available: false,
-        is_booked: false,
-        status: "active",
-        booking_status: "offline"
-    }
-];
-
 export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriverProfile, vehicleType: initialVehicleType }: DriversListProps) {
     const [drivers, setDrivers] = useState<DriverNearbyResponse[]>([]);
     const [loading, setLoading] = useState(true);
@@ -134,6 +34,7 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
         const fetchDrivers = async () => {
             console.log("DriversList: fetchDrivers called for all system drivers");
             setLoading(true);
+            setError(null);
             try {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
@@ -145,14 +46,11 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
                                     50.0,
                                     true
                                 );
-                                if (data && data.length > 0) {
-                                    setDrivers(data);
-                                } else {
-                                    setDrivers(DEMO_DRIVERS);
-                                }
-                            } catch (err) {
-                                console.error("DriversList: Failed to fetch API drivers, using demo drivers:", err);
-                                setDrivers(DEMO_DRIVERS);
+                                setDrivers(data || []);
+                            } catch (err: any) {
+                                console.error("DriversList: Failed to fetch API drivers:", err);
+                                setError(err.message || "Failed to load real-time drivers from server.");
+                                setDrivers([]);
                             } finally {
                                 setLoading(false);
                             }
@@ -160,13 +58,11 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
                         async () => {
                             try {
                                 const data = await getDriversNearby(6.5244, 3.3792, 50.0, true);
-                                if (data && data.length > 0) {
-                                    setDrivers(data);
-                                } else {
-                                    setDrivers(DEMO_DRIVERS);
-                                }
-                            } catch (apiErr) {
-                                setDrivers(DEMO_DRIVERS);
+                                setDrivers(data || []);
+                            } catch (apiErr: any) {
+                                console.error("DriversList: Failed to fetch drivers with fallback coords:", apiErr);
+                                setError(apiErr.message || "Failed to load real-time drivers from server.");
+                                setDrivers([]);
                             } finally {
                                 setLoading(false);
                             }
@@ -174,12 +70,13 @@ export function DriversList({ onBack, onContinue, tripDistance = 0, onViewDriver
                     );
                 } else {
                     const data = await getDriversNearby(6.5244, 3.3792, 50.0, true);
-                    setDrivers(data && data.length > 0 ? data : DEMO_DRIVERS);
+                    setDrivers(data || []);
                     setLoading(false);
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error("DriversList: Error fetching drivers:", err);
-                setDrivers(DEMO_DRIVERS);
+                setError(err.message || "Failed to load drivers. Please check connection.");
+                setDrivers([]);
                 setLoading(false);
             }
         };
