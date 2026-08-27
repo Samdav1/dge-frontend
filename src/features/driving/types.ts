@@ -66,6 +66,11 @@ export interface DriverNearbyResponse {
     rating: number;
     driver_avatar?: string;
     supported_vehicles?: string[];
+    is_online?: boolean;
+    is_available?: boolean;
+    is_booked?: boolean;
+    status?: string;
+    booking_status?: 'available' | 'booked' | 'offline' | 'inactive';
 }
 
 export type TripStatus = 'pending' | 'en_route' | 'arrived' | 'awaiting_confirmation' | 'in_progress' | 'active' | 'completed' | 'cancelled' | 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';

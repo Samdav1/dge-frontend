@@ -59,8 +59,8 @@ async function apiCall(endpoint: string, method: string = 'GET', body?: any) {
 }
 
 
-export async function getDriversNearby(lat: number, lon: number, radius: number = 5.0): Promise<DriverNearbyResponse[]> {
-    console.log(`ServerAction: getDriversNearby called with lat=${lat}, lon=${lon}, radius=${radius}`);
+export async function getDriversNearby(lat: number, lon: number, radius: number = 50.0, includeAll: boolean = true): Promise<DriverNearbyResponse[]> {
+    console.log(`ServerAction: getDriversNearby called with lat=${lat}, lon=${lon}, radius=${radius}, includeAll=${includeAll}`);
 
     const headers = await getAuthHeaders();
     if (!headers) {
@@ -69,7 +69,7 @@ export async function getDriversNearby(lat: number, lon: number, radius: number 
     }
 
     // Replace 0.0.0.0 with 127.0.0.1 for server-side fetching if needed
-    const targetUrl = `${apiUrl.replace('0.0.0.0', '127.0.0.1')}/drivers/nearby?latitude=${lat}&longitude=${lon}&radius=${radius}`;
+    const targetUrl = `${apiUrl.replace('0.0.0.0', '127.0.0.1')}/drivers/nearby?latitude=${lat}&longitude=${lon}&radius=${radius}&include_all=${includeAll}`;
     console.log(`ServerAction: Fetching ${targetUrl}`);
 
     try {
