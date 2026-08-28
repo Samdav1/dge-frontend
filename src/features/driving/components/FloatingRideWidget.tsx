@@ -239,14 +239,25 @@ export function FloatingRideWidget() {
                     <div className="relative z-10 space-y-4">
                         {/* iPhone Style Notification Alert banner when status changes */}
                         {statusChanged && tripStatus !== "idle" && (
-                            <div className="flex items-center gap-2 bg-[#C69C2E]/10 border border-[#C69C2E]/30 px-3 py-2 rounded-2xl animate-in slide-in-from-top duration-300">
-                                <Sparkles className="w-4 h-4 text-[#C69C2E] shrink-0 animate-spin" />
-                                <div className="min-w-0">
-                                    <p className="text-[9px] font-black text-[#C69C2E] uppercase tracking-wider leading-none">Status Updated</p>
-                                    <p className="text-[11px] text-white font-bold leading-tight mt-0.5 truncate">
-                                        Your ride is now <span className="capitalize">{tripStatus}</span>!
-                                    </p>
+                            <div 
+                                onClick={() => {
+                                    setIsExpanded(false);
+                                    router.push("/dashboard/driving");
+                                }}
+                                className="flex items-center justify-between gap-2 bg-[#C69C2E]/10 border border-[#C69C2E]/30 px-3 py-2 rounded-2xl animate-in slide-in-from-top duration-300 cursor-pointer hover:bg-[#C69C2E]/20 transition-colors"
+                            >
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <Sparkles className="w-4 h-4 text-[#C69C2E] shrink-0 animate-spin" />
+                                    <div className="min-w-0">
+                                        <p className="text-[9px] font-black text-[#C69C2E] uppercase tracking-wider leading-none">Status Updated</p>
+                                        <p className="text-[11px] text-white font-bold leading-tight mt-0.5 truncate">
+                                            Your ride is now <span className="capitalize">{tripStatus}</span>!
+                                        </p>
+                                    </div>
                                 </div>
+                                <span className="text-[10px] font-bold text-[#C69C2E] flex items-center shrink-0">
+                                    View <ArrowRight className="w-3 h-3 ml-0.5" />
+                                </span>
                             </div>
                         )}
 
@@ -327,11 +338,29 @@ export function FloatingRideWidget() {
                                                 <span className="text-emerald-400">✓ Ride completed</span>
                                             </>
                                         )}
+                                        {tripStatus === "active" && (
+                                            <>
+                                                <span className="text-[#C69C2E]">Ride requested</span>
+                                            </>
+                                        )}
                                     </div>
                                     <span className="ml-auto text-[9px] font-black text-[#C69C2E] bg-[#C69C2E]/10 px-1.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">
                                         Live
                                     </span>
                                 </div>
+
+                                {/* CTA Button to View Ride in Driving Section */}
+                                <button
+                                    onClick={() => {
+                                        setIsExpanded(false);
+                                        router.push("/dashboard/driving");
+                                    }}
+                                    className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#C69C2E] to-[#E5B84D] hover:from-[#b08b29] hover:to-[#d4a83e] text-black font-black text-xs transition-all shadow-[0_0_15px_rgba(198,156,46,0.3)] cursor-pointer mt-2 uppercase tracking-wider group"
+                                >
+                                    <Car className="w-4 h-4 text-black group-hover:scale-110 transition-transform" />
+                                    <span>View Ride & Tracking</span>
+                                    <ArrowRight className="w-3.5 h-3.5 text-black group-hover:translate-x-1 transition-transform" />
+                                </button>
                             </>
                         ) : (
                             /* Idle state — no active trip */

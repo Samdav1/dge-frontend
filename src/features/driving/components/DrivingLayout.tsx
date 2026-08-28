@@ -904,8 +904,8 @@ export function DrivingLayout() {
             {/* Tab Content */}
             <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-hidden relative z-0">
                 {activeTrip ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-full animate-in fade-in duration-300">
-                        <div className="lg:col-span-1 h-auto lg:h-[calc(100vh-380px)] min-h-0">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 h-full animate-in fade-in duration-300">
+                        <div className="md:col-span-5 lg:col-span-4 h-auto md:h-[500px] lg:h-[calc(100vh-380px)] min-h-0 overflow-y-auto pr-1">
                             <ActiveTripView
                                 trip={activeTrip}
                                 isDriver={isCurrentDriver}
@@ -948,7 +948,7 @@ export function DrivingLayout() {
                                 }}
                             />
                         </div>
-                        <div className="lg:col-span-2 h-[400px] md:h-[500px] lg:h-[calc(100vh-380px)] min-h-[350px]">
+                        <div className="md:col-span-7 lg:col-span-8 h-[350px] md:h-[500px] lg:h-[calc(100vh-380px)] min-h-[300px]">
                             <MapView center={mapCenter} liveDrivers={liveDrivers} trip={activeTrip} driverLocation={driverLocation} />
                         </div>
                     </div>
@@ -1005,8 +1005,8 @@ export function DrivingLayout() {
                         />
                     </div>
                 ) : activeTab === 'active_drivers' && !isDriverVerified ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-full">
-                        <div className="lg:col-span-1 h-auto lg:h-[calc(100vh-380px)] min-h-0 animate-in slide-in-from-left duration-300">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 h-full">
+                        <div className="md:col-span-5 lg:col-span-4 h-auto md:h-[500px] lg:h-[calc(100vh-380px)] min-h-0 animate-in slide-in-from-left duration-300">
                             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm h-full flex flex-col items-center justify-center p-8">
                                 <div className="relative mb-4">
                                     <div className="w-16 h-16 rounded-2xl bg-[#C69C2E]/10 flex items-center justify-center">
@@ -1023,14 +1023,14 @@ export function DrivingLayout() {
                                 </Button>
                             </div>
                         </div>
-                        <div className="lg:col-span-2 h-[400px] md:h-[500px] lg:h-[calc(100vh-380px)] min-h-[350px] animate-in slide-in-from-right duration-300">
+                        <div className="md:col-span-7 lg:col-span-8 h-[350px] md:h-[500px] lg:h-[calc(100vh-380px)] min-h-[300px] animate-in slide-in-from-right duration-300">
                             <MapView center={mapCenter} liveDrivers={liveDrivers} trip={activeTrip} driverLocation={driverLocation} />
                         </div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 h-full">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 h-full">
                         {/* Left Panel — Form / Drivers / Confirmation */}
-                        <div className="lg:col-span-1 h-auto lg:h-[calc(100vh-380px)] min-h-0 overflow-y-auto pr-1 pb-4 animate-in slide-in-from-left duration-300">
+                        <div className="md:col-span-5 lg:col-span-4 h-auto md:h-[500px] lg:h-[calc(100vh-380px)] min-h-0 overflow-y-auto pr-1 pb-4 animate-in slide-in-from-left duration-300">
                             {showConfirmation && selectedDriver ? (
                                 <RideConfirmation
                                     driver={selectedDriver}
@@ -1111,7 +1111,7 @@ export function DrivingLayout() {
                         </div>
 
                         {/* Right Panel — Map */}
-                        <div className="lg:col-span-2 h-[400px] md:h-[500px] lg:h-[calc(100vh-380px)] min-h-[350px] animate-in slide-in-from-right duration-300">
+                        <div className="md:col-span-7 lg:col-span-8 h-[350px] md:h-[500px] lg:h-[calc(100vh-380px)] min-h-[300px] animate-in slide-in-from-right duration-300">
                             <MapView center={mapCenter} liveDrivers={liveDrivers} trip={activeTrip} driverLocation={driverLocation} />
                         </div>
                     </div>

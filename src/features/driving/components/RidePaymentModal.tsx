@@ -70,21 +70,13 @@ export function RidePaymentModal({ tripId, onClose, onPayment, amountToPay }: Ri
                 <div className="h-1 bg-gradient-to-r from-[#C69C2E] to-[#E5B84D]" />
 
                 <div className="p-6">
-                    <button
-                        onClick={onClose}
-                        className="absolute right-4 top-5 p-2 hover:bg-gray-50 rounded-xl transition-colors"
-                        disabled={isSubmitting}
-                    >
-                        <X className="w-4 h-4 text-gray-400" />
-                    </button>
-
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-xl bg-[#C69C2E]/10 flex items-center justify-center">
                             <Wallet className="w-5 h-5 text-[#C69C2E]" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900">Confirm Payment</h2>
-                            <p className="text-xs text-gray-400">Rate your driver to finalize payment</p>
+                            <h2 className="text-lg font-bold text-gray-900">Ride Completed - Feedback Required</h2>
+                            <p className="text-xs text-amber-700 font-semibold">Please rate your driver & leave feedback to complete trip</p>
                         </div>
                     </div>
 
