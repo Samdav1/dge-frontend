@@ -7,7 +7,10 @@ import { Navigation, Clock, MapPin, Banknote, ShieldCheck, Check, X, RefreshCw }
 
 export interface RideIntent {
     rider_id: string;
+    rider_name?: string;
+    rider_avatar?: string;
     trip_id?: string;
+    type?: string;
     pickup: { lat: number; lng: number; address: string };
     dropoff: { lat: number; lng: number; address: string };
     distance_km: number;

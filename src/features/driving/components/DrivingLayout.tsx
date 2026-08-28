@@ -231,7 +231,9 @@ export function DrivingLayout() {
                         }
                     } else if (data.type === 'ride_completed') {
                         if (activeTripRef.current && activeTripRef.current.id === data.trip_id) {
-                            if (!isDriverVerifiedRef.current) {
+                            const currentUserId = (session?.user as any)?.id || session?.user?.id;
+                            const isTripRider = currentUserId ? (activeTripRef.current.rider_id === currentUserId) : !isDriverVerifiedRef.current;
+                            if (isTripRider) {
                                 // Rider: Update the trip with final fare and show payment modal
                                 setActiveTrip((prev: any) => ({ ...prev, final_fare: data.final_fare }));
                                 setShowPayment(true);
@@ -245,7 +247,9 @@ export function DrivingLayout() {
                     } else if (data.type === 'driver_arrived') {
                         if (activeTripRef.current && activeTripRef.current.id === data.trip_id) {
                             setActiveTrip((prev: any) => ({ ...prev, status: 'arrived' }));
-                            if (!isDriverVerifiedRef.current) {
+                            const currentUserId = (session?.user as any)?.id || session?.user?.id;
+                            const isTripRider = currentUserId ? (activeTripRef.current.rider_id === currentUserId) : !isDriverVerifiedRef.current;
+                            if (isTripRider) {
                                 playNotificationSound();
                                 setSuccessModal({ title: "Driver Arrived", message: "Your driver has arrived at the pickup location." });
                             }
@@ -253,7 +257,9 @@ export function DrivingLayout() {
                     } else if (data.type === 'trip_start_requested') {
                         if (activeTripRef.current && activeTripRef.current.id === data.trip_id) {
                             setActiveTrip((prev: any) => ({ ...prev, status: 'awaiting_confirmation' }));
-                            if (!isDriverVerifiedRef.current) {
+                            const currentUserId = (session?.user as any)?.id || session?.user?.id;
+                            const isTripRider = currentUserId ? (activeTripRef.current.rider_id === currentUserId) : !isDriverVerifiedRef.current;
+                            if (isTripRider) {
                                 playNotificationSound();
                                 setSuccessModal({ title: "Start Trip?", message: "Your driver has requested to start the trip. Please confirm." });
                             }
@@ -261,7 +267,9 @@ export function DrivingLayout() {
                     } else if (data.type === 'trip_started') {
                         if (activeTripRef.current && activeTripRef.current.id === data.trip_id) {
                             setActiveTrip((prev: any) => ({ ...prev, status: 'in_progress' }));
-                            if (isDriverVerifiedRef.current) {
+                            const currentUserId = (session?.user as any)?.id || session?.user?.id;
+                            const isTripRider = currentUserId ? (activeTripRef.current.rider_id === currentUserId) : !isDriverVerifiedRef.current;
+                            if (!isTripRider) {
                                 playNotificationSound();
                                 setSuccessModal({ title: "Trip Started", message: "The passenger has confirmed the trip." });
                             }
@@ -322,8 +330,28 @@ export function DrivingLayout() {
                 if (res.success && res.data) {
                     setActiveTrip(res.data);
                     const isPending = res.data.status.toUpperCase() === 'PENDING';
-                    if (isPending && !isDriverVerified) {
-                        setIsWaitingForDriver(true);
+                    const currentUserId = (session?.user as any)?.id || session?.user?.id;
+                    const isRider = currentUserId ? (res.data.rider_id === currentUserId) : false;
+
+                    if (isPending) {
+                        if (isRider) {
+                            setIsWaitingForDriver(true);
+                        } else {
+                            // Driver side: populate incoming request dialog so the Accept/Counter modal shows!
+                            setIncomingRequestDialog({
+                                trip_id: res.data.id,
+                                rider_id: res.data.rider_id,
+                                rider_name: res.data.rider_name || "Passenger",
+                                rider_avatar: res.data.rider_avatar,
+                                pickup: { lat: res.data.pickup_lat, lng: res.data.pickup_lng, address: res.data.pickup_address },
+                                dropoff: { lat: res.data.dropoff_lat, lng: res.data.dropoff_lng, address: res.data.dropoff_address },
+                                negotiated_fare: res.data.negotiated_fare,
+                                estimated_fare: res.data.estimated_fare,
+                                distance_km: res.data.distance_km,
+                                distance_to_pickup_km: 1.0,
+                                type: "ride_request"
+                            });
+                        }
                     }
                 }
             }).catch(console.error);
@@ -539,6 +567,12 @@ export function DrivingLayout() {
         if (hour < 17) return 'Good Afternoon';
         return 'Good Evening';
     };
+
+    const currentUserId = (session?.user as any)?.id || session?.user?.id;
+    const isCurrentRider = activeTrip ? (currentUserId === activeTrip.rider_id) : false;
+    const isCurrentDriver = activeTrip
+        ? (activeTrip.driver_user_id ? currentUserId === activeTrip.driver_user_id : (!isCurrentRider && isDriverVerified))
+        : isDriverVerified;
 
     return (
         <div className="min-h-[calc(100vh-100px)] flex flex-col relative -mt-4 md:-mt-8 -mx-4 md:-mx-8 w-[calc(100%+2rem)] md:w-[calc(100%+4rem)] overflow-hidden">
@@ -874,7 +908,7 @@ export function DrivingLayout() {
                         <div className="lg:col-span-1 h-auto lg:h-[calc(100vh-380px)] min-h-0">
                             <ActiveTripView
                                 trip={activeTrip}
-                                isDriver={isDriverVerified}
+                                isDriver={isCurrentDriver}
                                 driverLocation={driverLocation}
                                 onCancel={async (id) => {
                                     await cancelTrip(id);

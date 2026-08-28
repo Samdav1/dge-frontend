@@ -8,6 +8,8 @@ import { useRouter } from "next/navigation";
 import { useAgoraCall } from "@/features/inbox/hooks/useAgoraCall";
 import { CallModal } from "@/features/inbox/components/CallModal";
 
+import { playNotificationSound } from "@/lib/sound";
+
 interface ChatContextType {
     token: string | null;
     userId: string | null;
@@ -165,6 +167,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     const handleNotificationReceived = useCallback((notification: Record<string, unknown>) => {
         console.log("Global notification received:", notification);
+        playNotificationSound();
         setLatestNotification(notification);
         if (notification.type === 'ride_requested') {
             setUnreadRideRequests(prev => prev + 1);

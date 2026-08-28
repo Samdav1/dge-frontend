@@ -3,8 +3,10 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Car, X, MapPin, Clock, Bell, ArrowRight, Sparkles } from "lucide-react";
+import { Car, X, MapPin, Clock, ArrowRight, Sparkles } from "lucide-react";
 import { getActiveTrip } from "@/features/driving/actions";
+import { useChatContext } from "@/providers/ChatProvider";
+import { playNotificationSound } from "@/lib/sound";
 
 type TripStatus = "idle" | "active" | "arriving" | "in_progress" | "completed";
 
@@ -22,6 +24,7 @@ export function FloatingRideWidget() {
     const { data: session } = useSession();
     const isLoggedIn = !!session?.backendToken;
     const router = useRouter();
+    const { latestNotification } = useChatContext();
 
     const [tripData, setTripData] = useState<TripData | null>(null);
     const [tripStatus, setTripStatus] = useState<TripStatus>("idle");
@@ -30,8 +33,31 @@ export function FloatingRideWidget() {
     const [hasNotification, setHasNotification] = useState(false);
     const [lastSeenTripId, setLastSeenTripId] = useState<string | null>(null);
     const [statusChanged, setStatusChanged] = useState(false);
+    const [isPulsingHorizontal, setIsPulsingHorizontal] = useState(false);
+
     const containerRef = useRef<HTMLDivElement>(null);
     const prevStatusRef = useRef<TripStatus>("idle");
+
+    // Helper to trigger the iPhone Dynamic Island horizontal expansion pop animation
+    const triggerDynamicIslandPop = useCallback(() => {
+        playNotificationSound();
+        setIsPulsingHorizontal(true);
+        setHasNotification(true);
+        setStatusChanged(true);
+
+        const timer = setTimeout(() => {
+            setIsPulsingHorizontal(false);
+        }, 1200);
+
+        const highlightTimer = setTimeout(() => {
+            setStatusChanged(false);
+        }, 6000);
+
+        return () => {
+            clearTimeout(timer);
+            clearTimeout(highlightTimer);
+        };
+    }, []);
 
     // Click outside to collapse
     useEffect(() => {
@@ -44,23 +70,21 @@ export function FloatingRideWidget() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Auto-expand and trigger notification when ride status updates (iPhone style)
+    // Trigger iPhone style horizontal expansion pop when trip status changes
     useEffect(() => {
         if (tripStatus !== "idle" && tripStatus !== prevStatusRef.current) {
-            setIsExpanded(true);
-            setHasNotification(true);
-            setStatusChanged(true);
-            
-            // Clear status changed highlight after 6 seconds
-            const timer = setTimeout(() => {
-                setStatusChanged(false);
-            }, 6000);
-            
+            triggerDynamicIslandPop();
             prevStatusRef.current = tripStatus;
-            return () => clearTimeout(timer);
         }
         prevStatusRef.current = tripStatus;
-    }, [tripStatus]);
+    }, [tripStatus, triggerDynamicIslandPop]);
+
+    // Trigger iPhone style pop when global notification arrives
+    useEffect(() => {
+        if (latestNotification) {
+            triggerDynamicIslandPop();
+        }
+    }, [latestNotification, triggerDynamicIslandPop]);
 
     // Poll for active trip
     const pollTrip = useCallback(async () => {
@@ -80,7 +104,7 @@ export function FloatingRideWidget() {
                     fare: trip.fare || trip.final_fare || trip.negotiated_fare,
                 });
 
-                // Map backend status to our local status
+                // Map backend status to local status
                 const s = (trip.status || "").toLowerCase();
                 if (s.includes("complet")) {
                     setTripStatus("completed");
@@ -92,11 +116,11 @@ export function FloatingRideWidget() {
                     setTripStatus("active");
                 }
 
-                // Show notification if new trip ID is detected
+                // Show notification if new trip ID detected
                 if (trip.id !== lastSeenTripId) {
-                    setHasNotification(true);
                     setLastSeenTripId(trip.id);
                     setIsDismissed(false);
+                    triggerDynamicIslandPop();
                 }
             } else {
                 setTripData(null);
@@ -105,7 +129,7 @@ export function FloatingRideWidget() {
         } catch (err) {
             console.debug("Ride widget poll error:", err);
         }
-    }, [isLoggedIn, lastSeenTripId]);
+    }, [isLoggedIn, lastSeenTripId, triggerDynamicIslandPop]);
 
     // Poll every 15 seconds
     useEffect(() => {
@@ -142,12 +166,43 @@ export function FloatingRideWidget() {
 
     return (
         <div ref={containerRef} className="relative flex flex-col items-center">
+            {/* Embedded Keyframes for authentic iPhone Dynamic Island spring expansion animation */}
+            <style jsx>{`
+                @keyframes islandExpandHorizontal {
+                    0% {
+                        transform: scale(1) scaleX(1);
+                        max-width: 200px;
+                    }
+                    30% {
+                        transform: scale(1.08) scaleX(1.35);
+                        max-width: 320px;
+                    }
+                    60% {
+                        transform: scale(0.97) scaleX(0.92);
+                        max-width: 240px;
+                    }
+                    85% {
+                        transform: scale(1.02) scaleX(1.04);
+                        max-width: 270px;
+                    }
+                    100% {
+                        transform: scale(1) scaleX(1);
+                        max-width: 260px;
+                    }
+                }
+                .animate-island-spring {
+                    animation: islandExpandHorizontal 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+            `}</style>
+
             {/* Sleek Dynamic Island pill container */}
             <button
                 onClick={handleExpand}
-                className={`flex items-center gap-2.5 px-4 py-2 rounded-full bg-black border transition-all duration-500 cursor-pointer select-none text-white max-w-[260px] md:max-w-xs ${
+                className={`flex items-center gap-2.5 px-4 py-2 rounded-full bg-black border transition-all duration-300 cursor-pointer select-none text-white max-w-[260px] md:max-w-xs ${
+                    isPulsingHorizontal ? "animate-island-spring border-[#C69C2E] ring-4 ring-[#C69C2E]/30 shadow-[0_0_25px_rgba(198,156,46,0.6)]" : ""
+                } ${
                     statusChanged 
-                        ? "border-[#C69C2E] shadow-[0_0_15px_rgba(198,156,46,0.5)] scale-105" 
+                        ? "border-[#C69C2E] shadow-[0_0_15px_rgba(198,156,46,0.5)]" 
                         : "border-[#C69C2E]/40 shadow-lg shadow-black/80 hover:border-[#C69C2E]/80"
                 }`}
             >
@@ -279,7 +334,7 @@ export function FloatingRideWidget() {
                                 </div>
                             </>
                         ) : (
-                            /* Idle state — no active trip, show quick action */
+                            /* Idle state — no active trip */
                             <div className="space-y-3">
                                 <p className="text-xs text-gray-400 leading-relaxed">
                                     No active ride right now. Need to go somewhere?
