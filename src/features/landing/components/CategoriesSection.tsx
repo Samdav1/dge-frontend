@@ -41,8 +41,8 @@ export function CategoriesSection() {
                     <p className="text-muted-foreground text-sm mt-2 max-w-sm mx-auto">From home repairs to creative freelancers — every service you need, all in one trusted place.</p>
                 </div>
 
-                {/* Icon Grid — 4 columns always */}
-                <div className="grid grid-cols-4 gap-3 md:gap-5 max-w-3xl mx-auto">
+                {/* Icon Grid — 3 columns */}
+                <div className="grid grid-cols-3 gap-3 md:gap-5 max-w-3xl mx-auto">
                     {SERVICES_PREVIEW.map((svc, i) => (
                         <div
                             key={i}

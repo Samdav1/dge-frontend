@@ -185,7 +185,7 @@ export default function EcosystemPage() {
                 <div className="space-y-12 md:space-y-16">
                     {/* View All Categories Grid */}
                     <div className={selectedCategory === "all" ? "block" : "hidden"}>
-                        <div className="grid grid-cols-4 lg:grid-cols-5 gap-2 md:gap-6">
+                        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-6">
                              {filteredCategories.map((cat: any, i: number) => {
                                  const categoryEmoji = resolveCategoryEmoji(cat.icon, cat.name);
                                  const isLoading = clickedCategoryId === cat.id;
