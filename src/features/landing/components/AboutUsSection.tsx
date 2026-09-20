@@ -27,7 +27,7 @@ export function AboutUsSection() {
     return (
         <section className="py-20 bg-background">
             <div className="container mx-auto px-4 md:px-8 max-w-[1600px]">
-                <div className="bg-[#FFFBF0] rounded-[3rem] p-8 md:p-16 flex flex-col md:flex-row items-center gap-12 mb-16">
+                <div className="bg-[#FFFBF0] dark:bg-[#141414] rounded-3xl md:rounded-[3rem] p-5 sm:p-8 md:p-16 flex flex-col md:flex-row items-center gap-8 md:gap-12 mb-16 border border-transparent dark:border-[#2A2A2A]">
                     <div className="flex-1">
                         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#C69C2E] mb-4">Our Mission</p>
                         <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">

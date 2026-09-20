@@ -198,7 +198,7 @@ export function FloatingRideWidget() {
             {/* Sleek Dynamic Island pill container */}
             <button
                 onClick={handleExpand}
-                className={`flex items-center gap-2.5 px-4 py-2 rounded-full bg-black border transition-all duration-300 cursor-pointer select-none text-white max-w-[260px] md:max-w-xs ${
+                className={`flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-black border transition-all duration-300 cursor-pointer select-none text-white max-w-[140px] sm:max-w-[220px] md:max-w-xs ${
                     isPulsingHorizontal ? "animate-island-spring border-[#C69C2E] ring-4 ring-[#C69C2E]/30 shadow-[0_0_25px_rgba(198,156,46,0.6)]" : ""
                 } ${
                     statusChanged 
@@ -219,11 +219,11 @@ export function FloatingRideWidget() {
                     )}
                 </div>
                 <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-[10px] font-black tracking-wider uppercase truncate">
+                    <span className="text-[9px] sm:text-[10px] font-black tracking-wider uppercase truncate">
                         {tripStatus === "idle" ? "Book Ride" : `Ride ${config.label}`}
                     </span>
                     {tripData?.estimated_arrival && (
-                        <span className="text-[8px] text-[#C69C2E] font-black bg-[#C69C2E]/10 border border-[#C69C2E]/20 px-1.5 py-0.5 rounded-full shrink-0">
+                        <span className="text-[8px] text-[#C69C2E] font-black bg-[#C69C2E]/10 border border-[#C69C2E]/20 px-1.5 py-0.5 rounded-full shrink-0 hidden sm:inline-block">
                             {tripData.estimated_arrival}
                         </span>
                     )}
@@ -232,7 +232,7 @@ export function FloatingRideWidget() {
 
             {/* Dropdown expanded details card */}
             {isExpanded && (
-                <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 w-[310px] bg-gradient-to-br from-[#121215] to-[#0A0A0C] border border-[#C69C2E]/30 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8),_0_0_30px_rgba(198,156,46,0.12)] z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 w-[min(310px,calc(100vw-32px))] bg-gradient-to-br from-[#121215] to-[#0A0A0C] border border-[#C69C2E]/30 rounded-3xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.8),_0_0_30px_rgba(198,156,46,0.12)] z-50 animate-in fade-in slide-in-from-top-4 duration-300">
                     {/* Tech Grid Background Overlay */}
                     <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:10px_10px] opacity-40 rounded-3xl pointer-events-none" />
 

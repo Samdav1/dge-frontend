@@ -24,18 +24,18 @@ export function Header() {
                         <Link href="/dashboard/driving" className="hover:text-primary transition-colors">Driving</Link>
                     </nav>
 
-                    <div className="flex gap-4">
+                    <div className="flex gap-2 sm:gap-4">
                         {isAuthenticated ? (
                             <Link href="/dashboard/marketplace">
-                                <Button variant="default" className="bg-primary text-white hover:bg-primary/90 px-8 rounded-lg">Dashboard</Button>
+                                <Button variant="default" className="bg-primary text-white hover:bg-primary/90 px-4 sm:px-8 rounded-lg text-xs sm:text-sm">Dashboard</Button>
                             </Link>
                         ) : (
                             <>
                                 <Link href="/login">
-                                    <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 px-8 rounded-lg hidden md:flex">Login</Button>
+                                    <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 px-4 sm:px-8 rounded-lg hidden md:flex text-xs sm:text-sm">Login</Button>
                                 </Link>
                                 <Link href="/register">
-                                    <Button variant="default" className="bg-primary text-white hover:bg-primary/90 px-8 rounded-lg">Sign Up</Button>
+                                    <Button variant="default" className="bg-primary text-white hover:bg-primary/90 px-4 sm:px-8 rounded-lg text-xs sm:text-sm">Sign Up</Button>
                                 </Link>
                             </>
                         )}

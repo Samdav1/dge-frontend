@@ -146,7 +146,7 @@ export function LandingSearchBar() {
                         }
                     }}
                     placeholder="Search for any service..."
-                    className="w-full h-12 sm:h-14 md:h-16 pl-3 sm:pl-6 md:pl-8 pr-20 sm:pr-28 md:pr-32 rounded-xl sm:rounded-2xl bg-transparent border-0 text-black shadow-none text-xs sm:text-base md:text-lg placeholder:text-gray-400 focus-visible:ring-0 truncate"
+                    className="w-full h-12 sm:h-14 md:h-16 pl-3 sm:pl-6 md:pl-8 pr-20 sm:pr-28 md:pr-32 rounded-xl sm:rounded-2xl bg-transparent border-0 text-black shadow-none text-base md:text-lg placeholder:text-gray-400 focus-visible:ring-0 truncate"
                 />
 
                 {/* Right Input Action Controls */}

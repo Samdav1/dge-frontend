@@ -19,10 +19,10 @@ const FAQSection = dynamic(() => import('@/features/landing/components/FAQSectio
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground font-sans">
+    <div className="min-h-screen flex flex-col bg-background text-foreground font-sans overflow-x-hidden w-full max-w-full">
       <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden">
         <HeroSection />
         <CategoriesSection />
         <TrendingServicesSection />

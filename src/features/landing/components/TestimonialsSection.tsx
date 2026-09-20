@@ -54,7 +54,7 @@ export function TestimonialsSection() {
                 </div>
                 <div className="grid md:grid-cols-3 gap-8">
                     {TESTIMONIALS.map((t, i) => (
-                        <Card key={i} className="p-8 border hover:shadow-xl transition-all duration-300 hover:border-[#C69C2E]/30 rounded-2xl flex flex-col justify-between">
+                        <Card key={i} className="p-5 sm:p-8 border hover:shadow-xl transition-all duration-300 hover:border-[#C69C2E]/30 rounded-2xl flex flex-col justify-between">
                             <div>
                                 <StarRating count={t.stars} />
                                 <p className="text-sm text-muted-foreground italic leading-relaxed mb-6">

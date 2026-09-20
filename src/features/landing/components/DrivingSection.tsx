@@ -241,7 +241,7 @@ export function DrivingSection() {
                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
                     </div>
 
-                    <div className="relative z-10 p-8 md:p-16 max-w-2xl">
+                    <div className="relative z-10 p-5 sm:p-8 md:p-16 max-w-2xl">
                         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/15 border border-primary/25 mb-6">
                             <Car className="h-3.5 w-3.5 text-primary" />
                             <span className="text-xs font-semibold text-primary tracking-wider uppercase">DGE Rides</span>
@@ -254,7 +254,7 @@ export function DrivingSection() {
                         </p>
 
                         {/* Stats */}
-                        <div className="flex gap-6 md:gap-8">
+                        <div className="flex flex-wrap gap-4 sm:gap-6 md:gap-8">
                             {RIDE_STATS.map((stat, i) => (
                                 <div key={i} className="flex items-center gap-2 md:gap-3">
                                     <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-white/10 flex items-center justify-center">
