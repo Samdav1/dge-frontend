@@ -21,7 +21,8 @@ import {
     Shield,
     BellRing,
     Monitor,
-    TrendingUp
+    TrendingUp,
+    Coins
 } from "lucide-react";
 
 // Sub-views imports
@@ -33,13 +34,20 @@ import TeamManagementView from "./components/TeamManagementView";
 import AdminManagementView from "./components/AdminManagementView";
 import RoleManagementView from "./components/RoleManagementView";
 import CategoryManagementView from "./components/CategoryManagementView";
+import PointsSettingsView from "./components/PointsSettingsView";
 
-type ViewType = "main" | "personal-details" | "security" | "notifications" | "sessions" | "team" | "admin" | "category" | "roles";
+type ViewType = "main" | "personal-details" | "security" | "notifications" | "sessions" | "team" | "admin" | "category" | "roles" | "points";
 
 export default function AdminSettingsPage() {
     const [activeView, setActiveView] = useState<ViewType>("main");
 
     const settingCards = [
+        {
+            id: "points",
+            title: "DGE Points Settings",
+            desc: "Configure point exchange rate (₦100 default) and signup bonuses.",
+            icon: <Coins className="w-6 h-6 text-[#C69C2E]" />
+        },
         {
             id: "personal-details",
             title: "Personal Details",
@@ -99,7 +107,8 @@ export default function AdminSettingsPage() {
         "team": "Settings / Team Management",
         "admin": "Settings / Admin Management",
         "category": "Settings / Manage Category",
-        "roles": "Settings / Role Management"
+        "roles": "Settings / Role Management",
+        "points": "Settings / DGE Points Configuration"
     };
 
     return (
@@ -199,8 +208,8 @@ export default function AdminSettingsPage() {
                     {activeView === "team" && <TeamManagementView />}
                     {activeView === "admin" && <AdminManagementView />}
                     {activeView === "roles" && <RoleManagementView />}
-
                     {activeView === "category" && <CategoryManagementView />}
+                    {activeView === "points" && <PointsSettingsView />}
                 </div>
             </main>
         </div>

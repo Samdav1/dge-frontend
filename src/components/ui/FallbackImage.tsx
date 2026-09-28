@@ -14,7 +14,15 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 const normalizeUrl = (url?: string) => {
   if (!url) return undefined;
-  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:") || url.startsWith("blob:")) {
+  if (
+    url.startsWith("http://") || 
+    url.startsWith("https://") || 
+    url.startsWith("data:") || 
+    url.startsWith("blob:") ||
+    url.startsWith("/images/") ||
+    url.startsWith("/icons/") ||
+    url.startsWith("/assets/")
+  ) {
     return url;
   }
   let cleanUrl = url;

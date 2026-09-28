@@ -13,7 +13,8 @@ import {
     User,
     HeadphonesIcon,
     LogOut,
-    ShieldCheck
+    ShieldCheck,
+    Coins
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useChatContext } from "@/providers/ChatProvider";
@@ -26,6 +27,7 @@ const MENU_ITEMS = [
     { icon: ShieldCheck, label: "Escrow", href: "/dashboard/escrows" },
     { icon: MessageSquare, label: "Negotiation", href: "/dashboard/negotiation" },
     { icon: Wallet, label: "Wallet", href: "/dashboard/wallet" },
+    { icon: Coins, label: "DGE Points", href: "/dashboard/points" },
     { icon: Car, label: "Driving", href: "/dashboard/driving" },
     { icon: Mail, label: "Inbox", href: "/dashboard/inbox" },
     { icon: User, label: "Profile & Setting", href: "/dashboard/profile" },

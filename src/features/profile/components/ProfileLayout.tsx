@@ -112,6 +112,18 @@ export function ProfileLayout() {
         },
     ];
 
+    const handleAutoNext = (currentTabId: 'personal' | 'portfolio' | 'kyc') => {
+        const order: ('personal' | 'portfolio' | 'kyc' | 'driver')[] = ['personal', 'portfolio', 'kyc', 'driver'];
+        const currentIndex = order.indexOf(currentTabId);
+        if (currentIndex !== -1 && currentIndex < order.length - 1) {
+            const nextTab = order[currentIndex + 1];
+            handleTabChange(nextTab);
+            if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+    };
+
     return (
         <div className="p-4 md:p-8 max-w-7xl mx-auto min-h-[calc(100vh-100px)] flex flex-col relative text-gray-900 dark:text-white">
             <div className="flex flex-row items-center justify-between mb-6">
@@ -189,9 +201,9 @@ export function ProfileLayout() {
 
                 {/* Main Content Area */}
                 <div className="w-full lg:flex-1 bg-white dark:bg-[#121212] rounded-2xl border border-gray-100 dark:border-[#2A2A2A] p-4 sm:p-6 lg:p-8 shadow-sm">
-                    {activeTab === 'personal' && <PersonalSettings />}
-                    {activeTab === 'portfolio' && <PortfolioSettings />}
-                    {activeTab === 'kyc' && <KYCSettings />}
+                    {activeTab === 'personal' && <PersonalSettings onNext={() => handleAutoNext('personal')} />}
+                    {activeTab === 'portfolio' && <PortfolioSettings onNext={() => handleAutoNext('portfolio')} />}
+                    {activeTab === 'kyc' && <KYCSettings onNext={() => handleAutoNext('kyc')} />}
                     {activeTab === 'driver' && <DriverProfileForm />}
                 </div>
             </div>

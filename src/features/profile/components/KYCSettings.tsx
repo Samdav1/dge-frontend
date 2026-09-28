@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, AlertTriangle, ShieldCheck, RefreshCw, X } from "lucide-react";
+import { Loader2, CheckCircle, AlertTriangle, ShieldCheck, RefreshCw, X, ArrowRight } from "lucide-react";
 import { getUserKyc, getProfile, getKycConfig, getSumsubToken } from "../actions";
 
 interface KycData {
@@ -14,7 +14,11 @@ interface KycData {
     updated_at?: string;
 }
 
-export function KYCSettings() {
+interface KYCSettingsProps {
+    onNext?: () => void;
+}
+
+export function KYCSettings({ onNext }: KYCSettingsProps = {}) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [kycData, setKycData] = useState<KycData | null>(null);
@@ -463,6 +467,18 @@ export function KYCSettings() {
                             </p>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {onNext && (
+                <div className="flex justify-end pt-4 border-t border-gray-100 dark:border-[#2A2A2A]">
+                    <Button
+                        onClick={onNext}
+                        className="px-6 h-12 bg-[#C69C2E] hover:bg-[#b08b29] text-white font-bold rounded-xl shadow-lg shadow-[#C69C2E]/20 flex items-center gap-2 cursor-pointer transition-all"
+                    >
+                        <span>Continue to Driver Settings</span>
+                        <ArrowRight className="w-4 h-4" />
+                    </Button>
                 </div>
             )}
         </div>

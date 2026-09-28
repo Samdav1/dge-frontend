@@ -34,13 +34,42 @@ function SuccessModal({
     onClose,
     title,
     message,
+    nextLabel = "Continue to Portfolio Setup",
+    onNext,
 }: {
     open: boolean;
     onClose: () => void;
     title: string;
     message: string;
+    nextLabel?: string;
+    onNext?: () => void;
 }) {
+    const [countdown, setCountdown] = useState(3);
+
+    useEffect(() => {
+        if (!open || !onNext) return;
+        setCountdown(3);
+        const timer = setInterval(() => {
+            setCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(timer);
+                    onClose();
+                    onNext();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [open, onNext, onClose]);
+
     if (!open) return null;
+
+    const handleNextClick = () => {
+        onClose();
+        if (onNext) onNext();
+    };
+
     return (
         <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={onClose}>
             <div className="bg-white dark:bg-[#121212] border border-gray-100 dark:border-[#2A2A2A] rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
@@ -49,20 +78,44 @@ function SuccessModal({
                         <CheckCircle className="w-8 h-8" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">{message}</p>
-                    <button
-                        onClick={onClose}
-                        className="w-full py-3.5 rounded-xl bg-[#C69C2E] text-white text-sm font-bold hover:bg-[#b08b29] transition-colors shadow-lg shadow-[#C69C2E]/20 cursor-pointer"
-                    >
-                        Great!
-                    </button>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{message}</p>
+
+                    {onNext && (
+                        <div className="mb-6 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-800/30 text-xs text-amber-700 dark:text-amber-400 flex items-center justify-center gap-2">
+                            <span>Auto-advancing to next section in <strong>{countdown}s</strong>...</span>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col gap-2.5">
+                        {onNext && (
+                            <button
+                                onClick={handleNextClick}
+                                className="w-full py-3.5 rounded-xl bg-[#C69C2E] text-white text-sm font-bold hover:bg-[#b08b29] transition-all shadow-lg shadow-[#C69C2E]/20 cursor-pointer flex items-center justify-center gap-2 group"
+                            >
+                                <span>{nextLabel}</span>
+                                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                            </button>
+                        )}
+                        <button
+                            onClick={onClose}
+                            className={`w-full py-2.5 rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer ${
+                                !onNext ? "bg-[#C69C2E] text-white !py-3.5 !text-sm font-bold" : ""
+                            }`}
+                        >
+                            {onNext ? "Stay on this section" : "Great!"}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
 
-export function PersonalSettings() {
+interface PersonalSettingsProps {
+    onNext?: () => void;
+}
+
+export function PersonalSettings({ onNext }: PersonalSettingsProps = {}) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [showSuccess, setShowSuccess] = useState(false);
@@ -560,6 +613,8 @@ export function PersonalSettings() {
                 onClose={() => setShowSuccess(false)}
                 title="Profile Updated!"
                 message="Your personal settings have been successfully saved."
+                nextLabel="Continue to Portfolio Setup"
+                onNext={onNext}
             />
         </form>
     );
