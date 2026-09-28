@@ -18,7 +18,7 @@ const TRUST_PILLARS = [
     {
         icon: Sparkles,
         title: "Unique Experiences",
-        desc: "Whether you are hiring talent, offering services, or requesting a ride — every experience is designed to feel premium.",
+        desc: "Whether you are hiring talent, offering services, needing a ride, or handling errand logistics — every experience is designed to feel premium.",
         color: "#3B82F6",
     },
 ];
@@ -45,7 +45,7 @@ export function AboutUsSection() {
                     <div className="flex-1">
                         <div className="rounded-2xl overflow-hidden shadow-xl">
                             <FallbackImage
-                                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop"
+                                src="/images/dge_community.jpg"
                                 alt="DGE SPACE Community"
                                 className="w-full h-auto object-cover"
                             />

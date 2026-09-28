@@ -234,8 +234,8 @@ export function DrivingSection() {
                 <div className={`relative rounded-[2rem] overflow-hidden min-h-[350px] md:min-h-[420px] flex items-center mb-20 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
                     <div className="absolute inset-0">
                         <FallbackImage
-                            src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?q=80&w=2070&auto=format&fit=crop"
-                            alt="Driving"
+                            src="/images/dge_driving_hero.jpg"
+                            alt="DGE Rides Driver"
                             className="w-full h-full object-cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />

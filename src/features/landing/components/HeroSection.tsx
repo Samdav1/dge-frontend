@@ -10,8 +10,8 @@ export function HeroSection() {
                     {/* Background Image & Overlay Container */}
                     <div className="absolute inset-0 w-full h-full rounded-3xl md:rounded-[2.5rem] overflow-hidden">
                         <FallbackImage
-                            src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop"
-                            alt="Workspace"
+                            src="/images/dge_hero_bg.jpg"
+                            alt="Innovation Hub Lagos"
                             className="absolute inset-0 w-full h-full object-cover object-center"
                         />
 
@@ -27,8 +27,8 @@ export function HeroSection() {
                             One Ecosystem.<br className="hidden md:block" /> Infinite Possibilities.<br className="hidden md:block" /> <span style={{ color: '#C69C2E' }}>Absolute Trust.</span>
                         </h1>
 
-                        <p className="text-xs sm:text-base md:text-xl text-gray-100 mb-6 sm:mb-8 md:mb-12 max-w-2xl mx-auto font-light tracking-wide px-1 leading-relaxed">
-                            From skilled freelancers and local professionals to reliable rides, connect, negotiate, and transact with peace of mind. Every payment is Escrow-protected until you're 100% satisfied.
+                        <p className="text-xs sm:text-base md:text-xl text-gray-100 mb-6 sm:mb-8 md:mb-12 max-w-3xl mx-auto font-light tracking-wide px-1 leading-relaxed">
+                            From skilled freelancers and local professionals to reliable rides, connect, negotiate, earn, save cost, and transact with peace of mind. Every payment is Escrow-protected until you're 100% satisfied.
                         </p>
 
                         <LandingSearchBar />

@@ -6,7 +6,7 @@ import { Star } from "lucide-react";
 
 const TESTIMONIALS = [
     {
-        avatar: "https://i.pravatar.cc/150?img=11",
+        avatar: "/images/chukwuemeka_obi.jpg",
         name: "Chukwuemeka Obi",
         role: "Business Owner, Lagos",
         quote:
@@ -14,7 +14,7 @@ const TESTIMONIALS = [
         stars: 5,
     },
     {
-        avatar: "https://i.pravatar.cc/150?img=47",
+        avatar: "/images/amina_yusuf.jpg",
         name: "Amina Yusuf",
         role: "Freelance Designer, Abuja",
         quote:
@@ -22,7 +22,7 @@ const TESTIMONIALS = [
         stars: 5,
     },
     {
-        avatar: "https://i.pravatar.cc/150?img=32",
+        avatar: "/images/taiwo_adeyinka.jpg",
         name: "Taiwo Adeyinka",
         role: "Daily Commuter, Port Harcourt",
         quote:

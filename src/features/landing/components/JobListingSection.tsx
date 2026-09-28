@@ -16,8 +16,8 @@ export function JobListingSection() {
                     <div className="flex-1 order-2 md:order-1">
                         <div className="rounded-2xl overflow-hidden shadow-xl">
                             <FallbackImage
-                                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop"
-                                alt="Job Listing"
+                                src="/images/dge_job_listing.jpg"
+                                alt="Job Listing Collaboration"
                                 className="w-full h-auto object-cover"
                             />
                         </div>

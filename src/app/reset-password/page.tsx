@@ -8,15 +8,15 @@ import { Loader2 } from "lucide-react";
 
 const SLIDES = [
     {
-        image: "https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=2070&auto=format&fit=crop",
+        image: "/images/dge_job_listing.jpg",
         text: "Connecting clients in need to freelancers who deliver"
     },
     {
-        image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?q=80&w=2070&auto=format&fit=crop",
+        image: "/images/dge_hero_bg.jpg",
         text: "Work from anywhere, anytime with our secure platform"
     },
     {
-        image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop",
+        image: "/images/dge_community.jpg",
         text: "Join thousands of professionals growing their business"
     }
 ];

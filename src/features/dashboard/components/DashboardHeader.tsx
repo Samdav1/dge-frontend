@@ -62,7 +62,7 @@ export function DashboardHeader() {
                 <Link href="/dashboard/profile" className="flex items-center gap-3 group cursor-pointer">
                     <div className="w-8 h-8 bg-gray-200 dark:bg-[#1A1A1A] rounded-full overflow-hidden ring-2 ring-transparent group-hover:ring-[#C69C2E]/40 transition-all duration-200">
                         <FallbackImage
-                            src={profileAvatar || session?.user?.image || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=2070&auto=format&fit=crop"}
+                            src={profileAvatar || session?.user?.image || "/images/chukwuemeka_obi.jpg"}
                             alt={session?.user?.name || "User"}
                             className="w-full h-full object-cover"
                         />
