@@ -12,11 +12,13 @@ import {
     CheckCircle,
     AlertCircle,
     Briefcase,
+    MapPin,
 } from "lucide-react";
 import { PostedJob } from "@/features/posted-jobs/actions";
 import { BidOnJobModal } from "./BidOnJobModal";
 import { getBackendImageUrl } from "@/lib/imageUtils";
 import FallbackImage from "@/components/ui/FallbackImage";
+import { parseJobLocation, stripJobLocation } from "@/lib/countries-states";
 
 const DGE_LOGO = "/DGE logo.png";
 
@@ -53,6 +55,9 @@ export function PostedJobDetailsModal({ job, open, onClose }: Props) {
         month: "short",
         day: "numeric",
     });
+
+    const location = parseJobLocation(job.description, job.title);
+    const cleanDescription = stripJobLocation(job.description);
 
     return (
         <>
@@ -97,7 +102,13 @@ export function PostedJobDetailsModal({ job, open, onClose }: Props) {
                         </div>
 
                         {/* Meta */}
-                        <div className="flex flex-wrap gap-3 mb-4">
+                        <div className="flex flex-wrap gap-2.5 mb-4">
+                            {location.display && (
+                                <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-800 bg-amber-50/90 border border-amber-200/60 px-3 py-1.5 rounded-xl">
+                                    <MapPin className="w-3.5 h-3.5 text-[#C69C2E]" />
+                                    <span>{location.display}</span>
+                                </div>
+                            )}
                             {job.category && (
                                 <div className="flex items-center gap-1.5 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-xl">
                                     <Tag className="w-3.5 h-3.5" />
@@ -127,7 +138,7 @@ export function PostedJobDetailsModal({ job, open, onClose }: Props) {
                         <div className="bg-gray-50 rounded-2xl p-4 mb-6">
                             <h3 className="text-sm font-semibold text-gray-700 mb-2">Job Description</h3>
                             <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
-                                {job.description}
+                                {cleanDescription}
                             </p>
                         </div>
 

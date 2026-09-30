@@ -267,7 +267,7 @@ export function EcosystemSection() {
                     <div className={`hidden lg:block flex-shrink-0 w-[300px] xl:w-[340px] h-[450px] xl:h-[480px] relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'}`}>
                         <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full pointer-events-none" />
                         <FallbackImage 
-                            src="/images/professional_service_provider.png" 
+                            src="/images/professional_service_provider.jpg" 
                             alt="Professional Local Service Provider" 
                             className="relative z-10 w-full h-full object-cover"
                         />

@@ -10,7 +10,7 @@ const FAQS = [
     },
     {
         q: "How do I find and hire a service provider?",
-        a: "Simply search for the service you need, browse verified providers or post a job, and use our built-in negotiation system to agree on a fair price. Once you are happy, confirm the booking and the Escrow is created automatically.",
+        a: "Simply search for the service you need or post a job specifying your location. You can filter by country, state, or city to discover and hire verified service providers who are closest to you. Use our built-in negotiation system to agree on a fair price, and once you are happy, confirm the booking with automatic Escrow protection.",
     },
     {
         q: "Are the professionals on DGE SPACE verified?",

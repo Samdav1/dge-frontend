@@ -18,6 +18,8 @@ import { getBackendImageUrl } from "@/lib/imageUtils";
 import { useSession } from "next-auth/react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
+import { useCategories } from "@/features/marketplace/hooks/useMarketplace";
+import { CategorySearchPicker } from "@/components/ui/CategorySearchPicker";
 
 interface UploadedFile {
     file?: File;
@@ -119,6 +121,7 @@ export function PortfolioSettings({ onNext }: PortfolioSettingsProps = {}) {
     const router = useRouter();
 
     // Form state
+    const { data: categories = [], isLoading: isCategoriesLoading } = useCategories();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [portfolio, setPortfolio] = useState<UserPortfolio | null>(null);
@@ -130,6 +133,27 @@ export function PortfolioSettings({ onNext }: PortfolioSettingsProps = {}) {
     const [youtube, setYoutube] = useState("");
     const [twitter, setTwitter] = useState("");
     const [instagram, setInstagram] = useState("");
+
+    const categoryOptions = React.useMemo(() => {
+        return (categories || []).map((cat: any) => ({
+            id: cat.name,
+            name: cat.name,
+        }));
+    }, [categories]);
+
+    // Align existing category with loaded categories if needed
+    useEffect(() => {
+        if (category && categories && categories.length > 0) {
+            const matched = categories.find(
+                (c: any) =>
+                    c.name?.toLowerCase() === category.toLowerCase() ||
+                    c.id?.toString() === category.toString()
+            );
+            if (matched && matched.name !== category) {
+                setCategory(matched.name);
+            }
+        }
+    }, [category, categories]);
 
     // Media state
     const [photos, setPhotos] = useState<UploadedFile[]>([]);
@@ -617,20 +641,36 @@ export function PortfolioSettings({ onNext }: PortfolioSettingsProps = {}) {
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-900">Category</label>
-                    <Select value={category} onValueChange={setCategory}>
-                        <SelectTrigger className="h-12 bg-white border-gray-200 rounded-xl">
-                            <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="technology">Technology</SelectItem>
-                            <SelectItem value="design">Design</SelectItem>
-                            <SelectItem value="marketing">Marketing</SelectItem>
-                            <SelectItem value="writing">Writing</SelectItem>
-                            <SelectItem value="consulting">Consulting</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-gray-900">Category</label>
+                        {isCategoriesLoading && (
+                            <span className="text-xs text-gray-400 flex items-center gap-1">
+                                <Loader2 className="w-3 h-3 animate-spin" /> Loading categories...
+                            </span>
+                        )}
+                    </div>
+                    {categoryOptions.length > 0 ? (
+                        <CategorySearchPicker
+                            categories={categoryOptions}
+                            value={category}
+                            onChange={(val) => setCategory(val)}
+                            placeholder="Select category"
+                        />
+                    ) : (
+                        <Select value={category} onValueChange={setCategory}>
+                            <SelectTrigger className="h-12 bg-white border-gray-200 rounded-xl">
+                                <SelectValue placeholder={isCategoriesLoading ? "Loading categories..." : "Select category"} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="technology">Technology</SelectItem>
+                                <SelectItem value="design">Design</SelectItem>
+                                <SelectItem value="marketing">Marketing</SelectItem>
+                                <SelectItem value="writing">Writing</SelectItem>
+                                <SelectItem value="consulting">Consulting</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    )}
                 </div>
 
                 {/* Social Profiles Section */}

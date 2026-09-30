@@ -1,10 +1,11 @@
 "use client";
 
 import React from "react";
-import { Users, DollarSign, Calendar, Tag } from "lucide-react";
+import { Users, DollarSign, Calendar, Tag, MapPin } from "lucide-react";
 import { PostedJob } from "../actions";
 import { getBackendImageUrl } from "@/lib/imageUtils";
 import FallbackImage from "@/components/ui/FallbackImage";
+import { parseJobLocation, stripJobLocation } from "@/lib/countries-states";
 
 interface JobBoardCardProps {
     job: PostedJob;
@@ -53,6 +54,9 @@ export function JobBoardCard({ job, onClick }: JobBoardCardProps) {
         year: 'numeric'
     });
 
+    const location = parseJobLocation(job.description, job.title);
+    const cleanDescription = stripJobLocation(job.description);
+
     return (
         <div 
             onClick={handleCardClick}
@@ -83,10 +87,16 @@ export function JobBoardCard({ job, onClick }: JobBoardCardProps) {
             </div>
 
             {/* Title and Budget */}
-            <div className="flex justify-between items-start gap-4 mb-3">
+            <div className="flex justify-between items-start gap-4 mb-1.5">
                 <h3 className="font-bold text-lg text-gray-900 line-clamp-1 group-hover:text-[#C69C2E] transition-colors flex-1">
                     {job.title}
                 </h3>
+            </div>
+
+            {/* Location Badge */}
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-3.5">
+                <MapPin className="w-3.5 h-3.5 text-[#C69C2E] shrink-0" />
+                <span className="font-medium truncate">{location.display}</span>
             </div>
 
             {/* Price Range */}
@@ -111,7 +121,7 @@ export function JobBoardCard({ job, onClick }: JobBoardCardProps) {
 
             {/* Description */}
             <p className="text-sm text-gray-500 line-clamp-3 leading-relaxed mb-6 flex-1">
-                {job.description}
+                {cleanDescription}
             </p>
 
             {/* Footer */}

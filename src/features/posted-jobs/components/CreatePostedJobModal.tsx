@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
     X,
     Loader2,
@@ -10,12 +10,20 @@ import {
     FileText,
     Tag,
     Image as ImageIcon,
+    MapPin,
 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCategories } from "@/features/marketplace/hooks/useMarketplace";
 import { createPostedJob, uploadJobImage } from "@/features/posted-jobs/actions";
 import { getBackendImageUrl } from "@/lib/imageUtils";
 import { CategorySearchPicker } from "@/components/ui/CategorySearchPicker";
+import {
+    COUNTRIES,
+    getStatesForCountry,
+    getCitiesForState,
+    embedJobLocation,
+} from "@/lib/countries-states";
+import { getProfile } from "@/features/profile/actions";
 
 interface Props {
     open: boolean;
@@ -29,6 +37,10 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [categoryId, setCategoryId] = useState("");
+    const [country, setCountry] = useState("Nigeria");
+    const [state, setState] = useState("");
+    const [city, setCity] = useState("");
+    const [customCity, setCustomCity] = useState("");
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
     const [imageUrl, setImageUrl] = useState("");
@@ -38,10 +50,29 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
+    // Dynamic states and cities based on preloaded frontend data
+    const availableStates = useMemo(() => getStatesForCountry(country), [country]);
+    const availableCities = useMemo(() => getCitiesForState(state), [state]);
+
+    // Prefill from user's profile location if set
+    useEffect(() => {
+        if (!open) return;
+        let isSubscribed = true;
+        getProfile().then(res => {
+            if (isSubscribed && res?.success && res.data) {
+                if (res.data.country) setCountry(res.data.country);
+                if (res.data.state) setState(res.data.state);
+                if (res.data.city) setCity(res.data.city);
+            }
+        }).catch(() => {});
+        return () => { isSubscribed = false; };
+    }, [open]);
+
     if (!open) return null;
 
     const resetForm = () => {
         setTitle(""); setDescription(""); setCategoryId("");
+        setCountry("Nigeria"); setState(""); setCity(""); setCustomCity("");
         setMinPrice(""); setMaxPrice(""); setImageUrl("");
         setPaymentMethod("platform");
         setImageFile(null);
@@ -54,6 +85,9 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
         if (!title.trim()) { setError("Title is required."); return; }
         if (!description.trim()) { setError("Description is required."); return; }
         if (!categoryId) { setError("Please select a category."); return; }
+        if (!country) { setError("Please select a country for this job."); return; }
+        if (!state) { setError("Please select a state or region for this job."); return; }
+
         const minCents = Math.round(parseFloat(minPrice) * 100);
         const maxCents = Math.round(parseFloat(maxPrice) * 100);
         if (isNaN(minCents) || minCents <= 0) { setError("Please enter a valid minimum price."); return; }
@@ -77,9 +111,16 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
             }
         }
 
+        const resolvedCity = city === "other" ? customCity.trim() : (city || customCity.trim());
+        const finalDescription = embedJobLocation(description.trim(), {
+            country: country.trim(),
+            state: state.trim(),
+            city: resolvedCity || undefined,
+        });
+
         const result = await createPostedJob({
             title: title.trim(),
-            description: description.trim(),
+            description: finalDescription,
             category_id: categoryId,
             min_price_cents: minCents,
             max_price_cents: maxCents,
@@ -176,6 +217,119 @@ export function CreatePostedJobModal({ open, onClose }: Props) {
                                     onChange={(val) => setCategoryId(val)}
                                     placeholder="Select category"
                                 />
+                            </div>
+
+                            {/* Location: Country, State, City */}
+                            <div className="space-y-3 bg-gray-50/80 p-4 rounded-2xl border border-gray-100">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+                                        <MapPin className="w-4 h-4 text-[#C69C2E]" />
+                                        Job Location <span className="text-red-500">*</span>
+                                    </label>
+                                    <span className="text-[11px] text-gray-400 font-medium">Preloaded</span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {/* Country */}
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-600 mb-1">
+                                            Country <span className="text-red-500">*</span>
+                                        </label>
+                                        <select
+                                            value={country}
+                                            onChange={(e) => {
+                                                const c = e.target.value;
+                                                setCountry(c);
+                                                setState("");
+                                                setCity("");
+                                                setCustomCity("");
+                                            }}
+                                            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C69C2E]/30 font-medium text-gray-800"
+                                        >
+                                            {COUNTRIES.map((c) => (
+                                                <option key={c} value={c}>{c}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* State */}
+                                    <div>
+                                        <label className="block text-xs font-semibold text-gray-600 mb-1">
+                                            State / Region <span className="text-red-500">*</span>
+                                        </label>
+                                        {availableStates.length > 0 ? (
+                                            <select
+                                                value={state}
+                                                onChange={(e) => {
+                                                    const s = e.target.value;
+                                                    setState(s);
+                                                    setCity("");
+                                                    setCustomCity("");
+                                                }}
+                                                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C69C2E]/30 font-medium text-gray-800"
+                                            >
+                                                <option value="">Select State</option>
+                                                {availableStates.map((s) => (
+                                                    <option key={s} value={s}>{s}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                type="text"
+                                                placeholder="Enter state/region"
+                                                value={state}
+                                                onChange={(e) => setState(e.target.value)}
+                                                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C69C2E]/30"
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* City */}
+                                <div>
+                                    <label className="block text-xs font-semibold text-gray-600 mb-1">
+                                        City / Town / Locality
+                                    </label>
+                                    {availableCities.length > 0 ? (
+                                        <div className="space-y-2">
+                                            <select
+                                                value={city}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setCity(val);
+                                                    if (val !== "other") {
+                                                        setCustomCity("");
+                                                    }
+                                                }}
+                                                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C69C2E]/30 font-medium text-gray-800"
+                                            >
+                                                <option value="">Select City / Area (Optional)</option>
+                                                {availableCities.map((c) => (
+                                                    <option key={c} value={c}>{c}</option>
+                                                ))}
+                                                <option value="other">Other / Custom Area...</option>
+                                            </select>
+                                            {city === "other" && (
+                                                <input
+                                                    type="text"
+                                                    placeholder="Type specific town or locality"
+                                                    value={customCity}
+                                                    onChange={(e) => setCustomCity(e.target.value)}
+                                                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C69C2E]/30 animate-in fade-in-50"
+                                                    autoFocus
+                                                />
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            placeholder="Enter city (e.g. Ikeja, Lekki, Garki)"
+                                            value={city}
+                                            onChange={(e) => setCity(e.target.value)}
+                                            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#C69C2E]/30"
+                                        />
+                                    )}
+                                </div>
                             </div>
 
                             {/* Price Range */}
