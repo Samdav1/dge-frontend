@@ -23,6 +23,7 @@ interface NegotiationCardProps {
     receiver_id: string;
     onStatusChange?: () => void;
     payment_method?: string;
+    isBuyer?: boolean;
 }
 
 export function NegotiationCard({
@@ -38,7 +39,9 @@ export function NegotiationCard({
     receiver_id,
     onStatusChange,
     payment_method,
+    isBuyer: propIsBuyer,
 }: NegotiationCardProps) {
+    const isBuyer = propIsBuyer ?? (type === "outgoing");
     const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [isCounterOpen, setIsCounterOpen] = useState(false);
@@ -397,7 +400,7 @@ export function NegotiationCard({
                 open={isAcceptModalOpen}
                 onOpenChange={handleAcceptModalChange}
                 onAccept={handleAccept}
-                isBuyer={true}
+                isBuyer={isBuyer}
                 isLoading={isLoading}
                 error={acceptError}
             />
