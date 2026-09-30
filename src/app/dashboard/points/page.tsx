@@ -17,7 +17,14 @@ import {
     Check,
     ChevronRight,
     TrendingUp,
-    ShieldCheck
+    ShieldCheck,
+    Car,
+    Briefcase,
+    Users,
+    Flame,
+    Zap,
+    Info,
+    CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +36,7 @@ import {
     PointsSummary,
     PointsTransactionItem
 } from "@/features/points/actions";
+import { SPECIAL_PROMO_PACKS, SpecialPointsPack } from "@/features/points/services/pointRules";
 import { toast } from "sonner";
 import Link from "next/link";
 
@@ -38,7 +46,8 @@ export default function DGEPointsPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Buy Points State
-    const [pointsToBuy, setPointsToBuy] = useState<number>(10);
+    const [selectedPromoPack, setSelectedPromoPack] = useState<SpecialPointsPack | null>(SPECIAL_PROMO_PACKS[1]); // Default to ₦2,000 for 25 pts
+    const [pointsToBuy, setPointsToBuy] = useState<number>(25);
     const [paymentMethod, setPaymentMethod] = useState<"wallet" | "gateway">("wallet");
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -73,7 +82,9 @@ export default function DGEPointsPage() {
     }, []);
 
     const rate = data?.rate_per_point || 100;
-    const totalCost = pointsToBuy * rate;
+    const totalCost = selectedPromoPack && selectedPromoPack.points === pointsToBuy
+        ? selectedPromoPack.nairaAmount
+        : pointsToBuy * rate;
     const walletBalance = data?.wallet_balance_naira || 0;
     const hasEnoughWalletBalance = walletBalance >= totalCost;
 
@@ -307,8 +318,73 @@ export default function DGEPointsPage() {
                     {/* Left: Points selector */}
                     <div className="lg:col-span-7 space-y-6">
                         <div>
+                            {/* Special Bonus Offers Banner */}
+                            <div className="mb-5">
+                                <div className="flex items-center justify-between mb-2.5">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                                        <Flame className="w-3.5 h-3.5 text-[#C69C2E]" />
+                                        <span>Special Promo Packages</span>
+                                    </label>
+                                    <span className="text-[11px] font-semibold text-[#C69C2E] flex items-center gap-1">
+                                        <Zap className="w-3 h-3" /> Extra Bonus Points
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    {SPECIAL_PROMO_PACKS.map((pack) => {
+                                        const isSelected = selectedPromoPack?.id === pack.id && pointsToBuy === pack.points;
+                                        return (
+                                            <button
+                                                key={pack.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedPromoPack(pack);
+                                                    setPointsToBuy(pack.points);
+                                                }}
+                                                className={`p-3.5 rounded-2xl border text-left transition-all relative cursor-pointer group flex flex-col justify-between ${
+                                                    isSelected
+                                                        ? "border-[#C69C2E] bg-gradient-to-b from-[#C69C2E]/10 to-transparent dark:from-[#C69C2E]/20 ring-2 ring-[#C69C2E]/30"
+                                                        : "border-gray-200 dark:border-[#282828] bg-white dark:bg-[#181818] hover:border-[#C69C2E]/40"
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                        {pack.title}
+                                                    </span>
+                                                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#C69C2E] text-white">
+                                                        {pack.badge}
+                                                    </span>
+                                                </div>
+
+                                                <div>
+                                                    <div className="flex items-baseline gap-1">
+                                                        <span className="text-2xl font-black text-gray-900 dark:text-white">
+                                                            {pack.points}
+                                                        </span>
+                                                        <span className="text-xs font-bold text-[#C69C2E]">PTS</span>
+                                                    </div>
+                                                    <p className="text-xs font-bold text-gray-700 dark:text-gray-300 mt-1">
+                                                        ₦{pack.nairaAmount.toLocaleString()}
+                                                    </p>
+                                                    <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1">
+                                                        {pack.description}
+                                                    </p>
+                                                </div>
+
+                                                {isSelected && (
+                                                    <div className="mt-2 pt-1.5 border-t border-[#C69C2E]/20 flex items-center justify-between text-[11px] font-bold text-[#C69C2E]">
+                                                        <span>Selected</span>
+                                                        <CheckCircle className="w-3.5 h-3.5" />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
                             <label className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 block">
-                                Select or Enter Points
+                                Or Choose Standard Points Count
                             </label>
 
                             {/* Preset Buttons */}
@@ -317,9 +393,12 @@ export default function DGEPointsPage() {
                                     <button
                                         key={pack}
                                         type="button"
-                                        onClick={() => setPointsToBuy(pack)}
+                                        onClick={() => {
+                                            setSelectedPromoPack(null);
+                                            setPointsToBuy(pack);
+                                        }}
                                         className={`py-2.5 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                                            pointsToBuy === pack
+                                            pointsToBuy === pack && !selectedPromoPack
                                                 ? "bg-[#C69C2E] text-white border-[#C69C2E] shadow-sm shadow-[#C69C2E]/30"
                                                 : "bg-gray-50 dark:bg-[#1A1A1A] border-gray-200 dark:border-[#2A2A2A] text-gray-700 dark:text-gray-300 hover:border-[#C69C2E]/50"
                                         }`}
@@ -336,7 +415,10 @@ export default function DGEPointsPage() {
                                     min="1"
                                     step="1"
                                     value={pointsToBuy || ""}
-                                    onChange={(e) => setPointsToBuy(Math.max(1, parseInt(e.target.value) || 0))}
+                                    onChange={(e) => {
+                                        setSelectedPromoPack(null);
+                                        setPointsToBuy(Math.max(1, parseInt(e.target.value) || 0));
+                                    }}
                                     placeholder="Enter points count"
                                     className="h-14 pl-4 pr-24 rounded-2xl text-lg font-bold bg-gray-50/50 dark:bg-[#181818] border-gray-200 dark:border-[#2E2E2E]"
                                 />
@@ -423,6 +505,12 @@ export default function DGEPointsPage() {
                                 <span>Points to Receive</span>
                                 <strong className="font-bold text-gray-900 dark:text-white">+{pointsToBuy} DGE Points</strong>
                             </div>
+                            {selectedPromoPack && selectedPromoPack.points === pointsToBuy && (
+                                <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold text-xs bg-emerald-50/60 dark:bg-emerald-950/20 px-2.5 py-1.5 rounded-xl border border-emerald-200/40">
+                                    <span>Special Package Bonus</span>
+                                    <span>+{selectedPromoPack.bonusPoints} PTS Included</span>
+                                </div>
+                            )}
                             <div className="flex justify-between text-gray-600 dark:text-gray-300">
                                 <span>Rate per Point</span>
                                 <span>₦{rate.toLocaleString()}</span>
@@ -540,6 +628,144 @@ export default function DGEPointsPage() {
                     </div>
                 </div>
             )}
+
+            {/* System Rules & Fair-Use Policy */}
+            <div className="bg-white dark:bg-[#121212] rounded-3xl border border-gray-100 dark:border-[#2A2A2A] p-6 sm:p-8 shadow-sm space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-gray-100 dark:border-[#202020] gap-2">
+                    <div>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2.5">
+                            <ShieldCheck className="w-5 h-5 text-[#C69C2E]" />
+                            <span>DGE Points System & Fair-Use Policy</span>
+                        </h2>
+                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            How points are earned, deducted, and protected across services, job applications, and rides.
+                        </p>
+                    </div>
+
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold self-start sm:self-auto border border-emerald-200/50 dark:border-emerald-800/30">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Fair-Use Protection Active</span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Rule 1: Marketplace Services */}
+                    <div className="p-5 rounded-2xl bg-gray-50/70 dark:bg-[#181818] border border-gray-100 dark:border-[#262626] flex flex-col justify-between space-y-3">
+                        <div>
+                            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-[#C69C2E]/20 text-[#C69C2E] flex items-center justify-center mb-3">
+                                <Users className="w-5 h-5" />
+                            </div>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                                Marketplace Services
+                            </h3>
+                            <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2">
+                                Client Deducted
+                            </span>
+                            <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-2">
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-[#C69C2E] font-bold">•</span>
+                                    <span><strong>1 Point</strong> deducted when negotiation is accepted.</span>
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-[#C69C2E] font-bold">•</span>
+                                    <span><strong>1 Point</strong> deducted if client chats with up to <strong>3 service providers</strong> without reaching an agreement.</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="text-[10px] text-gray-400 pt-2 border-t border-gray-200/50 dark:border-[#282828]">
+                            Guarantees committed inquiries for providers.
+                        </div>
+                    </div>
+
+                    {/* Rule 2: Posted Jobs */}
+                    <div className="p-5 rounded-2xl bg-gray-50/70 dark:bg-[#181818] border border-gray-100 dark:border-[#262626] flex flex-col justify-between space-y-3">
+                        <div>
+                            <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3">
+                                <Briefcase className="w-5 h-5" />
+                            </div>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                                Posted Jobs (Job Board)
+                            </h3>
+                            <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2">
+                                Provider Deducted
+                            </span>
+                            <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-2">
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-blue-500 font-bold">•</span>
+                                    <span><strong>1 Point</strong> deducted from service provider when their application/bid is accepted.</span>
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-blue-500 font-bold">•</span>
+                                    <span><strong>1 Point</strong> deducted if service provider applies to up to <strong>3 jobs</strong> without any agreement.</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="text-[10px] text-gray-400 pt-2 border-t border-gray-200/50 dark:border-[#282828]">
+                            Ensures verified and genuine job bids.
+                        </div>
+                    </div>
+
+                    {/* Rule 3: Driving System */}
+                    <div className="p-5 rounded-2xl bg-gray-50/70 dark:bg-[#181818] border border-gray-100 dark:border-[#262626] flex flex-col justify-between space-y-3">
+                        <div>
+                            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3">
+                                <Car className="w-5 h-5" />
+                            </div>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                                Driving & Logistics
+                            </h3>
+                            <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">
+                                Both Parties Deducted
+                            </span>
+                            <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-2">
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-indigo-500 font-bold">•</span>
+                                    <span><strong>1 Point</strong> deducted from both passenger and driver on agreed negotiation.</span>
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-indigo-500 font-bold">•</span>
+                                    <span><strong>1 Point</strong> deducted if party has up to <strong>3 failed negotiations</strong>.</span>
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-indigo-500 font-bold">•</span>
+                                    <span><strong>2 Points</strong> deducted upon complete service finish.</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="text-[10px] text-gray-400 pt-2 border-t border-gray-200/50 dark:border-[#282828]">
+                            Full accountability for riders and drivers.
+                        </div>
+                    </div>
+
+                    {/* Rule 4: Registration Bonus */}
+                    <div className="p-5 rounded-2xl bg-gray-50/70 dark:bg-[#181818] border border-gray-100 dark:border-[#262626] flex flex-col justify-between space-y-3">
+                        <div>
+                            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3">
+                                <Gift className="w-5 h-5" />
+                            </div>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                                Sign-Up Welcome Gift
+                            </h3>
+                            <span className="inline-block text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2">
+                                Free 10 Points
+                            </span>
+                            <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-2">
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-emerald-500 font-bold">•</span>
+                                    <span>Every new user receives <strong>10 DGE Points</strong> automatically upon sign-up.</span>
+                                </li>
+                                <li className="flex items-start gap-1.5">
+                                    <span className="text-emerald-500 font-bold">•</span>
+                                    <span>Start connecting, negotiating, and booking immediately with zero delay.</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div className="text-[10px] text-gray-400 pt-2 border-t border-gray-200/50 dark:border-[#282828]">
+                            No initial deposit required to get started.
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* Points History Table */}
             <div className="bg-white dark:bg-[#121212] rounded-3xl border border-gray-100 dark:border-[#2A2A2A] p-6 sm:p-8 shadow-sm space-y-6">

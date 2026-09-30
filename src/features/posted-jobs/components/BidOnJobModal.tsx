@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Loader2, AlertCircle, CheckCircle, DollarSign, Briefcase } from "lucide-react";
+import { X, Loader2, AlertCircle, CheckCircle, DollarSign, Briefcase, Coins } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PostedJob, bidOnPostedJob } from "@/features/posted-jobs/actions";
 import { listServices } from "@/features/marketplace/actions";
@@ -173,6 +173,14 @@ export function BidOnJobModal({ job, open, onClose }: Props) {
                                     onChange={(e) => setMessage(e.target.value)}
                                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#C69C2E]/30 bg-gray-50 resize-none"
                                 />
+                            </div>
+
+                            {/* Point Deduction Notice for Service Provider */}
+                            <div className="p-3.5 bg-amber-50/80 border border-amber-200/60 rounded-2xl flex items-start gap-2.5">
+                                <Coins className="w-4 h-4 text-[#C69C2E] shrink-0 mt-0.5" />
+                                <div className="text-xs text-amber-800">
+                                    <span className="font-bold">1 DGE Point</span> is deducted from your balance once your bid is accepted by the job owner.
+                                </div>
                             </div>
 
                             {error && (

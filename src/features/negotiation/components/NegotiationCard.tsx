@@ -8,6 +8,7 @@ import { RejectNegotiationModal } from "./RejectNegotiationModal";
 import { useRouter } from "next/navigation";
 import { acceptNegotiation, rejectNegotiation, counterNegotiation } from "../actions";
 import { createConversation, addParticipant, getCurrentUserId } from "../../inbox/actions";
+import { onMarketplaceNegotiationAccepted, onMarketplaceNegotiationFailed } from "@/features/points/services/pointRules";
 
 interface NegotiationCardProps {
     id: string;
@@ -113,6 +114,7 @@ export function NegotiationCard({
         try {
             const result = await acceptNegotiation(id, paymentMethod);
             if (result.success) {
+                await onMarketplaceNegotiationAccepted(isBuyer, id);
                 setIsAcceptModalOpen(false);
                 if (onStatusChange) {
                     onStatusChange();
@@ -137,6 +139,7 @@ export function NegotiationCard({
         try {
             const result = await rejectNegotiation(id);
             if (result.success) {
+                await onMarketplaceNegotiationFailed(isBuyer);
                 setIsRejectModalOpen(false);
                 if (onStatusChange) {
                     onStatusChange();

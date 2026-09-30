@@ -4,7 +4,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { X, ArrowDownUp, MessageSquare, Sparkles } from "lucide-react";
+import { X, ArrowDownUp, MessageSquare, Sparkles, Coins } from "lucide-react";
 
 interface RideNegotiationModalProps {
     onClose: () => void;
@@ -97,6 +97,14 @@ export function RideNegotiationModal({ onClose, onSubmit, estimatedFare = 85000 
                                 placeholder="Add a note for the driver..."
                                 className="min-h-[100px] bg-white border-gray-200 rounded-xl resize-none text-sm focus:ring-[#C69C2E]/20 focus:border-[#C69C2E]/30"
                             />
+                        </div>
+
+                        {/* Fair-use Points Notice */}
+                        <div className="p-3 bg-amber-50 border border-amber-200/60 rounded-xl text-left flex items-start gap-2">
+                            <Coins className="w-3.5 h-3.5 text-[#C69C2E] shrink-0 mt-0.5" />
+                            <div className="text-[11px] text-amber-800 leading-tight">
+                                <span className="font-bold">1 DGE Point</span> is deducted from both passenger and driver upon agreeing on the ride (or after 3 unagreed offers).
+                            </div>
                         </div>
                     </div>
 

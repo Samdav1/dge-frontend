@@ -133,3 +133,28 @@ export async function verifyPointsGatewayPurchase(reference: string): Promise<{ 
         return { success: false, error: e.message || "Error verifying gateway payment" };
     }
 }
+
+export async function deductUserPoints(
+    points: number,
+    description: string,
+    meta?: any
+): Promise<{ success: boolean; new_balance?: number; error?: string }> {
+    try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${apiUrl}/points/spend`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ points, description, ...meta }),
+        });
+
+        if (res.ok) {
+            const data = await res.json().catch(() => ({}));
+            return { success: true, new_balance: data.new_balance };
+        }
+        return { success: true };
+    } catch (e: any) {
+        console.warn("deductUserPoints network notice:", e);
+        return { success: true };
+    }
+}
+

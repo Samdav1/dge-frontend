@@ -2,12 +2,13 @@
 
 import React from "react";
 import { Trip } from "../types";
-import { Car, MapPin, Navigation, Phone, CheckCircle, XCircle, Route, User, AlertCircle, MessageSquare } from "lucide-react";
+import { Car, MapPin, Navigation, Phone, CheckCircle, XCircle, Route, User, AlertCircle, MessageSquare, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useChatContext } from "@/providers/ChatProvider";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createConversation, addParticipant, getCurrentUserId } from "../../inbox/actions";
+import { onTripCompleted } from "@/features/points/services/pointRules";
 
 interface ActiveTripViewProps {
     trip: Trip;
@@ -290,6 +291,14 @@ export function ActiveTripView({ trip, isDriver, onCancel, onComplete, onArrive,
                         {isChatLoading ? <div className="w-4 h-4 border-2 border-[#C69C2E] border-t-transparent rounded-full animate-spin" /> : <MessageSquare className="w-4 h-4" />}
                     </Button>
                 </div>
+
+                {/* 2 Points Completion Notice */}
+                <div className="bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 rounded-xl p-3 flex items-center justify-between text-xs text-amber-800 dark:text-amber-300">
+                    <span className="flex items-center gap-1.5 font-medium">
+                        <Coins className="w-3.5 h-3.5 text-[#C69C2E]" /> Service Completion:
+                    </span>
+                    <span className="font-bold">2 DGE Points deducted upon finish</span>
+                </div>
             </div>
 
             {/* Actions */}
@@ -323,7 +332,10 @@ export function ActiveTripView({ trip, isDriver, onCancel, onComplete, onArrive,
                 {isDriver && trip.status === "in_progress" && onComplete && (
                     <Button 
                         className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl font-bold shadow-lg shadow-green-600/20"
-                        onClick={() => onComplete(trip.id)}
+                        onClick={async () => {
+                            await onTripCompleted(true, trip.id);
+                            onComplete(trip.id);
+                        }}
                     >
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Complete Ride

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Loader2, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -32,9 +32,17 @@ export function AcceptNegotiationModal({ open, onOpenChange, onAccept, isBuyer, 
                         Accept Negotiation
                     </h2>
 
-                    <p className="text-gray-500 mb-6 text-sm">
+                    <p className="text-gray-500 mb-4 text-sm">
                         Are you sure you want to accept this negotiation?
                     </p>
+
+                    {/* Point deduction notice */}
+                    <div className="mb-5 p-3.5 bg-amber-50/80 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 rounded-2xl text-left flex items-start gap-2.5 w-full">
+                        <Coins className="w-4 h-4 text-[#C69C2E] shrink-0 mt-0.5" />
+                        <div className="text-xs text-amber-800 dark:text-amber-300">
+                            <span className="font-bold">1 DGE Point</span> will be deducted from your account upon accepting this agreement.
+                        </div>
+                    </div>
 
                     {error && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 text-xs font-semibold text-center w-full animate-shake">
