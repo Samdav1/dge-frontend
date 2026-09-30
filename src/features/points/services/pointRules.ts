@@ -1,7 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
-import { deductUserPoints } from "../actions";
+import { deductUserPoints, recordFailedNegotiationAction } from "../actions";
 
 const KEY_MARKETPLACE_FAILED = "dge_points_failed_marketplace";
 const KEY_POSTED_JOB_FAILED = "dge_points_failed_posted_jobs";
@@ -135,6 +135,7 @@ export async function onMarketplaceNegotiationAccepted(isClient: boolean, negoti
  */
 export async function onMarketplaceNegotiationFailed(isClient: boolean) {
     if (!isClient) return;
+    recordFailedNegotiationAction("marketplace").catch(() => {});
     const { count, shouldDeduct } = incrementFailedAttempts(KEY_MARKETPLACE_FAILED);
     if (shouldDeduct) {
         await executePointDeduction(1, "3 Unagreed Marketplace Inquiries", { count: 3, role: "client" });
@@ -164,6 +165,7 @@ export async function onPostedJobBidAccepted(isServiceProvider: boolean, jobId?:
  */
 export async function onPostedJobBidFailed(isServiceProvider: boolean) {
     if (!isServiceProvider) return;
+    recordFailedNegotiationAction("posted_job").catch(() => {});
     const { count, shouldDeduct } = incrementFailedAttempts(KEY_POSTED_JOB_FAILED);
     if (shouldDeduct) {
         await executePointDeduction(1, "3 Unaccepted Posted Job Applications", { count: 3, role: "service_provider" });
@@ -188,6 +190,7 @@ export async function onDrivingNegotiationAccepted(tripId?: string) {
  * -> Deduct 1 point from both parties.
  */
 export async function onDrivingNegotiationFailed() {
+    recordFailedNegotiationAction("driving").catch(() => {});
     const { count, shouldDeduct } = incrementFailedAttempts(KEY_DRIVING_FAILED);
     if (shouldDeduct) {
         await executePointDeduction(1, "3 Failed Ride Negotiations", { count: 3, context: "driving_negotiation_failed" });

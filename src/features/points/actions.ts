@@ -158,3 +158,25 @@ export async function deductUserPoints(
     }
 }
 
+export async function recordFailedNegotiationAction(
+    context: string = "general"
+): Promise<{ success: boolean; deducted?: boolean; count?: number; message?: string }> {
+    try {
+        const headers = await getAuthHeaders();
+        const res = await fetch(`${apiUrl}/points/record-failed-negotiation`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({ context }),
+        });
+
+        if (res.ok) {
+            const data = await res.json().catch(() => ({}));
+            return { success: true, ...data };
+        }
+        return { success: true };
+    } catch (e: any) {
+        console.warn("recordFailedNegotiationAction network notice:", e);
+        return { success: true };
+    }
+}
+
