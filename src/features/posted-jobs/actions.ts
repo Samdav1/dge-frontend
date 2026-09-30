@@ -44,11 +44,19 @@ export interface PostedJobBid {
 export async function listOpenPostedJobs(params?: {
     category_id?: string;
     search?: string;
+    country?: string;
+    state?: string;
+    city?: string;
+    near_me?: boolean;
 }): Promise<{ success: boolean; data?: PostedJob[]; error?: string }> {
     try {
         const query = new URLSearchParams();
         if (params?.category_id) query.set("category_id", params.category_id);
         if (params?.search) query.set("search", params.search);
+        if (params?.country) query.set("country", params.country);
+        if (params?.state) query.set("state", params.state);
+        if (params?.city) query.set("city", params.city);
+        if (params?.near_me) query.set("near_me", "true");
 
         const res = await backendFetch(
             `/posted_jobs/?${query.toString()}`,

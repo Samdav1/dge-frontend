@@ -31,6 +31,10 @@ export interface ServiceFilters {
     onlyMine?: boolean;
     search?: string;
     categoryId?: string;
+    country?: string;
+    state?: string;
+    city?: string;
+    nearMe?: boolean;
     offset?: number;
     limit?: number;
     sortBy?: string;
@@ -49,6 +53,10 @@ export async function listServices(filters: ServiceFilters = {}) {
     if (filters.onlyMine !== undefined) params.append("only_mine", String(filters.onlyMine));
     if (filters.search) params.append("search", filters.search);
     if (filters.categoryId && filters.categoryId !== "all") params.append("category_id", filters.categoryId);
+    if (filters.country) params.append("country", filters.country);
+    if (filters.state) params.append("state", filters.state);
+    if (filters.city) params.append("city", filters.city);
+    if (filters.nearMe) params.append("near_me", "true");
     if (filters.offset !== undefined) params.append("offset", String(filters.offset));
     if (filters.limit !== undefined) params.append("limit", String(filters.limit));
     if (filters.sortBy) params.append("sort_by", filters.sortBy);
@@ -196,6 +204,10 @@ export async function listPublicServices(filters: ServiceFilters = {}) {
     if (filters.type && filters.type !== "all") params.append("type", filters.type);
     if (filters.search) params.append("search", filters.search);
     if (filters.categoryId && filters.categoryId !== "all") params.append("category_id", filters.categoryId);
+    if (filters.country) params.append("country", filters.country);
+    if (filters.state) params.append("state", filters.state);
+    if (filters.city) params.append("city", filters.city);
+    if (filters.nearMe) params.append("near_me", "true");
     if (filters.offset !== undefined) params.append("offset", String(filters.offset));
     if (filters.limit !== undefined) params.append("limit", String(filters.limit));
     if (filters.sortBy) params.append("sort_by", filters.sortBy);
