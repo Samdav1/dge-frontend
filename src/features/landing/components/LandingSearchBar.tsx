@@ -34,10 +34,18 @@ interface ServiceItem {
     };
 }
 
-const POPULAR_TAGS = [
-    "Plumbing",
-    "Web Dev",
-    "Cleaning"
+interface PopularCategoryTag {
+    label: string;
+    query: string;
+    href?: string;
+}
+
+const POPULAR_TAGS: PopularCategoryTag[] = [
+    { label: "Rides & Logistics", query: "Ride & Logistics", href: "/dashboard/driving" },
+    { label: "Cleaning", query: "Cleaning" },
+    { label: "Electrician", query: "Electrician" },
+    { label: "Mechanics", query: "Mechanic" },
+    { label: "Web Services", query: "Web Services" },
 ];
 
 export function LandingSearchBar() {
@@ -181,20 +189,28 @@ export function LandingSearchBar() {
             </div>
 
             {/* Minimal Popular Search Tags */}
-            <div className="mt-2 flex items-center justify-center gap-1.5 flex-wrap text-[10px] text-gray-200">
-                <span className="flex items-center gap-1 font-medium text-[#C69C2E] shrink-0 text-[9px] sm:text-[10px]">
-                    <Sparkles className="w-3 h-3 text-[#C69C2E]" /> Popular:
+            <div className="mt-2.5 flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap text-xs text-gray-200">
+                <span className="flex items-center gap-1 font-semibold text-[#C69C2E] shrink-0 text-[10px] sm:text-xs">
+                    <Sparkles className="w-3.5 h-3.5 text-[#C69C2E]" /> Popular:
                 </span>
                 {POPULAR_TAGS.map((tag) => (
                     <button
-                        key={tag}
+                        key={tag.label}
+                        type="button"
                         onClick={() => {
-                            setQuery(tag);
-                            handleExecuteSearch(tag);
+                            if (tag.href) {
+                                if (typeof window !== "undefined") {
+                                    sessionStorage.setItem("redirect_after_login", tag.href);
+                                }
+                                router.push(tag.href);
+                            } else {
+                                setQuery(tag.query);
+                                handleExecuteSearch(tag.query);
+                            }
                         }}
-                        className="px-1.5 py-0.5 rounded-full bg-white/10 hover:bg-[#C69C2E]/20 hover:text-[#C69C2E] border border-white/15 backdrop-blur-md transition-all text-[9px] sm:text-[10px] font-medium cursor-pointer shrink-0"
+                        className="px-2.5 py-1 rounded-full bg-white/10 hover:bg-[#C69C2E]/25 hover:text-[#C69C2E] hover:border-[#C69C2E]/40 border border-white/15 backdrop-blur-md transition-all text-[10px] sm:text-xs font-medium cursor-pointer shrink-0"
                     >
-                        {tag}
+                        {tag.label}
                     </button>
                 ))}
             </div>
