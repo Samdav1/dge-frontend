@@ -79,7 +79,61 @@ export default function DGEPointsPage() {
 
     useEffect(() => {
         loadPoints();
+
+        // Check if returning from payment gateway with paymentReference or reference
+        if (typeof window !== "undefined") {
+            const urlParams = new URLSearchParams(window.location.search);
+            const ref = urlParams.get("paymentReference") || urlParams.get("reference") || urlParams.get("transactionReference");
+            if (ref && (ref.startsWith("DGE-PT-") || urlParams.get("status") === "paid")) {
+                setIsVerifying(true);
+                toast.info("Verifying your online payment...", { id: "verify-gateway" });
+                verifyPointsGatewayPurchase(ref).then(async (verifyRes) => {
+                    if (verifyRes.success) {
+                        toast.success(verifyRes.data?.message || "Payment verified! Your DGE Points have been credited.", { id: "verify-gateway" });
+                        await loadPoints(true);
+                    } else {
+                        toast.error(verifyRes.data?.message || "Payment verification pending. If you just paid, please wait a moment or click Verify.", { id: "verify-gateway" });
+                    }
+                    // Clean up URL query parameters cleanly without reload
+                    const cleanUrl = window.location.pathname;
+                    window.history.replaceState({}, document.title, cleanUrl);
+                }).catch(() => {
+                    toast.error("Failed to verify payment gateway transaction", { id: "verify-gateway" });
+                }).finally(() => {
+                    setIsVerifying(false);
+                });
+            }
+        }
     }, []);
+
+    // Background polling when gateway pending modal is active (in case user paid in another tab/window)
+    useEffect(() => {
+        if (!gatewayPendingData?.reference) return;
+
+        let attempts = 0;
+        const maxAttempts = 30; // 30 * 4s = 2 minutes
+        const interval = setInterval(async () => {
+            attempts++;
+            if (attempts > maxAttempts) {
+                clearInterval(interval);
+                return;
+            }
+
+            try {
+                const res = await verifyPointsGatewayPurchase(gatewayPendingData.reference);
+                if (res.success) {
+                    toast.success(res.data?.message || "Payment confirmed! Points credited to your balance.");
+                    setGatewayPendingData(null);
+                    await loadPoints(true);
+                    clearInterval(interval);
+                }
+            } catch (e) {
+                // Keep polling silently
+            }
+        }, 4000);
+
+        return () => clearInterval(interval);
+    }, [gatewayPendingData?.reference]);
 
     const rate = data?.rate_per_point || 100;
     const totalCost = selectedPromoPack && selectedPromoPack.points === pointsToBuy
@@ -134,7 +188,10 @@ export default function DGEPointsPage() {
         setIsProcessing(true);
         setError(null);
         try {
-            const res = await initiatePointsGatewayPurchase(pointsToBuy);
+            const redirectUrl = typeof window !== "undefined"
+                ? `${window.location.origin}/dashboard/points`
+                : undefined;
+            const res = await initiatePointsGatewayPurchase(pointsToBuy, redirectUrl);
             if (res.success && res.data) {
                 setGatewayPendingData({
                     reference: res.data.reference,

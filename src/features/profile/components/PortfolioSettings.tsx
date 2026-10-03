@@ -11,7 +11,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Briefcase, Upload, X, Loader2, CheckCircle, AlertTriangle, ArrowRight } from "lucide-react";
+import { Briefcase, Upload, X, Loader2, CheckCircle, AlertTriangle, ArrowRight, Trash2 } from "lucide-react";
 import { getUserPortfolio, createUserPortfolio, updateUserPortfolio, uploadPortfolioMedia, deletePortfolioMedia } from "@/features/portfolio/actions";
 import { UserPortfolio, PortfolioMedia } from "@/features/portfolio/types";
 import { getBackendImageUrl } from "@/lib/imageUtils";
@@ -524,13 +524,15 @@ export function PortfolioSettings({ onNext }: PortfolioSettingsProps = {}) {
                                 />
                                 <button
                                     type="button"
+                                    aria-label="Delete photo"
+                                    title="Delete photo"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setDeleteConfirm({ index, type: "photo", isExisting: !!photo.isExisting });
                                     }}
-                                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                    className="absolute top-2 right-2 w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white transition-all z-20 hover:scale-110 active:scale-95 cursor-pointer"
                                 >
-                                    <X className="w-4 h-4 text-white" />
+                                    <Trash2 className="w-4 h-4 text-white" />
                                 </button>
                                 <div className={`absolute bottom-2 left-2 text-white text-xs px-2 py-1 rounded font-medium ${
                                     photo.isExisting ? "bg-emerald-600/80" : "bg-amber-500/80"
@@ -580,13 +582,15 @@ export function PortfolioSettings({ onNext }: PortfolioSettingsProps = {}) {
                                 />
                                 <button
                                     type="button"
+                                    aria-label="Delete video"
+                                    title="Delete video"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setDeleteConfirm({ index, type: "video", isExisting: !!video.isExisting });
                                     }}
-                                    className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                    className="absolute top-2 right-2 w-8 h-8 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white transition-all z-20 hover:scale-110 active:scale-95 cursor-pointer"
                                 >
-                                    <X className="w-4 h-4 text-white" />
+                                    <Trash2 className="w-4 h-4 text-white" />
                                 </button>
                                 <div className={`absolute bottom-2 left-2 text-white text-xs px-2 py-1 rounded font-medium ${
                                     video.isExisting ? "bg-emerald-600/80" : "bg-amber-500/80"

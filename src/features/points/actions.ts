@@ -93,13 +93,16 @@ export async function buyPointsWithWallet(points: number): Promise<{ success: bo
     }
 }
 
-export async function initiatePointsGatewayPurchase(points: number): Promise<{ success: boolean; data?: any; error?: string }> {
+export async function initiatePointsGatewayPurchase(
+    points: number,
+    redirectUrl?: string
+): Promise<{ success: boolean; data?: any; error?: string }> {
     try {
         const headers = await getAuthHeaders();
         const res = await fetch(`${apiUrl}/points/buy/initiate`, {
             method: "POST",
             headers,
-            body: JSON.stringify({ points }),
+            body: JSON.stringify({ points, redirect_url: redirectUrl }),
         });
 
         const data = await res.json().catch(() => ({}));
