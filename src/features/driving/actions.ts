@@ -17,26 +17,6 @@ export async function getGoogleMapsApiKey(): Promise<string> {
     );
 }
 
-export async function saveGoogleMapsApiKey(key: string): Promise<{ success: boolean; message?: string }> {
-    try {
-        const fs = await import("fs");
-        const path = await import("path");
-        const envLocalPath = path.join(process.cwd(), ".env.local");
-        let content = "";
-        if (fs.existsSync(envLocalPath)) {
-            content = fs.readFileSync(envLocalPath, "utf-8");
-        }
-        if (content.includes("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=")) {
-            content = content.replace(/NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=.*$/m, `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${key.trim()}`);
-        } else {
-            content += `\nNEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${key.trim()}\nGOOGLE_MAPS_API_KEY=${key.trim()}\n`;
-        }
-        fs.writeFileSync(envLocalPath, content, "utf-8");
-        return { success: true, message: "Google Maps API Key saved successfully to .env.local" };
-    } catch (e: any) {
-        return { success: false, message: e.message || "Failed to save key" };
-    }
-}
 
 // Helper function to get auth headers
 async function getAuthHeaders() {

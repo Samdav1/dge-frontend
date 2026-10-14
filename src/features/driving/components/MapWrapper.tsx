@@ -4,10 +4,9 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { 
     Loader2, AlertCircle, RefreshCw, Navigation, Crosshair, 
     TrafficCone, ZoomIn, ZoomOut, Star, ShieldCheck, Car, 
-    X, ArrowRight, Zap, CheckCircle2, ChevronRight, Key, Check
+    X, ChevronRight
 } from "lucide-react";
-import { getGoogleMapsApiKey, saveGoogleMapsApiKey } from "../actions";
-import { toast } from "sonner";
+import { getGoogleMapsApiKey } from "../actions";
 
 // Top-Down Vehicle SVGs (inDrive / Mobility App Style)
 const SEDAN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="60" viewBox="0 0 34 60" fill="none">
@@ -120,6 +119,78 @@ const lightMapStyles: any[] = [
     { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }, { weight: 2 }] }
 ];
 
+let googleMapsLoadingPromise: Promise<void> | null = null;
+
+function loadGoogleMapsSdk(apiKey: string): Promise<void> {
+    if (typeof window === "undefined") return Promise.reject(new Error("SSR"));
+
+    if ((window as any).google?.maps) {
+        return Promise.resolve();
+    }
+
+    if (googleMapsLoadingPromise) {
+        return googleMapsLoadingPromise;
+    }
+
+    googleMapsLoadingPromise = new Promise<void>((resolve, reject) => {
+        if ((window as any).google?.maps) {
+            resolve();
+            return;
+        }
+
+        const scriptId = "google-maps-js-sdk";
+        const existingScript = document.getElementById(scriptId) as HTMLScriptElement | null;
+        if (existingScript) {
+            if ((window as any).google?.maps) {
+                resolve();
+            } else {
+                existingScript.addEventListener("load", () => resolve(), { once: true });
+                existingScript.addEventListener("error", (e) => reject(e), { once: true });
+            }
+            return;
+        }
+
+        const cleanKey = apiKey?.trim();
+        if (!cleanKey) {
+            googleMapsLoadingPromise = null;
+            reject(new Error("Google Maps API Key is required"));
+            return;
+        }
+
+        const callbackName = `__initGoogleMapsSdk_${Date.now()}`;
+        (window as any)[callbackName] = () => {
+            try {
+                delete (window as any)[callbackName];
+            } catch (_) {
+                (window as any)[callbackName] = undefined;
+            }
+            resolve();
+        };
+
+        const script = document.createElement("script");
+        script.id = scriptId;
+        script.type = "text/javascript";
+        script.async = true;
+        script.defer = true;
+        // Standard libraries places and geometry with safe initialization callback
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(cleanKey)}&libraries=places,geometry&callback=${callbackName}`;
+
+        script.onerror = (e) => {
+            try {
+                delete (window as any)[callbackName];
+            } catch (_) {
+                (window as any)[callbackName] = undefined;
+            }
+            googleMapsLoadingPromise = null;
+            reject(new Error("Failed to load Google Maps SDK"));
+        };
+
+        document.head.appendChild(script);
+    });
+
+    return googleMapsLoadingPromise;
+}
+
 interface MapWrapperProps {
     center?: [number, number] | null;
     liveDrivers?: { id: string; lat: number; lng: number; supported_vehicles?: string[]; details?: any }[];
@@ -143,7 +214,6 @@ export default function MapWrapper({
     const directionsRendererRef = useRef<any>(null);
     const trafficLayerRef = useRef<any>(null);
 
-    const [apiKey, setApiKey] = useState<string>("");
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
     const [loadError, setLoadError] = useState(false);
     const [trafficEnabled, setTrafficEnabled] = useState(false);
@@ -151,102 +221,49 @@ export default function MapWrapper({
     const [selectedDriverPopup, setSelectedDriverPopup] = useState<any | null>(null);
     const [isLocating, setIsLocating] = useState(false);
 
-    // API Key Configuration Modal state
-    const [showKeyModal, setShowKeyModal] = useState(false);
-    const [inputKey, setInputKey] = useState("");
-    const [isSavingKey, setIsSavingKey] = useState(false);
-
-    // 1. Resolve API Key from Server Actions, Environment, or LocalStorage
+    // Initialize Google Maps script safely using the environment API key
     useEffect(() => {
-        const resolveKey = async () => {
-            let foundKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
-            if (!foundKey) {
+        let isCancelled = false;
+
+        const initSdk = async () => {
+            let key = (process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "").trim();
+            if (!key) {
                 try {
                     const serverKey = await getGoogleMapsApiKey();
-                    if (serverKey) foundKey = serverKey.trim();
-                } catch (e) {
-                    console.warn("Could not fetch Google Maps key via server action:", e);
+                    if (serverKey) key = serverKey.trim();
+                } catch (err) {
+                    console.error("Could not retrieve Google Maps API key:", err);
                 }
             }
-            if (!foundKey && typeof window !== "undefined") {
-                foundKey = (localStorage.getItem("GOOGLE_MAPS_API_KEY") || "").trim();
+
+            if (isCancelled) return;
+
+            if (!key) {
+                console.warn("No Google Maps API Key provided in environment.");
+                setLoadError(true);
+                return;
             }
-            setApiKey(foundKey);
-            if (foundKey) setInputKey(foundKey);
+
+            try {
+                await loadGoogleMapsSdk(key);
+                if (!isCancelled) {
+                    setIsScriptLoaded(true);
+                    setLoadError(false);
+                }
+            } catch (err) {
+                if (!isCancelled) {
+                    console.error("Error loading Google Maps SDK:", err);
+                    setLoadError(true);
+                }
+            }
         };
-        resolveKey();
+
+        initSdk();
+
+        return () => {
+            isCancelled = true;
+        };
     }, []);
-
-    // 2. Load Google Maps Driving & Mobility JavaScript SDK
-    const loadGoogleMaps = useCallback((keyToUse?: string) => {
-        if (typeof window === "undefined") return;
-
-        const effectiveKey = (keyToUse !== undefined ? keyToUse : apiKey).trim();
-
-        // Check if window.google.maps is already initialized
-        if ((window as any).google?.maps) {
-            setIsScriptLoaded(true);
-            setLoadError(false);
-            return;
-        }
-
-        const existingScript = document.getElementById("google-maps-js-sdk");
-        if (existingScript) {
-            existingScript.remove();
-        }
-
-        const script = document.createElement("script");
-        script.id = "google-maps-js-sdk";
-        script.async = true;
-        script.defer = true;
-        
-        // Load official Google Maps Driving & Places SDK
-        const keyParam = effectiveKey ? `key=${effectiveKey}&` : "";
-        script.src = `https://maps.googleapis.com/maps/api/js?${keyParam}libraries=places,geometry,marker&v=weekly`;
-
-        script.onload = () => {
-            setIsScriptLoaded(true);
-            setLoadError(false);
-        };
-        script.onerror = () => {
-            console.error("Google Maps SDK failed to load");
-            setLoadError(true);
-        };
-
-        document.head.appendChild(script);
-    }, [apiKey]);
-
-    useEffect(() => {
-        loadGoogleMaps(apiKey);
-    }, [apiKey, loadGoogleMaps]);
-
-    // Save user API key
-    const handleSaveKey = async () => {
-        if (!inputKey.trim()) {
-            toast.error("Please enter a valid Google Maps API Key");
-            return;
-        }
-        setIsSavingKey(true);
-        try {
-            const cleanKey = inputKey.trim();
-            localStorage.setItem("GOOGLE_MAPS_API_KEY", cleanKey);
-            setApiKey(cleanKey);
-            await saveGoogleMapsApiKey(cleanKey);
-            toast.success("Google Maps API Key activated successfully!");
-            setShowKeyModal(false);
-            
-            // Reload script with new key
-            delete (window as any).google;
-            const existingScript = document.getElementById("google-maps-js-sdk");
-            if (existingScript) existingScript.remove();
-            setIsScriptLoaded(false);
-            loadGoogleMaps(cleanKey);
-        } catch (e: any) {
-            toast.error(e.message || "Failed to save API key");
-        } finally {
-            setIsSavingKey(false);
-        }
-    };
 
     // Dark mode detection
     const isDarkMode = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
@@ -621,26 +638,20 @@ export default function MapWrapper({
         return (
             <div className="w-full h-full min-h-[350px] flex flex-col items-center justify-center bg-gray-50 dark:bg-[#141414] p-6 text-center space-y-3">
                 <AlertCircle className="w-10 h-10 text-amber-500" />
-                <h4 className="font-bold text-gray-900 dark:text-white text-base">Google Maps Connection Error</h4>
+                <h4 className="font-bold text-gray-900 dark:text-white text-base">Google Maps Service Unavailable</h4>
                 <p className="text-xs text-gray-500 max-w-sm">
-                    Unable to load Google Maps navigation services with your provided key.
+                    Unable to load navigation services. Please check your internet connection or reload the page.
                 </p>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => setShowKeyModal(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-bold transition-colors cursor-pointer"
-                    >
-                        <Key className="w-4 h-4" />
-                        <span>Update API Key</span>
-                    </button>
-                    <button
-                        onClick={() => loadGoogleMaps(apiKey)}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C69C2E] hover:bg-[#b08b29] text-white text-xs font-bold transition-colors cursor-pointer"
-                    >
-                        <RefreshCw className="w-4 h-4" />
-                        <span>Retry</span>
-                    </button>
-                </div>
+                <button
+                    onClick={() => {
+                        setLoadError(false);
+                        window.location.reload();
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C69C2E] hover:bg-[#b08b29] text-white text-xs font-bold transition-colors cursor-pointer shadow-md"
+                >
+                    <RefreshCw className="w-4 h-4" />
+                    <span>Reload Map</span>
+                </button>
             </div>
         );
     }
@@ -811,16 +822,6 @@ export default function MapWrapper({
                                 : "0 Active Drivers Nearby"}
                         </span>
                     </div>
-
-                    {/* Google Maps API Key Config Pill */}
-                    <button
-                        onClick={() => setShowKeyModal(true)}
-                        className="bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-gray-200/80 dark:border-[#333] shadow-md flex items-center gap-1.5 text-[11px] font-semibold text-gray-700 dark:text-gray-300 hover:text-[#C69C2E] transition-colors cursor-pointer"
-                        title={apiKey ? "Google Maps API Key Active" : "Set Google Maps API Key"}
-                    >
-                        <Key className={`w-3.5 h-3.5 ${apiKey ? "text-emerald-500" : "text-amber-500"}`} />
-                        <span className="hidden sm:inline">{apiKey ? "API Key Configured" : "Add API Key"}</span>
-                    </button>
                 </div>
 
                 {/* inDrive Vehicle Category Filter Bar (Only when real drivers are available and not on trip) */}
@@ -1009,72 +1010,6 @@ export default function MapWrapper({
                 </div>
             )}
 
-            {/* API Key Modal */}
-            {showKeyModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white dark:bg-[#18181B] rounded-3xl p-6 max-w-md w-full border border-gray-200 dark:border-[#2E2E32] shadow-2xl space-y-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-9 h-9 rounded-xl bg-[#C69C2E]/10 flex items-center justify-center text-[#C69C2E]">
-                                    <Key className="w-5 h-5" />
-                                </div>
-                                <h3 className="font-bold text-base text-gray-900 dark:text-white">
-                                    Google Maps API Key
-                                </h3>
-                            </div>
-                            <button
-                                onClick={() => setShowKeyModal(false)}
-                                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                            Enter your Google Cloud API key with <strong>Maps JavaScript API</strong> and <strong>Directions API</strong> enabled. It will be saved into your application environment.
-                        </p>
-
-                        <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
-                                Google Maps API Key
-                            </label>
-                            <input
-                                type="text"
-                                value={inputKey}
-                                onChange={(e) => setInputKey(e.target.value)}
-                                placeholder="AIzaSy..."
-                                className="w-full h-11 px-3.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#121214] text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C69C2E]"
-                            />
-                        </div>
-
-                        <div className="flex items-center justify-end gap-2 pt-2">
-                            <button
-                                onClick={() => setShowKeyModal(false)}
-                                className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-500 hover:text-gray-900 dark:hover:text-white cursor-pointer"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSaveKey}
-                                disabled={isSavingKey}
-                                className="px-5 py-2.5 rounded-xl bg-[#C69C2E] hover:bg-[#b08b29] text-white text-xs font-bold flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
-                            >
-                                {isSavingKey ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                        <span>Saving...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Check className="w-4 h-4" />
-                                        <span>Activate Key</span>
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

@@ -123,11 +123,10 @@ export function DrivingLayout() {
         if (!session?.backendToken) return;
 
         const token = session.backendToken.replace(/^"|"$/g, '');
-        // We use the general chat WS since it uses ConnectionManager that routes per user
         const getWsUrl = () => {
-            if (process.env.NEXT_PUBLIC_WS_URL) return process.env.NEXT_PUBLIC_WS_URL;
-            if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace(/^http/, 'ws');
-            return 'wss://dge-tech-web-cjhe4jg72a-ew.a.run.app';
+            const raw = process.env.NEXT_PUBLIC_WS_URL || 
+                (process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/^http/, 'ws') : 'wss://dge-tech-web-cjhe4jg72a-ew.a.run.app');
+            return raw.replace(/\/+$/, '');
         };
         const wsUrl = `${getWsUrl()}/chat/ws?token=${token}`;
 

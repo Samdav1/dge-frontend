@@ -27,9 +27,9 @@ interface UseChatWebSocketReturn {
 }
 
 const getWsUrl = () => {
-    if (process.env.NEXT_PUBLIC_WS_URL) return process.env.NEXT_PUBLIC_WS_URL;
-    if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL.replace(/^http/, 'ws');
-    return 'wss://dge-tech-web-cjhe4jg72a-ew.a.run.app';
+    const raw = process.env.NEXT_PUBLIC_WS_URL || 
+        (process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/^http/, 'ws') : 'wss://dge-tech-web-cjhe4jg72a-ew.a.run.app');
+    return raw.replace(/\/+$/, '');
 };
 const WS_BASE_URL = getWsUrl();
 const MAX_RETRIES = 5;
