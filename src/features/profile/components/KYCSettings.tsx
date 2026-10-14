@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, AlertTriangle, ShieldCheck, RefreshCw, X, ArrowRight } from "lucide-react";
+import { Loader2, CheckCircle, AlertTriangle, ShieldCheck, RefreshCw, X, ArrowRight, ArrowLeft } from "lucide-react";
 import { getUserKyc, getProfile, getKycConfig, getSumsubToken } from "../actions";
 
 interface KycData {
@@ -334,7 +334,18 @@ export function KYCSettings({ onNext }: KYCSettingsProps = {}) {
                             >
                                 {/* Modal Header */}
                                 <div className="px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0 bg-gray-50 dark:bg-[#1A1A1A] border-b border-gray-200 dark:border-[#2A2A2A]">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2.5 sm:gap-3">
+                                        {/* Back Button */}
+                                        <button
+                                            onClick={() => setIsModalOpen(false)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#333] bg-white dark:bg-[#222] text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#2e2e2e] transition-colors font-semibold text-xs sm:text-sm shadow-sm cursor-pointer"
+                                            aria-label="Back"
+                                            title="Back to KYC Settings"
+                                        >
+                                            <ArrowLeft className="w-4 h-4 text-[#C69C2E]" />
+                                            <span>Back</span>
+                                        </button>
+
                                         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#C69C2E]/10 border border-[#C69C2E]/20 flex items-center justify-center shrink-0 text-[#C69C2E]">
                                             <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
                                         </div>
@@ -348,8 +359,9 @@ export function KYCSettings({ onNext }: KYCSettingsProps = {}) {
                                     {/* Close Button */}
                                     <button
                                         onClick={() => setIsModalOpen(false)}
-                                        className="p-2 rounded-xl transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-[#2A2A2A]"
+                                        className="p-2 rounded-xl transition-colors text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-[#2A2A2A] cursor-pointer"
                                         aria-label="Close modal"
+                                        title="Close"
                                     >
                                         <X className="w-5 h-5" />
                                     </button>
@@ -422,6 +434,21 @@ export function KYCSettings({ onNext }: KYCSettingsProps = {}) {
                                             </div>
                                         )}
                                     </div>
+                                </div>
+
+                                {/* Modal Footer with Back Button */}
+                                <div className="px-4 sm:px-6 py-3 bg-gray-50 dark:bg-[#1A1A1A] border-t border-gray-200 dark:border-[#2A2A2A] flex items-center justify-between shrink-0">
+                                    <button
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-[#2A2A2A] transition-colors cursor-pointer"
+                                    >
+                                        <ArrowLeft className="w-4 h-4 text-[#C69C2E]" />
+                                        <span>Back to KYC Settings</span>
+                                    </button>
+                                    <span className="text-[11px] text-gray-400 flex items-center gap-1.5">
+                                        <ShieldCheck className="w-3.5 h-3.5 text-[#C69C2E]" />
+                                        256-Bit Encrypted
+                                    </span>
                                 </div>
                             </div>
                         </div>

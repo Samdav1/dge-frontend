@@ -98,12 +98,35 @@ export async function getDriversNearby(lat: number, lon: number, radius: number 
 export async function searchLocation(query: string) {
     console.log(`ServerAction: searchLocation called with query=${query}`);
 
+    const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+
+    if (googleApiKey) {
+        try {
+            const resp = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${googleApiKey}`
+            );
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.status === "OK" && data.results?.length > 0) {
+                    return data.results.map((r: any, idx: number) => ({
+                        place_id: r.place_id || idx,
+                        lat: String(r.geometry.location.lat),
+                        lon: String(r.geometry.location.lng),
+                        display_name: r.formatted_address,
+                    }));
+                }
+            }
+        } catch (e) {
+            console.warn("Google Maps Geocoding search failed, falling back to OpenStreetMap Nominatim:", e);
+        }
+    }
+
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`,
             {
                 headers: {
-                    'User-Agent': 'DGE_Frontend/1.0', // Nominatim requires a User-Agent
+                    'User-Agent': 'DGE_Frontend/1.0',
                 }
             }
         );
@@ -122,6 +145,24 @@ export async function searchLocation(query: string) {
 
 export async function reverseGeocode(lat: number, lon: number) {
     console.log(`ServerAction: reverseGeocode called with lat=${lat}, lon=${lon}`);
+
+    const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+
+    if (googleApiKey) {
+        try {
+            const resp = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${googleApiKey}`
+            );
+            if (resp.ok) {
+                const data = await resp.json();
+                if (data.status === "OK" && data.results?.[0]?.formatted_address) {
+                    return data.results[0].formatted_address;
+                }
+            }
+        } catch (e) {
+            console.warn("Google Maps Reverse Geocoding failed, falling back to OpenStreetMap Nominatim:", e);
+        }
+    }
 
     try {
         const response = await fetch(
