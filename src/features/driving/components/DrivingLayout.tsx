@@ -543,6 +543,21 @@ export function DrivingLayout() {
         setMapCenter([lat, lon]);
     };
 
+    const handleMapDriverSelect = (driver: any) => {
+        const driverId = driver.id || driver.driver_id;
+        const carName = driver.car_name || driver.details?.car_name || "Toyota Corolla";
+        const driverName = driver.driver_name || driver.details?.name || "Verified Driver";
+        const distanceKm = driver.distance_km || 1.2;
+
+        setSelectedDriver({
+            id: driverId,
+            car_name: carName,
+            driver_name: driverName,
+            distance_km: distanceKm,
+        });
+        setShowConfirmation(true);
+    };
+
     const tabs = [
         { key: 'book' as const, label: 'Book a Ride', icon: Car, desc: 'Find nearby drivers' },
         ...(isDriverVerified
@@ -948,7 +963,7 @@ export function DrivingLayout() {
                                 }}
                             />
                         </div>
-                        <div className="md:col-span-7 lg:col-span-8 h-[350px] md:h-[500px] lg:h-[calc(100vh-380px)] min-h-[300px]">
+                        <div className="md:col-span-7 lg:col-span-8 h-[380px] sm:h-[460px] md:h-[540px] lg:h-[calc(100vh-340px)] min-h-[350px]">
                             <MapView center={mapCenter} liveDrivers={liveDrivers} trip={activeTrip} driverLocation={driverLocation} />
                         </div>
                     </div>
@@ -1023,8 +1038,8 @@ export function DrivingLayout() {
                                 </Button>
                             </div>
                         </div>
-                        <div className="md:col-span-7 lg:col-span-8 h-[350px] md:h-[500px] lg:h-[calc(100vh-380px)] min-h-[300px] animate-in slide-in-from-right duration-300">
-                            <MapView center={mapCenter} liveDrivers={liveDrivers} trip={activeTrip} driverLocation={driverLocation} />
+                        <div className="md:col-span-7 lg:col-span-8 h-[380px] sm:h-[460px] md:h-[540px] lg:h-[calc(100vh-340px)] min-h-[350px] animate-in slide-in-from-right duration-300">
+                            <MapView center={mapCenter} liveDrivers={liveDrivers} trip={activeTrip} driverLocation={driverLocation} onSelectDriver={handleMapDriverSelect} />
                         </div>
                     </div>
                 ) : (
@@ -1111,8 +1126,8 @@ export function DrivingLayout() {
                         </div>
 
                         {/* Right Panel — Map */}
-                        <div className="md:col-span-7 lg:col-span-8 h-[350px] md:h-[500px] lg:h-[calc(100vh-380px)] min-h-[300px] animate-in slide-in-from-right duration-300">
-                            <MapView center={mapCenter} liveDrivers={liveDrivers} trip={activeTrip} driverLocation={driverLocation} />
+                        <div className="md:col-span-7 lg:col-span-8 h-[380px] sm:h-[460px] md:h-[540px] lg:h-[calc(100vh-340px)] min-h-[350px] animate-in slide-in-from-right duration-300">
+                            <MapView center={mapCenter} liveDrivers={liveDrivers} trip={activeTrip} driverLocation={driverLocation} onSelectDriver={handleMapDriverSelect} />
                         </div>
                     </div>
                 )}
