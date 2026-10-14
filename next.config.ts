@@ -6,6 +6,17 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  env: {
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+      process.env.GOOGLE_MAPS_API_KEY ||
+      process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY ||
+      process.env.GOOGLE_MAP_API_KEY ||
+      process.env.NEXT_PUBLIC_GOOGLE_API_KEY ||
+      process.env.GOOGLE_API_KEY ||
+      process.env.MAPS_API_KEY ||
+      "",
+  },
   images: {
     remotePatterns: [
       {

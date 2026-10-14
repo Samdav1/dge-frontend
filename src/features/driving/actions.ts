@@ -4,6 +4,40 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth"
 import { DriverNearbyResponse } from "./types";
 
+export async function getGoogleMapsApiKey(): Promise<string> {
+    return (
+        process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+        process.env.GOOGLE_MAPS_API_KEY ||
+        process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY ||
+        process.env.GOOGLE_MAP_API_KEY ||
+        process.env.NEXT_PUBLIC_GOOGLE_API_KEY ||
+        process.env.GOOGLE_API_KEY ||
+        process.env.MAPS_API_KEY ||
+        ""
+    );
+}
+
+export async function saveGoogleMapsApiKey(key: string): Promise<{ success: boolean; message?: string }> {
+    try {
+        const fs = await import("fs");
+        const path = await import("path");
+        const envLocalPath = path.join(process.cwd(), ".env.local");
+        let content = "";
+        if (fs.existsSync(envLocalPath)) {
+            content = fs.readFileSync(envLocalPath, "utf-8");
+        }
+        if (content.includes("NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=")) {
+            content = content.replace(/NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=.*$/m, `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${key.trim()}`);
+        } else {
+            content += `\nNEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${key.trim()}\nGOOGLE_MAPS_API_KEY=${key.trim()}\n`;
+        }
+        fs.writeFileSync(envLocalPath, content, "utf-8");
+        return { success: true, message: "Google Maps API Key saved successfully to .env.local" };
+    } catch (e: any) {
+        return { success: false, message: e.message || "Failed to save key" };
+    }
+}
+
 // Helper function to get auth headers
 async function getAuthHeaders() {
     const session = await auth();
@@ -98,7 +132,7 @@ export async function getDriversNearby(lat: number, lon: number, radius: number 
 export async function searchLocation(query: string) {
     console.log(`ServerAction: searchLocation called with query=${query}`);
 
-    const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+    const googleApiKey = await getGoogleMapsApiKey();
 
     if (googleApiKey) {
         try {
@@ -146,7 +180,7 @@ export async function searchLocation(query: string) {
 export async function reverseGeocode(lat: number, lon: number) {
     console.log(`ServerAction: reverseGeocode called with lat=${lat}, lon=${lon}`);
 
-    const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
+    const googleApiKey = await getGoogleMapsApiKey();
 
     if (googleApiKey) {
         try {

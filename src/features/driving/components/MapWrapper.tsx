@@ -4,8 +4,10 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { 
     Loader2, AlertCircle, RefreshCw, Navigation, Crosshair, 
     TrafficCone, ZoomIn, ZoomOut, Star, ShieldCheck, Car, 
-    X, ArrowRight, Zap, CheckCircle2, ChevronRight, Fuel
+    X, ArrowRight, Zap, CheckCircle2, ChevronRight, Key, Check
 } from "lucide-react";
+import { getGoogleMapsApiKey, saveGoogleMapsApiKey } from "../actions";
+import { toast } from "sonner";
 
 // Top-Down Vehicle SVGs (inDrive / Mobility App Style)
 const SEDAN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="60" viewBox="0 0 34 60" fill="none">
@@ -118,75 +120,6 @@ const lightMapStyles: any[] = [
     { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }, { weight: 2 }] }
 ];
 
-// Demo Available Drivers with Realistic inDrive Attributes
-const fallbackDemoDrivers = [
-    {
-        id: "demo-1",
-        lat: 6.2255,
-        lng: 7.0852,
-        driver_name: "David Johnson",
-        car_name: "Toyota Corolla",
-        car_type: "Sedan",
-        rating: 4.9,
-        eta_min: 3,
-        fare: 1800,
-        trips: 342,
-        vehicle_category: "sedan"
-    },
-    {
-        id: "demo-2",
-        lat: 6.2198,
-        lng: 7.0815,
-        driver_name: "Sophia Turner",
-        car_name: "Lexus ES 350",
-        car_type: "Comfort",
-        rating: 5.0,
-        eta_min: 5,
-        fare: 2800,
-        trips: 512,
-        vehicle_category: "comfort"
-    },
-    {
-        id: "demo-3",
-        lat: 6.2295,
-        lng: 7.0890,
-        driver_name: "Michael Lee",
-        car_name: "Toyota RAV4",
-        car_type: "SUV",
-        rating: 4.8,
-        eta_min: 4,
-        fare: 2400,
-        trips: 189,
-        vehicle_category: "suv"
-    },
-    {
-        id: "demo-4",
-        lat: 6.2230,
-        lng: 7.0790,
-        driver_name: "Emeka Okafor",
-        car_name: "Yamaha Express",
-        car_type: "Bike",
-        rating: 4.9,
-        eta_min: 2,
-        fare: 900,
-        trips: 640,
-        vehicle_category: "bike"
-    },
-    {
-        id: "demo-5",
-        lat: 6.2272,
-        lng: 7.0834,
-        driver_name: "Chinedu Eze",
-        car_name: "Hyundai Elantra",
-        car_type: "Sedan",
-        rating: 4.7,
-        eta_min: 6,
-        fare: 1600,
-        trips: 220,
-        vehicle_category: "sedan"
-    }
-];
-
 interface MapWrapperProps {
     center?: [number, number] | null;
     liveDrivers?: { id: string; lat: number; lng: number; supported_vehicles?: string[]; details?: any }[];
@@ -210,6 +143,7 @@ export default function MapWrapper({
     const directionsRendererRef = useRef<any>(null);
     const trafficLayerRef = useRef<any>(null);
 
+    const [apiKey, setApiKey] = useState<string>("");
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
     const [loadError, setLoadError] = useState(false);
     const [trafficEnabled, setTrafficEnabled] = useState(false);
@@ -217,10 +151,39 @@ export default function MapWrapper({
     const [selectedDriverPopup, setSelectedDriverPopup] = useState<any | null>(null);
     const [isLocating, setIsLocating] = useState(false);
 
-    // Load Google Maps SDK
-    const loadGoogleMaps = useCallback(() => {
+    // API Key Configuration Modal state
+    const [showKeyModal, setShowKeyModal] = useState(false);
+    const [inputKey, setInputKey] = useState("");
+    const [isSavingKey, setIsSavingKey] = useState(false);
+
+    // 1. Resolve API Key from Server Actions, Environment, or LocalStorage
+    useEffect(() => {
+        const resolveKey = async () => {
+            let foundKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+            if (!foundKey) {
+                try {
+                    const serverKey = await getGoogleMapsApiKey();
+                    if (serverKey) foundKey = serverKey.trim();
+                } catch (e) {
+                    console.warn("Could not fetch Google Maps key via server action:", e);
+                }
+            }
+            if (!foundKey && typeof window !== "undefined") {
+                foundKey = (localStorage.getItem("GOOGLE_MAPS_API_KEY") || "").trim();
+            }
+            setApiKey(foundKey);
+            if (foundKey) setInputKey(foundKey);
+        };
+        resolveKey();
+    }, []);
+
+    // 2. Load Google Maps Driving & Mobility JavaScript SDK
+    const loadGoogleMaps = useCallback((keyToUse?: string) => {
         if (typeof window === "undefined") return;
 
+        const effectiveKey = (keyToUse !== undefined ? keyToUse : apiKey).trim();
+
+        // Check if window.google.maps is already initialized
         if ((window as any).google?.maps) {
             setIsScriptLoaded(true);
             setLoadError(false);
@@ -229,19 +192,17 @@ export default function MapWrapper({
 
         const existingScript = document.getElementById("google-maps-js-sdk");
         if (existingScript) {
-            existingScript.addEventListener("load", () => setIsScriptLoaded(true));
-            existingScript.addEventListener("error", () => setLoadError(true));
-            return;
+            existingScript.remove();
         }
 
-        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
         const script = document.createElement("script");
         script.id = "google-maps-js-sdk";
         script.async = true;
         script.defer = true;
-        script.src = apiKey
-            ? `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry`
-            : `https://maps.googleapis.com/maps/api/js?libraries=places,geometry`;
+        
+        // Load official Google Maps Driving & Places SDK
+        const keyParam = effectiveKey ? `key=${effectiveKey}&` : "";
+        script.src = `https://maps.googleapis.com/maps/api/js?${keyParam}libraries=places,geometry,marker&v=weekly`;
 
         script.onload = () => {
             setIsScriptLoaded(true);
@@ -253,16 +214,44 @@ export default function MapWrapper({
         };
 
         document.head.appendChild(script);
-    }, []);
+    }, [apiKey]);
 
     useEffect(() => {
-        loadGoogleMaps();
-    }, [loadGoogleMaps]);
+        loadGoogleMaps(apiKey);
+    }, [apiKey, loadGoogleMaps]);
 
-    // Check dark mode
+    // Save user API key
+    const handleSaveKey = async () => {
+        if (!inputKey.trim()) {
+            toast.error("Please enter a valid Google Maps API Key");
+            return;
+        }
+        setIsSavingKey(true);
+        try {
+            const cleanKey = inputKey.trim();
+            localStorage.setItem("GOOGLE_MAPS_API_KEY", cleanKey);
+            setApiKey(cleanKey);
+            await saveGoogleMapsApiKey(cleanKey);
+            toast.success("Google Maps API Key activated successfully!");
+            setShowKeyModal(false);
+            
+            // Reload script with new key
+            delete (window as any).google;
+            const existingScript = document.getElementById("google-maps-js-sdk");
+            if (existingScript) existingScript.remove();
+            setIsScriptLoaded(false);
+            loadGoogleMaps(cleanKey);
+        } catch (e: any) {
+            toast.error(e.message || "Failed to save API key");
+        } finally {
+            setIsSavingKey(false);
+        }
+    };
+
+    // Dark mode detection
     const isDarkMode = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
 
-    // Initialize Map
+    // Initialize Map Instance
     useEffect(() => {
         if (!isScriptLoaded || !mapContainerRef.current) return;
         const google = (window as any).google;
@@ -281,8 +270,8 @@ export default function MapWrapper({
                 mapTypeControl: false,
                 streetViewControl: false,
                 fullscreenControl: false,
-                zoomControl: false, // We supply custom responsive inDrive controls
-                gestureHandling: "greedy", // Smooth single-finger mobile panning
+                zoomControl: false,
+                gestureHandling: "greedy",
                 styles: isDarkMode ? darkMapStyles : lightMapStyles,
             });
 
@@ -297,12 +286,11 @@ export default function MapWrapper({
             });
 
             trafficLayerRef.current = new google.maps.TrafficLayer();
-
             mapInstanceRef.current = map;
         }
     }, [isScriptLoaded, isDarkMode, trip, center]);
 
-    // Helper: Determine vehicle category
+    // Vehicle Category Detector
     const detectVehicleCategory = (nameOrModel: string, supportedVehicles: string[] = []): "sedan" | "comfort" | "suv" | "bike" => {
         const text = `${nameOrModel || ""} ${supportedVehicles.join(" ")}`.toLowerCase();
         if (text.includes("bike") || text.includes("moto") || text.includes("motorcycle")) return "bike";
@@ -311,7 +299,7 @@ export default function MapWrapper({
         return "sedan";
     };
 
-    // Helper: Pick SVG by category
+    // Pick SVG by category
     const getVehicleSvg = (category: string) => {
         switch (category) {
             case "comfort": return COMFORT_SVG;
@@ -321,9 +309,9 @@ export default function MapWrapper({
         }
     };
 
-    // Format Available Drivers
+    // FORMAT ONLY REAL DRIVERS — STRICTLY NO FAKE OR MOCK DRIVERS!
     const parsedDrivers = useMemo(() => {
-        if (liveDrivers.length > 0) {
+        if (liveDrivers && liveDrivers.length > 0) {
             return liveDrivers.map((d, index) => {
                 const carName = d.details?.car_name || "Toyota Corolla";
                 const carModel = d.details?.car_model || "";
@@ -337,18 +325,19 @@ export default function MapWrapper({
                     car_name: fullName,
                     car_type: category.charAt(0).toUpperCase() + category.slice(1),
                     rating: d.details?.rating || 4.9,
-                    eta_min: Math.floor(Math.random() * 4) + 2,
-                    fare: 1500 + Math.floor(Math.random() * 800),
+                    eta_min: d.details?.eta_min || 3,
+                    fare: d.details?.fare || 1800,
                     trips: d.details?.total_rides || 140,
                     vehicle_category: category,
                     raw: d
                 };
             });
         }
-        return fallbackDemoDrivers;
+        // ONLY REAL DRIVERS. If no drivers active in WebSocket/API, return empty array.
+        return [];
     }, [liveDrivers]);
 
-    // Filter drivers based on user category selection
+    // Filter real drivers based on user category selection
     const filteredDrivers = useMemo(() => {
         if (selectedCategory === "all") return parsedDrivers;
         return parsedDrivers.filter(d => d.vehicle_category === selectedCategory);
@@ -362,7 +351,7 @@ export default function MapWrapper({
         markersRef.current = [];
     };
 
-    // Render inDrive Custom HTML Overlays & Route
+    // Render Overlays, Markers & Driving Route
     useEffect(() => {
         if (!isScriptLoaded || !mapInstanceRef.current) return;
         const google = (window as any).google;
@@ -371,7 +360,7 @@ export default function MapWrapper({
         const map = mapInstanceRef.current;
         clearMapItems();
 
-        // Custom inDrive HTML Overlay Class
+        // inDrive Custom HTML Overlay
         class InDriveVehicleOverlay extends google.maps.OverlayView {
             private position: any;
             private div: HTMLElement | null = null;
@@ -424,7 +413,7 @@ export default function MapWrapper({
 
         const bounds = new google.maps.LatLngBounds();
 
-        // 1. ACTIVE USER CAR (When trip is ongoing)
+        // 1. ACTIVE USER RIDE (When trip is ongoing)
         const isTripActive = trip && (
             trip.status === "ACTIVE" || trip.status === "active" || 
             trip.status === "in_progress" || trip.status === "en_route" ||
@@ -447,7 +436,7 @@ export default function MapWrapper({
                         <span class="active-live-dot"></span>
                         <div class="active-text-block">
                             <span class="active-pill-title">YOUR RIDE • EN ROUTE</span>
-                            <span class="active-pill-sub">${trip.car_name || "Toyota Corolla"} • Driver on the way</span>
+                            <span class="active-pill-sub">${trip.car_name || "Toyota Corolla"} • Driver arriving</span>
                         </div>
                     </div>
 
@@ -474,8 +463,8 @@ export default function MapWrapper({
             bounds.extend(currentActivePos);
         }
 
-        // 2. AVAILABLE DRIVERS ON THE MAP (inDrive style with floating vehicle tags)
-        if (!isTripActive) {
+        // 2. REAL AVAILABLE DRIVERS (ONLY REAL DRIVERS FROM BACKEND/WEBSOCKET)
+        if (!isTripActive && filteredDrivers.length > 0) {
             filteredDrivers.forEach((driver) => {
                 const pos = { lat: driver.lat, lng: driver.lng };
                 const vehicleSvg = getVehicleSvg(driver.vehicle_category);
@@ -489,14 +478,12 @@ export default function MapWrapper({
 
                 const driverOverlayHtml = `
                     <div class="indrive-driver-marker-box group">
-                        <!-- inDrive Floating Tag / Pill directly on the car -->
                         <div class="indrive-driver-pill">
                             <span class="indrive-type-badge ${categoryBadgeColors}">${driver.car_type}</span>
                             <span class="indrive-car-model">${driver.car_name.split(" ")[0]}</span>
                             <span class="indrive-rating-chip">★ ${driver.rating}</span>
                         </div>
 
-                        <!-- Top-down realistic vehicle icon with drop shadow -->
                         <div class="indrive-car-graphic-container">
                             <div class="car-halo"></div>
                             ${vehicleSvg}
@@ -546,19 +533,24 @@ export default function MapWrapper({
             markersRef.current.push(dMarker);
             bounds.extend(dPos);
 
-            // Route via Google DirectionsService
+            // Driving Service: Turn-by-Turn Road Route with Driving Optimization
             const directionsService = new google.maps.DirectionsService();
             directionsService.route(
                 {
                     origin: pPos,
                     destination: dPos,
                     travelMode: google.maps.TravelMode.DRIVING,
+                    drivingOptions: {
+                        departureTime: new Date(),
+                        trafficModel: google.maps.TrafficModel.BEST_GUESS,
+                    },
+                    unitSystem: google.maps.UnitSystem.METRIC,
                 },
                 (result: any, status: any) => {
                     if (status === google.maps.DirectionsStatus.OK && result) {
                         directionsRendererRef.current?.setDirections(result);
                     } else {
-                        // Fallback straight-line polyline
+                        // Fallback straight-line polyline if Directions API unavailable
                         if (polylineRef.current) polylineRef.current.setMap(null);
                         polylineRef.current = new google.maps.Polyline({
                             path: [pPos, dPos],
@@ -574,13 +566,12 @@ export default function MapWrapper({
 
             map.fitBounds(bounds, { top: 60, bottom: 60, left: 60, right: 60 });
         } else if (center) {
-            // Selected center if any
             const cPos = { lat: center[0], lng: center[1] };
             map.panTo(cPos);
         }
     }, [isScriptLoaded, filteredDrivers, trip, driverLocation, selectedCategory]);
 
-    // Recenter to user's real GPS position
+    // Recenter GPS
     const handleRecenter = () => {
         if (!mapInstanceRef.current) return;
         setIsLocating(true);
@@ -594,7 +585,6 @@ export default function MapWrapper({
                     setIsLocating(false);
                 },
                 () => {
-                    // Fallback to default
                     mapInstanceRef.current.panTo({ lat: 6.224, lng: 7.084 });
                     setIsLocating(false);
                 },
@@ -617,7 +607,6 @@ export default function MapWrapper({
         }
     };
 
-    // Custom Zoom
     const handleZoomIn = () => {
         if (!mapInstanceRef.current) return;
         mapInstanceRef.current.setZoom(mapInstanceRef.current.getZoom() + 1);
@@ -634,15 +623,24 @@ export default function MapWrapper({
                 <AlertCircle className="w-10 h-10 text-amber-500" />
                 <h4 className="font-bold text-gray-900 dark:text-white text-base">Google Maps Connection Error</h4>
                 <p className="text-xs text-gray-500 max-w-sm">
-                    Unable to initialize live mobility map. Please check your internet connection and try again.
+                    Unable to load Google Maps navigation services with your provided key.
                 </p>
-                <button
-                    onClick={loadGoogleMaps}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C69C2E] hover:bg-[#b08b29] text-white text-xs font-bold transition-colors cursor-pointer"
-                >
-                    <RefreshCw className="w-4 h-4" />
-                    <span>Retry Map Connection</span>
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setShowKeyModal(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-black text-xs font-bold transition-colors cursor-pointer"
+                    >
+                        <Key className="w-4 h-4" />
+                        <span>Update API Key</span>
+                    </button>
+                    <button
+                        onClick={() => loadGoogleMaps(apiKey)}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C69C2E] hover:bg-[#b08b29] text-white text-xs font-bold transition-colors cursor-pointer"
+                    >
+                        <RefreshCw className="w-4 h-4" />
+                        <span>Retry</span>
+                    </button>
+                </div>
             </div>
         );
     }
@@ -793,24 +791,40 @@ export default function MapWrapper({
                 <div className="absolute inset-0 bg-gray-50/90 dark:bg-[#121212]/90 backdrop-blur-sm flex flex-col items-center justify-center z-10 gap-3">
                     <Loader2 className="w-8 h-8 animate-spin text-[#C69C2E]" />
                     <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                        Loading inDrive Google Maps Navigation...
+                        Connecting to Google Maps Driving Service...
                     </p>
                 </div>
             )}
 
-            {/* Top Bar: inDrive Status & Category Filter Pills */}
+            {/* Top Bar: inDrive Status, Category Filters & API Key Status */}
             <div className="absolute top-3 left-3 right-3 z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pointer-events-none">
                 {/* Live Status Chip */}
-                <div className="bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-gray-200/80 dark:border-[#333] shadow-md flex items-center gap-2 pointer-events-auto">
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-                        <Navigation className="w-3.5 h-3.5 text-[#C69C2E]" />
-                        {trip ? "Active GPS Tracking" : `${filteredDrivers.length} Drivers on Map`}
-                    </span>
+                <div className="flex items-center gap-2 pointer-events-auto">
+                    <div className="bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-gray-200/80 dark:border-[#333] shadow-md flex items-center gap-2">
+                        <div className={`w-2.5 h-2.5 rounded-full ${filteredDrivers.length > 0 || trip ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+                        <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                            <Navigation className="w-3.5 h-3.5 text-[#C69C2E]" />
+                            {trip 
+                                ? "Active GPS Tracking" 
+                                : filteredDrivers.length > 0 
+                                ? `${filteredDrivers.length} Live Driver${filteredDrivers.length > 1 ? "s" : ""} on Map`
+                                : "0 Active Drivers Nearby"}
+                        </span>
+                    </div>
+
+                    {/* Google Maps API Key Config Pill */}
+                    <button
+                        onClick={() => setShowKeyModal(true)}
+                        className="bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-gray-200/80 dark:border-[#333] shadow-md flex items-center gap-1.5 text-[11px] font-semibold text-gray-700 dark:text-gray-300 hover:text-[#C69C2E] transition-colors cursor-pointer"
+                        title={apiKey ? "Google Maps API Key Active" : "Set Google Maps API Key"}
+                    >
+                        <Key className={`w-3.5 h-3.5 ${apiKey ? "text-emerald-500" : "text-amber-500"}`} />
+                        <span className="hidden sm:inline">{apiKey ? "API Key Configured" : "Add API Key"}</span>
+                    </button>
                 </div>
 
-                {/* inDrive Vehicle Category Filter Bar (Only when not in active trip) */}
-                {!trip && (
+                {/* inDrive Vehicle Category Filter Bar (Only when real drivers are available and not on trip) */}
+                {!trip && parsedDrivers.length > 0 && (
                     <div className="bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md p-1 rounded-full border border-gray-200/80 dark:border-[#333] shadow-md flex items-center gap-1 overflow-x-auto max-w-full pointer-events-auto">
                         <button
                             onClick={() => setSelectedCategory("all")}
@@ -820,7 +834,7 @@ export default function MapWrapper({
                                     : "text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white"
                             }`}
                         >
-                            All
+                            All ({parsedDrivers.length})
                         </button>
                         <button
                             onClick={() => setSelectedCategory("sedan")}
@@ -865,6 +879,14 @@ export default function MapWrapper({
                     </div>
                 )}
             </div>
+
+            {/* Friendly "No Drivers Nearby" Notice (When 0 real drivers) */}
+            {!trip && parsedDrivers.length === 0 && (
+                <div className="absolute top-16 left-3 right-3 sm:left-auto sm:right-3 sm:max-w-xs z-10 bg-white/90 dark:bg-[#1C1C1E]/90 backdrop-blur-md p-3 rounded-2xl border border-gray-200/80 dark:border-[#333] shadow-md pointer-events-auto flex items-center gap-2.5 text-xs text-gray-600 dark:text-gray-300">
+                    <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                    <span>No drivers online in this area yet. You can still submit a ride request to broadcast to drivers.</span>
+                </div>
+            )}
 
             {/* Right Side In-Map Action Controls */}
             <div className="absolute right-3 bottom-6 sm:bottom-8 z-10 flex flex-col gap-2">
@@ -981,6 +1003,73 @@ export default function MapWrapper({
                             >
                                 <span>Select & Offer Fare</span>
                                 <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* API Key Modal */}
+            {showKeyModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-[#18181B] rounded-3xl p-6 max-w-md w-full border border-gray-200 dark:border-[#2E2E32] shadow-2xl space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-9 h-9 rounded-xl bg-[#C69C2E]/10 flex items-center justify-center text-[#C69C2E]">
+                                    <Key className="w-5 h-5" />
+                                </div>
+                                <h3 className="font-bold text-base text-gray-900 dark:text-white">
+                                    Google Maps API Key
+                                </h3>
+                            </div>
+                            <button
+                                onClick={() => setShowKeyModal(false)}
+                                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                            Enter your Google Cloud API key with <strong>Maps JavaScript API</strong> and <strong>Directions API</strong> enabled. It will be saved into your application environment.
+                        </p>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+                                Google Maps API Key
+                            </label>
+                            <input
+                                type="text"
+                                value={inputKey}
+                                onChange={(e) => setInputKey(e.target.value)}
+                                placeholder="AIzaSy..."
+                                className="w-full h-11 px-3.5 rounded-xl border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#121214] text-xs font-mono text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#C69C2E]"
+                            />
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2 pt-2">
+                            <button
+                                onClick={() => setShowKeyModal(false)}
+                                className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-500 hover:text-gray-900 dark:hover:text-white cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveKey}
+                                disabled={isSavingKey}
+                                className="px-5 py-2.5 rounded-xl bg-[#C69C2E] hover:bg-[#b08b29] text-white text-xs font-bold flex items-center gap-2 shadow-md cursor-pointer disabled:opacity-50"
+                            >
+                                {isSavingKey ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span>Saving...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check className="w-4 h-4" />
+                                        <span>Activate Key</span>
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
